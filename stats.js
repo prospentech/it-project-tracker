@@ -28,20 +28,44 @@ class StatsSystem {
         const activities = this.getActivities();
         const userActivities = activities.filter(a => a.user === user);
         
+        // Get user sessions
+        const sessions = this.getSessions().filter(s => s.user === user);
+        const currentSession = this.getCurrentSessions()[user];
+        
+        // Calculate active session duration
+        let currentDuration = 0;
+        if (currentSession && currentSession.loginTime) {
+            const loginTime = new Date(currentSession.loginTime);
+            const currentTime = new Date();
+            currentDuration = Math.round((currentTime - loginTime) / 1000 / 60);
+        }
+        
+        // Calculate total session time
+        let totalSessionTime = sessions.reduce((sum, session) => sum + (session.duration || 0), 0);
+        if (currentDuration > 0) {
+            totalSessionTime += currentDuration;
+        }
+        
         return {
             totalActions: userActivities.length,
             lastLogin: this.getLastLogin(user),
             todayActions: this.getTodayActions(user),
             favoriteAction: this.getMostCommonAction(user),
-            sessionCount: this.getSessionCount(user),
-            avgSessionDuration: this.getAvgSessionDuration(user)
+            sessionCount: sessions.length + (currentSession ? 1 : 0),
+            avgSessionDuration: sessions.length > 0 ? Math.round(totalSessionTime / (sessions.length + (currentSession ? 1 : 0))) : 0,
+            currentSessionDuration: currentDuration,
+            isOnline: currentSession ? currentSession.online : false
         };
     }
 
     getLastLogin(user) {
         const activities = this.getActivities();
         const logins = activities.filter(a => a.user === user && a.action === 'login');
-        return logins.length > 0 ? logins[0].timestamp : 'Never';
+        return logins.length > 0 ? this.formatDate(new Date(logins[0].timestamp)) : 'Never';
+    }
+
+    formatDate(date) {
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
     getTodayActions(user) {
@@ -68,20 +92,7 @@ class StatsSystem {
             }
         });
         
-        return maxAction;
-    }
-
-    getSessionCount(user) {
-        const sessions = this.getSessions();
-        return sessions.filter(s => s.user === user).length;
-    }
-
-    getAvgSessionDuration(user) {
-        const sessions = this.getSessions().filter(s => s.user === user);
-        if (sessions.length === 0) return 0;
-        
-        const totalDuration = sessions.reduce((sum, session) => sum + (session.duration || 0), 0);
-        return Math.round(totalDuration / sessions.length);
+        return maxAction.charAt(0).toUpperCase() + maxAction.slice(1);
     }
 
     updateRealTimeStats() {
@@ -97,7 +108,8 @@ class StatsSystem {
                      a.action === 'login' || a.action === 'logout' || 
                      a.action === 'create' || a.action === 'delete' || 
                      a.action === 'view' || a.action.includes('post') ||
-                     a.action.includes('profile') || a.action.includes('avatar'))
+                     a.action.includes('profile') || a.action.includes('avatar') ||
+                     a.action === 'comment')
             .slice(0, 20); // Last 20 updates
     }
 
@@ -113,13 +125,23 @@ class StatsSystem {
                 const minutesSinceActive = Math.round((now - lastActive) / 1000 / 60);
                 
                 status[user] = {
-                    online: minutesSinceActive < 5, // Consider online if active in last 5 minutes
-                    lastActive: currentSessions[user].lastActive,
+                    online: currentSessions[user].online && minutesSinceActive < 5, // Consider online if active in last 5 minutes
+                    lastActive: this.formatDate(new Date(currentSessions[user].lastActive)),
                     duration: currentSessions[user].currentDuration || 0,
-                    sessionStart: currentSessions[user].loginTime
+                    sessionStart: this.formatDate(new Date(currentSessions[user].loginTime || currentSessions[user].lastActive))
                 };
             } else {
-                status[user] = { online: false, lastActive: null, duration: 0, sessionStart: null };
+                // Check if user has any recent activity
+                const activities = this.getActivities();
+                const userActivities = activities.filter(a => a.user === user);
+                const lastActivity = userActivities[0];
+                
+                status[user] = { 
+                    online: false, 
+                    lastActive: lastActivity ? this.formatDate(new Date(lastActivity.timestamp)) : 'Never',
+                    duration: 0, 
+                    sessionStart: null 
+                };
             }
         });
         
@@ -130,6 +152,8 @@ class StatsSystem {
         const projects = JSON.parse(localStorage.getItem('prospenProjects')) || {};
         const projectList = Object.values(projects);
         
+        const now = new Date();
+        
         return {
             totalProjects: projectList.length,
             activeProjects: projectList.filter(p => p.status === 'In Progress').length,
@@ -137,10 +161,30 @@ class StatsSystem {
             overdueProjects: projectList.filter(p => {
                 if (!p.due) return false;
                 const dueDate = new Date(p.due);
-                const now = new Date();
                 return dueDate < now && p.status !== 'Completed';
+            }).length,
+            recentProjects: projectList.filter(p => {
+                if (!p.lastUpdated) return false;
+                const lastUpdated = new Date(p.lastUpdated);
+                const daysDiff = Math.round((now - lastUpdated) / (1000 * 60 * 60 * 24));
+                return daysDiff <= 7; // Projects updated in last 7 days
             }).length
         };
+    }
+    
+    getTopContributors() {
+        const activities = this.getActivities();
+        const userCounts = {};
+        
+        activities.forEach(activity => {
+            userCounts[activity.user] = (userCounts[activity.user] || 0) + 1;
+        });
+        
+        // Convert to array and sort
+        return Object.entries(userCounts)
+            .map(([user, count]) => ({ user, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 4); // Top 4 contributors
     }
 }
 
@@ -156,6 +200,7 @@ window.updateStatsDisplay = function() {
     const recentUpdates = statsSystem.getRecentUpdates();
     const onlineStatus = statsSystem.getUserOnlineStatus();
     const projectStats = statsSystem.getProjectStats();
+    const topContributors = statsSystem.getTopContributors();
 
     let html = `
         <div class="section-box">
@@ -182,7 +227,7 @@ window.updateStatsDisplay = function() {
 
         <div class="section-box">
             <h2><i class="fas fa-users"></i> User Online Status</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
     `;
 
     // Online status cards
@@ -198,13 +243,41 @@ window.updateStatsDisplay = function() {
                 </div>
                 ${data.online ? `
                     <div style="font-size: 0.8rem; color: var(--text-p); margin-top: 8px;">
-                        <i class="fas fa-clock"></i> Session: ${data.duration} min
+                        <i class="fas fa-clock"></i> Current Session: ${data.duration} min
                     </div>
-                ` : data.lastActive ? `
+                    <div style="font-size: 0.8rem; color: var(--text-p); margin-top: 4px;">
+                        <i class="fas fa-play-circle"></i> Started: ${data.sessionStart}
+                    </div>
+                ` : `
                     <div style="font-size: 0.8rem; color: var(--text-p); margin-top: 8px;">
-                        <i class="fas fa-clock"></i> Last active: ${new Date(data.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <i class="fas fa-clock"></i> Last active: ${data.lastActive}
                     </div>
-                ` : ''}
+                `}
+            </div>
+        `;
+    });
+
+    html += `
+            </div>
+        </div>
+
+        <div class="section-box">
+            <h2><i class="fas fa-trophy"></i> Top Contributors</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+    `;
+
+    topContributors.forEach((contributor, index) => {
+        const colors = ['#38bdf8', '#22c55e', '#f59e0b', '#a855f7'];
+        const color = colors[index] || '#6b7280';
+        html += `
+            <div style="background: ${color}20; padding: 15px; border-radius: 10px; border-left: 4px solid ${color};">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="color: ${color};">${index + 1}. ${contributor.user}</strong>
+                    <span style="background: ${color}; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem;">${contributor.count} actions</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-p); margin-top: 8px;">
+                    <i class="fas fa-chart-line"></i> Active contributor
+                </div>
             </div>
         `;
     });
@@ -267,7 +340,13 @@ window.updateStatsDisplay = function() {
         const userStats = statsSystem.getStatsByUser(user);
         html += `
             <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 10px;">
-                <h3 style="color: var(--accent); margin-top: 0;">${user}</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="color: var(--accent); margin: 0;">${user}</h3>
+                    <span style="color: ${userStats.isOnline ? '#22c55e' : '#94a3b8'}; font-size: 0.8rem;">
+                        <i class="fas fa-circle" style="font-size: 0.6rem;"></i>
+                        ${userStats.isOnline ? 'Online' : 'Offline'}
+                    </span>
+                </div>
                 <div style="font-size: 0.9rem;">
                     <div style="margin-bottom: 8px;">
                         <i class="fas fa-tasks"></i> Total Actions: <strong>${userStats.totalActions}</strong>
@@ -284,6 +363,11 @@ window.updateStatsDisplay = function() {
                     <div style="margin-bottom: 8px;">
                         <i class="fas fa-clock"></i> Avg Session: <strong>${userStats.avgSessionDuration} min</strong>
                     </div>
+                    ${userStats.isOnline ? `
+                        <div style="margin-bottom: 8px;">
+                            <i class="fas fa-play-circle"></i> Current: <strong>${userStats.currentSessionDuration} min</strong>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -291,6 +375,16 @@ window.updateStatsDisplay = function() {
 
     html += `
             </div>
+        </div>
+        
+        <div class="section-box">
+            <h2><i class="fas fa-info-circle"></i> Statistics Information</h2>
+            <p style="color: var(--text-p); font-size: 0.9rem;">
+                <i class="fas fa-sync-alt"></i> Statistics update every 30 seconds<br>
+                <i class="fas fa-database"></i> Tracking all user activities across the system<br>
+                <i class="fas fa-user-check"></i> Online status based on activity within last 5 minutes<br>
+                <i class="fas fa-project-diagram"></i> Project stats include all team members' contributions
+            </p>
         </div>
     `;
 

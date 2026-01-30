@@ -20,6 +20,10 @@ class AuthSystem {
             setInterval(() => {
                 this.updateUserLastActive();
             }, 30000); // Every 30 seconds
+            
+            // Record login activity
+            this.recordActivity('login', 'User logged in');
+            
         } else if (!window.location.pathname.includes('login.html')) {
             // Redirect to login if not on login page
             window.location.href = 'login.html';
@@ -46,10 +50,13 @@ class AuthSystem {
             });
             localStorage.setItem('userSessions', JSON.stringify(sessions.slice(0, 50))); // Keep last 50
             
-            // Remove from current sessions
+            // Update current sessions
             let currentSessions = JSON.parse(localStorage.getItem('currentSessions')) || {};
-            delete currentSessions[this.currentUser.username];
-            localStorage.setItem('currentSessions', JSON.stringify(currentSessions));
+            if (currentSessions[this.currentUser.username]) {
+                currentSessions[this.currentUser.username].online = false;
+                currentSessions[this.currentUser.username].logoutTime = logoutTime.toISOString();
+                localStorage.setItem('currentSessions', JSON.stringify(currentSessions));
+            }
         }
         
         localStorage.removeItem('currentUser');
@@ -67,9 +74,11 @@ class AuthSystem {
             let currentSessions = JSON.parse(localStorage.getItem('currentSessions')) || {};
             currentSessions[this.currentUser.username] = {
                 ...currentSessions[this.currentUser.username],
+                username: this.currentUser.username,
                 loginTime: this.currentUser.loginTime,
                 currentDuration: duration,
-                lastActive: currentTime.toISOString()
+                lastActive: currentTime.toISOString(),
+                online: true
             };
             localStorage.setItem('currentSessions', JSON.stringify(currentSessions));
         }
@@ -80,7 +89,9 @@ class AuthSystem {
             let currentSessions = JSON.parse(localStorage.getItem('currentSessions')) || {};
             currentSessions[this.currentUser.username] = {
                 ...currentSessions[this.currentUser.username],
-                lastActive: new Date().toISOString()
+                username: this.currentUser.username,
+                lastActive: new Date().toISOString(),
+                online: true
             };
             localStorage.setItem('currentSessions', JSON.stringify(currentSessions));
         }
@@ -108,6 +119,16 @@ class AuthSystem {
         // Trigger real-time update for stats page
         if (window.updateStatsDisplay) {
             window.updateStatsDisplay();
+        }
+        
+        // Also update project last updated timestamp
+        if (projectId) {
+            const projects = JSON.parse(localStorage.getItem('prospenProjects')) || {};
+            if (projects[projectId]) {
+                projects[projectId].lastUpdated = new Date().toISOString();
+                projects[projectId].lastUpdatedBy = this.currentUser.username;
+                localStorage.setItem('prospenProjects', JSON.stringify(projects));
+            }
         }
     }
 

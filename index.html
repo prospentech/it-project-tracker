@@ -3,9 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prospen IT & Design Control Center</title>
+    <title>Prospen IT and Design Project Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Poppins:wght@400;500;600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Custom Modal Styles */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .custom-modal {
+            background: var(--card);
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        .custom-modal.info {
+            border-left: 4px solid var(--accent);
+        }
+        .custom-modal.success {
+            border-left: 4px solid var(--success);
+        }
+        .custom-modal.warning {
+            border-left: 4px solid var(--warning);
+        }
+        .custom-modal.danger {
+            border-left: 4px solid var(--danger);
+        }
+        .custom-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .custom-modal-header h3 {
+            margin: 0;
+            color: var(--accent);
+        }
+        .custom-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-h);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        .custom-modal-close:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .custom-modal-body {
+            padding: 20px;
+        }
+        .custom-modal-body p {
+            margin: 0;
+            color: var(--text-h);
+        }
+        .custom-modal-footer {
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.03);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: right;
+        }
+        
+        /* Comment Modal */
+        .comment-modal textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-h);
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+        
+        /* View More Projects Button */
+        .view-more-btn {
+            display: block;
+            width: 200px;
+            margin: 40px auto;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+        .view-more-btn:hover {
+            background: #0ea5e9;
+        }
+        
+        /* Update Card with Comments */
+        .update-card .comments-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .update-card .comment-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
 
@@ -43,9 +166,9 @@
 
     <!-- Hero Slider -->
     <div class="hero-slider" id="heroSlider">
-        <div class="slide active">
-            <h2>PROSPEN HUB</h2>
-            <p>IT & Design Unified Project Tracker 2026</p>
+        <div class="slide active" id="welcomeSlide">
+            <h2>Welcome!</h2>
+            <p id="welcomeMessage">Loading your dashboard...</p>
         </div>
         <div class="slide team-slide">
             <h2>Meet Our Team</h2>
@@ -72,6 +195,19 @@
         </div>
     </div>
 
+    <!-- Featured Projects Section -->
+    <div class="updates-section">
+        <div class="updates-header">
+            <h2><i class="fas fa-star"></i> Featured Projects</h2>
+            <button class="control-btn" onclick="openAllProjects()">
+                <i class="fas fa-eye"></i> View All Projects
+            </button>
+        </div>
+        <div class="updates-container" id="featuredProjectsContainer">
+            <!-- Featured projects will be loaded here -->
+        </div>
+    </div>
+
     <!-- Updates Section -->
     <div class="updates-section">
         <div class="updates-header">
@@ -83,11 +219,24 @@
         <div class="updates-container" id="updatesContainer">
             <!-- Updates will be loaded here -->
         </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="view-more-btn" onclick="openAllUpdates()">
+                <i class="fas fa-eye"></i> View More Updates
+            </button>
+        </div>
     </div>
 
-    <!-- Projects Grid -->
-    <div class="project-grid" id="project-grid">
-        <!-- Projects will be loaded here -->
+    <!-- Projects Grid (Limited to 3) -->
+    <div class="updates-section">
+        <div class="updates-header">
+            <h2><i class="fas fa-project-diagram"></i> Recent Projects</h2>
+            <button class="control-btn" onclick="openAllProjects()">
+                <i class="fas fa-list"></i> View All
+            </button>
+        </div>
+        <div class="project-grid" id="project-grid">
+            <!-- Projects will be loaded here (limited to 3) -->
+        </div>
     </div>
 
     <!-- Footer -->
@@ -171,7 +320,7 @@
                 <li><strong>Statistics & Analytics:</strong> Detailed reports on user activities, project status, and team performance</li>
                 <li><strong>Version Control:</strong> Complete history of all changes with timestamps and user attribution</li>
                 <li><strong>User Management:</strong> Multi-user system with role-based access (admin, Junior, Buhle, AJay)</li>
-                <li><strong>Theme Customization:</strong> Dark/light modes with customizable colors</li>
+                <li><strong>Theme Customization:</strong> Dark/light modes with customizable colors and fonts</li>
             </ul>
         </div>
 
@@ -189,21 +338,34 @@
             <h3>== Features ==</h3>
             <ul>
                 <li>Real-time project tracking with countdown timers</li>
-                <li>Comprehensive activity logging</li>
-                <li>User session tracking and online status</li>
+                <li>Comprehensive activity logging across all users</li>
+                <li>User session tracking and online status for all team members</li>
                 <li>Team member management</li>
                 <li>Task allocation and progress tracking</li>
                 <li>Weekly timeline updates with "Updated By" tracking</li>
                 <li>Statistics and analytics dashboard</li>
                 <li>Data export functionality</li>
-                <li>Update board for team announcements</li>
+                <li>Update board for team announcements with comments</li>
                 <li>User profile management with avatar support</li>
                 <li>Responsive design for all devices</li>
+                <li>Font and color customization per user</li>
             </ul>
         </div>
 
         <div class="version-section">
             <h3>== Changelog ==</h3>
+            <p><strong>= 2.1.0 =</strong><br>
+            * Added multi-user tracking for all activities<br>
+            * Added welcome message with user-specific task count<br>
+            * Added featured projects section<br>
+            * Added all projects and all updates pages<br>
+            * Added comment system for updates<br>
+            * Added font customization in theme settings<br>
+            * Added custom modal system to replace alerts<br>
+            * Fixed user session tracking for all team members<br>
+            * Improved real-time statistics for all users<br>
+            * Enhanced project last updated tracking</p>
+
             <p><strong>= 2.0.0 =</strong><br>
             * Added hero slider with multiple slides<br>
             * Added Updates section for team announcements<br>
@@ -234,10 +396,10 @@
             Yes, use the Export Data button in the Statistics page.</p>
             
             <p><strong>How are user sessions tracked?</strong><br>
-            Sessions are tracked automatically when users login and logout.</p>
+            Sessions are tracked automatically when users login and logout. All user activities are recorded.</p>
             
-            <p><strong>Can I customize the theme colors?</strong><br>
-            Yes, use the Theme button to access color customization options.</p>
+            <p><strong>Can I customize the theme colors and fonts?</strong><br>
+            Yes, use the Theme button to access color and font customization options.</p>
         </div>
 
         <div class="version-section">
@@ -245,6 +407,42 @@
             <p>For support, visit <strong>https://prospentech.co.za</strong></p>
             <p>Report issues or suggest features through our contact form.</p>
         </div>
+    </div>
+</div>
+
+<!-- All Projects Page -->
+<div id="allProjectsPage" class="stats-page">
+    <div class="stats-header">
+        <h1><i class="fas fa-project-diagram"></i> All Projects</h1>
+        <div class="stats-controls">
+            <button class="control-btn" onclick="openProjectModal()">
+                <i class="fas fa-plus"></i> New Project
+            </button>
+            <button class="back-btn" onclick="closeAllProjects()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="allProjectsContainer" class="project-grid" style="padding: 20px;">
+        <!-- All projects will be loaded here -->
+    </div>
+</div>
+
+<!-- All Updates Page -->
+<div id="allUpdatesPage" class="stats-page">
+    <div class="stats-header">
+        <h1><i class="fas fa-bullhorn"></i> All Updates</h1>
+        <div class="stats-controls">
+            <button class="control-btn" onclick="openUpdateModal()">
+                <i class="fas fa-plus"></i> New Update
+            </button>
+            <button class="back-btn" onclick="closeAllUpdates()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="allUpdatesContainer" style="padding: 20px;">
+        <!-- All updates will be loaded here -->
     </div>
 </div>
 
@@ -367,6 +565,20 @@
         </div>
 
         <div class="settings-section">
+            <h3>Font Family</h3>
+            <select id="fontFamily" onchange="setFontFamily(this.value)" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-h);">
+                <option value="'Inter', sans-serif">Inter</option>
+                <option value="'Roboto', sans-serif">Roboto</option>
+                <option value="'Open Sans', sans-serif">Open Sans</option>
+                <option value="'Poppins', sans-serif">Poppins</option>
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'Arial', sans-serif">Arial</option>
+                <option value="'Georgia', serif">Georgia</option>
+                <option value="'Courier New', monospace">Courier New</option>
+            </select>
+        </div>
+
+        <div class="settings-section">
             <h3>Card Colors</h3>
             <div class="color-grid">
                 <div class="color-option active" style="background: #1e293b;" onclick="setCardColor('#1e293b')"></div>
@@ -395,7 +607,7 @@
         </div>
 
         <div class="btn-group">
-            <button type="button" class="btn-secondary" onclick="resetColors()">Reset Colors</button>
+            <button type="button" class="btn-secondary" onclick="resetSettings()">Reset All</button>
             <button type="button" class="btn-primary" onclick="closeSettings()">Apply Settings</button>
         </div>
     </div>
@@ -495,6 +707,29 @@
     </div>
 </div>
 
+<!-- Comment Modal -->
+<div id="commentModal" class="modal comment-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add Comment</h2>
+            <button class="close-btn" onclick="closeCommentModal()">&times;</button>
+        </div>
+        
+        <form id="commentForm" onsubmit="submitComment(event)">
+            <input type="hidden" id="commentUpdateId">
+            <div class="form-group">
+                <label for="commentMessage">Your Comment</label>
+                <textarea id="commentMessage" placeholder="Write your comment..." required></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeCommentModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Post Comment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="auth.js"></script>
 <script src="stats.js"></script>
 <script>
@@ -558,11 +793,14 @@
         }
     };
 
-    // Load theme settings
-    const themeSettings = JSON.parse(localStorage.getItem('prospenTheme')) || {
+    // Load theme settings with user-specific preferences
+    let currentUser = auth.getCurrentUser();
+    let username = currentUser ? currentUser.username : 'default';
+    let themeSettings = JSON.parse(localStorage.getItem('prospenTheme_' + username)) || {
         darkMode: true,
         cardColor: '#1e293b',
-        accentColor: '#38bdf8'
+        accentColor: '#38bdf8',
+        fontFamily: "'Inter', sans-serif"
     };
 
     // Load updates
@@ -617,10 +855,29 @@
         }
     };
 
-    // Auth system initialization
-    let currentUser = auth.getCurrentUser();
     let currentSlide = 0;
     let slideInterval;
+
+    // Custom modal function to replace default alerts
+    function showCustomModal(title, message, type = 'info') {
+        const modal = document.createElement('div');
+        modal.className = 'custom-modal-overlay';
+        modal.innerHTML = `
+            <div class="custom-modal ${type}">
+                <div class="custom-modal-header">
+                    <h3>${title}</h3>
+                    <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                </div>
+                <div class="custom-modal-body">
+                    <p>${message}</p>
+                </div>
+                <div class="custom-modal-footer">
+                    <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">OK</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
 
     // Update user info display
     function updateUserInfo() {
@@ -631,6 +888,27 @@
             const duration = auth.getSessionDuration();
             document.getElementById('sessionDuration').textContent = duration + ' min';
         }
+    }
+
+    // Update welcome message
+    function updateWelcomeMessage() {
+        if (currentUser) {
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const pendingTasks = getPendingTaskCount();
+            welcomeMessage.textContent = `Welcome ${currentUser.username}, you have ${pendingTasks} tasks pending.`;
+        }
+    }
+
+    function getPendingTaskCount() {
+        let total = 0;
+        Object.values(projects).forEach(project => {
+            project.tasks.forEach(task => {
+                if (task.status !== 'Completed') {
+                    total++;
+                }
+            });
+        });
+        return total;
     }
 
     // Initialize hero slider
@@ -646,6 +924,9 @@
         
         slides[currentSlide].classList.add('active');
         dots[currentSlide].classList.add('active');
+        
+        // Update welcome message
+        updateWelcomeMessage();
         
         // Update top project
         updateTopProject();
@@ -706,16 +987,76 @@
         }
     }
 
-    // Load and render updates
-    function loadUpdates() {
-        const container = document.getElementById('updatesContainer');
+    // Load featured projects (recently updated)
+    function loadFeaturedProjects() {
+        const container = document.getElementById('featuredProjectsContainer');
+        if (!container) return;
+        
+        // Sort projects by last updated
+        const sortedProjects = Object.values(projects).sort((a, b) => {
+            const timeA = a.lastUpdated ? new Date(a.lastUpdated) : new Date(a.start);
+            const timeB = b.lastUpdated ? new Date(b.lastUpdated) : new Date(b.start);
+            return timeB - timeA;
+        });
+        
         container.innerHTML = '';
         
-        updates.slice(0, 6).forEach(update => {
+        // Show only 2 most recent projects
+        sortedProjects.slice(0, 2).forEach(project => {
+            const dueDate = new Date(project.due);
+            const now = new Date();
+            const diff = dueDate - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            let countdownText = "No due date";
+            if (!isNaN(days)) {
+                if (days > 0) {
+                    countdownText = `${days} Days Remaining`;
+                } else if (days === 0) {
+                    countdownText = "Due Today!";
+                } else {
+                    countdownText = `${Math.abs(days)} Days Overdue`;
+                }
+            }
+            
+            const projectElement = document.createElement('div');
+            projectElement.className = 'update-card';
+            projectElement.onclick = () => openProject(project.id);
+            projectElement.innerHTML = `
+                <div style="display:flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <i class="${project.icon || 'fas fa-project-diagram'} fa-2x" style="color:var(--accent)"></i>
+                    <div>
+                        <h4 style="margin: 0; color: var(--accent);">${project.name}</h4>
+                        <small style="color: var(--text-p);">Last updated: ${project.lastUpdatedBy || project.lead}</small>
+                    </div>
+                    <span class="status-badge" style="margin-left: auto;">${project.status}</span>
+                </div>
+                <p>${project.desc.substring(0, 120)}${project.desc.length > 120 ? '...' : ''}</p>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                    <span><b>Lead:</b> ${project.lead}</span>
+                    <span class="countdown" style="margin: 0;">${countdownText}</span>
+                </div>
+            `;
+            container.appendChild(projectElement);
+        });
+    }
+
+    // Load and render updates (limited to 3)
+    function loadUpdates() {
+        const container = document.getElementById('updatesContainer');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        updates.slice(0, 3).forEach(update => {
             const userProfile = userProfiles[update.user] || userProfiles['admin'];
             const timeAgo = getTimeAgo(new Date(update.timestamp));
             const priorityClass = update.priority === 'urgent' ? 'danger' : 
                                 update.priority === 'important' ? 'warning' : 'success';
+            
+            // Get first comment if any
+            const comments = JSON.parse(localStorage.getItem(`updateComments_${update.id}`)) || [];
+            const firstComment = comments[0];
             
             const updateElement = document.createElement('div');
             updateElement.className = 'update-card';
@@ -740,12 +1081,27 @@
                     <h4 style="margin: 0 0 10px 0; color: var(--accent);">${update.title}</h4>
                     <p style="margin: 0;">${update.message}</p>
                 </div>
+                ${firstComment ? `
+                    <div class="comments-section">
+                        <div class="comment-item">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                <strong style="color: var(--accent);">${firstComment.user}</strong>
+                                <small style="color: var(--text-p);">${getTimeAgo(new Date(firstComment.timestamp))}</small>
+                            </div>
+                            <p style="margin: 0; font-size: 0.9rem;">${firstComment.message}</p>
+                        </div>
+                        ${comments.length > 1 ? `<p style="text-align: center; color: var(--accent); cursor: pointer; font-size: 0.9rem;" onclick="viewUpdateComments('${update.id}')">View ${comments.length - 1} more comment(s)</p>` : ''}
+                    </div>
+                ` : ''}
                 <div class="update-actions">
                     <button class="small-btn" onclick="likeUpdate('${update.id}')">
                         <i class="fas fa-thumbs-up"></i>
                     </button>
-                    <button class="small-btn" onclick="commentOnUpdate('${update.id}')">
+                    <button class="small-btn" onclick="openCommentModal('${update.id}')">
                         <i class="fas fa-comment"></i>
+                    </button>
+                    <button class="small-btn" onclick="shareUpdate('${update.id}')">
+                        <i class="fas fa-share"></i>
                     </button>
                 </div>
             `;
@@ -769,6 +1125,24 @@
         return date.toLocaleDateString();
     }
 
+    function viewUpdateComments(updateId) {
+        const comments = JSON.parse(localStorage.getItem(`updateComments_${updateId}`)) || [];
+        let commentsHtml = '<h3>All Comments</h3>';
+        comments.forEach(comment => {
+            commentsHtml += `
+                <div style="margin-bottom: 15px; padding: 15px; background: var(--card); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <strong style="color: var(--accent);">${comment.user}</strong>
+                        <small style="color: var(--text-p);">${new Date(comment.timestamp).toLocaleString()}</small>
+                    </div>
+                    <p style="margin: 0;">${comment.message}</p>
+                </div>
+            `;
+        });
+        
+        showCustomModal('Comments', commentsHtml, 'info');
+    }
+
     function openUpdateModal() {
         document.getElementById('updateModal').style.display = 'flex';
     }
@@ -779,11 +1153,19 @@
     }
 
     function postUpdate(event) {
-        event.preventDefault();
+        if (event) event.preventDefault();
         
-        const title = document.getElementById('updateTitle').value;
-        const message = document.getElementById('updateMessage').value;
-        const priority = document.getElementById('updatePriority').value;
+        let title, message, priority;
+        
+        if (event) {
+            title = document.getElementById('updateTitle').value;
+            message = document.getElementById('updateMessage').value;
+            priority = document.getElementById('updatePriority').value;
+        } else {
+            // For direct call from button
+            openUpdateModal();
+            return;
+        }
         
         const newUpdate = {
             id: 'update_' + Date.now(),
@@ -803,20 +1185,77 @@
         loadUpdates();
         closeUpdateModal();
         
-        alert('Update posted successfully!');
+        showCustomModal('Success', 'Update posted successfully!', 'success');
     }
 
     function likeUpdate(updateId) {
-        // Implementation for liking updates
-        alert('Like feature coming soon!');
+        let likes = JSON.parse(localStorage.getItem(`updateLikes_${updateId}`)) || [];
+        if (!likes.includes(currentUser.username)) {
+            likes.push(currentUser.username);
+            localStorage.setItem(`updateLikes_${updateId}`, JSON.stringify(likes));
+            showCustomModal('Success', 'You liked this update!', 'success');
+        } else {
+            showCustomModal('Info', 'You already liked this update', 'info');
+        }
     }
 
-    function commentOnUpdate(updateId) {
-        const comment = prompt('Enter your comment:');
-        if (comment) {
-            auth.recordActivity('comment', `Commented on update: "${comment}"`);
-            alert('Comment added!');
+    function shareUpdate(updateId) {
+        const update = updates.find(u => u.id === updateId);
+        if (update) {
+            const shareText = `${update.title}: ${update.message}`;
+            if (navigator.share) {
+                navigator.share({
+                    title: update.title,
+                    text: update.message,
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(shareText);
+                showCustomModal('Success', 'Update copied to clipboard!', 'success');
+            }
         }
+    }
+
+    function openCommentModal(updateId) {
+        document.getElementById('commentUpdateId').value = updateId;
+        document.getElementById('commentModal').style.display = 'flex';
+    }
+
+    function closeCommentModal() {
+        document.getElementById('commentModal').style.display = 'none';
+        document.getElementById('commentForm').reset();
+    }
+
+    function submitComment(event) {
+        event.preventDefault();
+        
+        const updateId = document.getElementById('commentUpdateId').value;
+        const message = document.getElementById('commentMessage').value;
+        
+        if (!message.trim()) return;
+        
+        const comments = JSON.parse(localStorage.getItem(`updateComments_${updateId}`)) || [];
+        const newComment = {
+            id: 'comment_' + Date.now(),
+            user: currentUser.username,
+            message: message,
+            timestamp: new Date().toISOString()
+        };
+        comments.push(newComment);
+        localStorage.setItem(`updateComments_${updateId}`, JSON.stringify(comments));
+        
+        // Record activity
+        auth.recordActivity('comment', `Commented on update`, updateId);
+        
+        closeCommentModal();
+        
+        // Refresh updates display
+        if (document.getElementById('allUpdatesPage').style.display === 'block') {
+            loadAllUpdates();
+        }
+        loadUpdates();
+        
+        showCustomModal('Success', 'Comment added successfully!', 'success');
     }
 
     // Profile functions
@@ -854,12 +1293,12 @@
         if (!file) return;
         
         if (!file.type.startsWith('image/')) {
-            alert('Please select an image file.');
+            showCustomModal('Error', 'Please select an image file.', 'danger');
             return;
         }
         
         if (file.size > 2 * 1024 * 1024) { // 2MB limit
-            alert('Image size should be less than 2MB.');
+            showCustomModal('Error', 'Image size should be less than 2MB.', 'danger');
             return;
         }
         
@@ -880,7 +1319,7 @@
                 // Record activity
                 auth.recordActivity('avatar_update', 'Updated profile avatar');
                 
-                alert('Avatar updated successfully!');
+                showCustomModal('Success', 'Avatar updated successfully!', 'success');
             }
         };
         
@@ -910,17 +1349,17 @@
         // Handle password change
         if (newPassword) {
             if (currentPassword !== currentUser.username) {
-                alert('Current password is incorrect.');
+                showCustomModal('Error', 'Current password is incorrect.', 'danger');
                 return;
             }
             
             if (newPassword !== confirmPassword) {
-                alert('New passwords do not match.');
+                showCustomModal('Error', 'New passwords do not match.', 'danger');
                 return;
             }
             
             // In a real app, you would hash the password and update it
-            alert('Password change feature would be implemented with backend authentication.');
+            showCustomModal('Info', 'Password change feature would be implemented with backend authentication.', 'info');
         }
         
         localStorage.setItem('prospenProfiles', JSON.stringify(userProfiles));
@@ -928,7 +1367,7 @@
         // Record activity
         auth.recordActivity('profile_update', 'Updated profile information');
         
-        alert('Profile updated successfully!');
+        showCustomModal('Success', 'Profile updated successfully!', 'success');
         closeProfile();
     }
 
@@ -941,7 +1380,7 @@
         document.getElementById('versionPage').style.display = 'none';
     }
 
-    // Existing functions (unchanged but included for completeness)
+    // Theme functions
     function applyTheme() {
         if (themeSettings.darkMode) {
             document.body.classList.remove('light-mode');
@@ -952,8 +1391,10 @@
         document.documentElement.style.setProperty('--card', themeSettings.cardColor);
         document.documentElement.style.setProperty('--accent', themeSettings.accentColor);
         document.documentElement.style.setProperty('--accent-glow', themeSettings.accentColor + '40');
+        document.body.style.fontFamily = themeSettings.fontFamily;
         
         document.getElementById('darkModeToggle').checked = themeSettings.darkMode;
+        document.getElementById('fontFamily').value = themeSettings.fontFamily;
         
         document.querySelectorAll('.color-option').forEach(option => {
             option.classList.remove('active');
@@ -970,26 +1411,34 @@
 
     function toggleDarkMode() {
         themeSettings.darkMode = !themeSettings.darkMode;
-        localStorage.setItem('prospenTheme', JSON.stringify(themeSettings));
+        localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
         applyTheme();
     }
 
     function setCardColor(color) {
         themeSettings.cardColor = color;
-        localStorage.setItem('prospenTheme', JSON.stringify(themeSettings));
+        localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
         applyTheme();
     }
 
     function setAccentColor(color) {
         themeSettings.accentColor = color;
-        localStorage.setItem('prospenTheme', JSON.stringify(themeSettings));
+        localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
         applyTheme();
     }
 
-    function resetColors() {
+    function setFontFamily(font) {
+        themeSettings.fontFamily = font;
+        localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
+        applyTheme();
+    }
+
+    function resetSettings() {
+        themeSettings.darkMode = true;
         themeSettings.cardColor = '#1e293b';
         themeSettings.accentColor = '#38bdf8';
-        localStorage.setItem('prospenTheme', JSON.stringify(themeSettings));
+        themeSettings.fontFamily = "'Inter', sans-serif";
+        localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
         applyTheme();
     }
 
@@ -1004,14 +1453,26 @@
     function saveProjects() {
         localStorage.setItem('prospenProjects', JSON.stringify(projects));
         renderProjects();
+        loadFeaturedProjects();
         updateTopProject();
     }
 
+    // Render projects (limited to 3 on main page)
     function renderProjects() {
         const grid = document.getElementById('project-grid');
+        if (!grid) return;
+        
         grid.innerHTML = '';
         
-        Object.values(projects).forEach(project => {
+        // Sort projects by last updated
+        const sortedProjects = Object.values(projects).sort((a, b) => {
+            const timeA = a.lastUpdated ? new Date(a.lastUpdated) : new Date(a.start);
+            const timeB = b.lastUpdated ? new Date(b.lastUpdated) : new Date(b.start);
+            return timeB - timeA;
+        });
+        
+        // Show only 3 most recent projects on main page
+        sortedProjects.slice(0, 3).forEach(project => {
             const dueDate = new Date(project.due);
             const now = new Date();
             const diff = dueDate - now;
@@ -1048,6 +1509,7 @@
                 <p>${project.desc.substring(0, 100)}${project.desc.length > 100 ? '...' : ''}</p>
                 <div><b>Lead:</b> ${project.lead}</div>
                 <div><b>Due:</b> ${formatDate(project.due)}</div>
+                <div><b>Last Updated:</b> ${project.lastUpdatedBy ? `By ${project.lastUpdatedBy}` : 'Never'}</div>
                 <div class="countdown">${countdownText}</div>
             `;
             grid.appendChild(card);
@@ -1078,6 +1540,7 @@
                         <table>
                             <tr><th>Lead</th><td>${p.lead}</td><th>Type</th><td>${p.type}</td></tr>
                             <tr><th>Start</th><td>${formatDate(p.start)}</td><th>Status</th><td>${p.status}</td></tr>
+                            <tr><th>Last Updated</th><td colspan="3">${p.lastUpdated ? formatDate(p.lastUpdated) + ' by ' + p.lastUpdatedBy : 'Never'}</td></tr>
                         </table>
                     </div>
 
@@ -1179,10 +1642,10 @@
                             <small>${member.role}</small>
                         </div>
                         <div class="task-actions">
-                            <button type="button" class="small-btn" onclick="editTeamMember(${index})">
+                            <button type="button" class="small-btn" onclick="editTeamMember('${projectId}', ${index})">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button type="button" class="small-btn" onclick="removeTeamMember(${index})">
+                            <button type="button" class="small-btn" onclick="removeTeamMember('${projectId}', ${index})">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1200,10 +1663,10 @@
                             <small>Assigned to: ${task.who} | Due: ${formatDate(task.due)}</small>
                         </div>
                         <div class="task-actions">
-                            <button type="button" class="small-btn" onclick="editTask(${index})">
+                            <button type="button" class="small-btn" onclick="editTask('${projectId}', ${index})">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button type="button" class="small-btn" onclick="removeTask(${index})">
+                            <button type="button" class="small-btn" onclick="removeTask('${projectId}', ${index})">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1246,7 +1709,9 @@
             notes: document.getElementById('projectNotes').value,
             members: existingProject?.members || [],
             tasks: existingProject?.tasks || [],
-            timeline: existingProject?.timeline || []
+            timeline: existingProject?.timeline || [],
+            lastUpdated: new Date().toISOString(),
+            lastUpdatedBy: currentUser.username
         };
         
         saveProjects();
@@ -1255,7 +1720,7 @@
         const action = document.getElementById('projectId').value ? 'update' : 'create';
         auth.recordActivity(action, `Project "${projects[projectId].name}" ${action}d`, projectId);
         
-        alert('Project saved successfully!');
+        showCustomModal('Success', 'Project saved successfully!', 'success');
     }
 
     function generateId() {
@@ -1269,13 +1734,38 @@
 
     function deleteProject(id, event) {
         event.stopPropagation();
-        if (confirm('Are you sure you want to delete this project?')) {
-            const projectName = projects[id]?.name;
-            delete projects[id];
-            saveProjects();
-            
-            auth.recordActivity('delete', `Project "${projectName}" deleted`, id);
-        }
+        
+        const projectName = projects[id]?.name;
+        
+        const modal = document.createElement('div');
+        modal.className = 'custom-modal-overlay';
+        modal.innerHTML = `
+            <div class="custom-modal danger">
+                <div class="custom-modal-header">
+                    <h3>Confirm Delete</h3>
+                    <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                </div>
+                <div class="custom-modal-body">
+                    <p>Are you sure you want to delete project "${projectName}"? This action cannot be undone.</p>
+                </div>
+                <div class="custom-modal-footer">
+                    <button class="btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                    <button class="btn-primary" style="background: var(--danger);" onclick="confirmDeleteProject('${id}')">Delete</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    function confirmDeleteProject(id) {
+        const projectName = projects[id]?.name;
+        delete projects[id];
+        saveProjects();
+        
+        auth.recordActivity('delete', `Project "${projectName}" deleted`, id);
+        
+        document.querySelector('.custom-modal-overlay').remove();
+        showCustomModal('Success', 'Project deleted successfully!', 'success');
     }
 
     function addTeamMember() {
@@ -1285,8 +1775,25 @@
             const resp = prompt("Enter responsibilities:");
             const contact = prompt("Enter contact info:");
             
-            alert("Team member will be added after saving the project.");
+            showCustomModal('Info', 'Team member will be added after saving the project.', 'info');
         }
+    }
+    
+    function editTeamMember(projectId, index) {
+        const member = projects[projectId].members[index];
+        const newName = prompt("Edit team member name:", member.name);
+        if (newName) {
+            const newRole = prompt("Edit role:", member.role);
+            const newResp = prompt("Edit responsibilities:", member.resp);
+            const newContact = prompt("Edit contact info:", member.contact);
+            
+            showCustomModal('Info', 'Team member will be updated after saving the project.', 'info');
+        }
+    }
+    
+    function removeTeamMember(projectId, index) {
+        projects[projectId].members.splice(index, 1);
+        showCustomModal('Info', 'Team member will be removed after saving the project.', 'info');
     }
 
     function addTask() {
@@ -1295,8 +1802,24 @@
             const who = prompt("Assign to:");
             const due = prompt("Due date (YYYY-MM-DD):");
             
-            alert("Task will be added after saving the project.");
+            showCustomModal('Info', 'Task will be added after saving the project.', 'info');
         }
+    }
+    
+    function editTask(projectId, index) {
+        const task = projects[projectId].tasks[index];
+        const newName = prompt("Edit task name:", task.name);
+        if (newName) {
+            const newWho = prompt("Edit assignee:", task.who);
+            const newDue = prompt("Edit due date (YYYY-MM-DD):", task.due);
+            
+            showCustomModal('Info', 'Task will be updated after saving the project.', 'info');
+        }
+    }
+    
+    function removeTask(projectId, index) {
+        projects[projectId].tasks.splice(index, 1);
+        showCustomModal('Info', 'Task will be removed after saving the project.', 'info');
     }
     
     function updateTimeline(projectId, week, data) {
@@ -1327,6 +1850,149 @@
         saveProjects();
         
         auth.recordActivity('update', `Updated timeline week ${week} for project "${projects[projectId].name}"`, projectId);
+    }
+
+    // All projects page functions
+    function openAllProjects() {
+        document.getElementById('allProjectsPage').style.display = 'block';
+        renderAllProjects();
+    }
+
+    function closeAllProjects() {
+        document.getElementById('allProjectsPage').style.display = 'none';
+    }
+
+    function renderAllProjects() {
+        const container = document.getElementById('allProjectsContainer');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        Object.values(projects).forEach(project => {
+            const dueDate = new Date(project.due);
+            const now = new Date();
+            const diff = dueDate - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            let countdownText = "No due date";
+            if (!isNaN(days)) {
+                if (days > 0) {
+                    countdownText = `${days} Days Remaining`;
+                } else if (days === 0) {
+                    countdownText = "Due Today!";
+                } else {
+                    countdownText = `${Math.abs(days)} Days Overdue`;
+                }
+            }
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => {
+                closeAllProjects();
+                setTimeout(() => openProject(project.id), 100);
+            };
+            card.innerHTML = `
+                <div class="card-actions">
+                    <button class="card-btn" onclick="editProject('${project.id}', event)">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="card-btn" onclick="deleteProject('${project.id}', event)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div style="display:flex; justify-content:space-between">
+                    <i class="${project.icon || 'fas fa-project-diagram'} fa-2x" style="color:var(--accent)"></i>
+                    <span class="status-badge">${project.status}</span>
+                </div>
+                <h3>${project.name}</h3>
+                <p>${project.desc.substring(0, 100)}${project.desc.length > 100 ? '...' : ''}</p>
+                <div><b>Lead:</b> ${project.lead}</div>
+                <div><b>Due:</b> ${formatDate(project.due)}</div>
+                <div><b>Last Updated:</b> ${project.lastUpdatedBy ? `By ${project.lastUpdatedBy}` : 'Never'}</div>
+                <div class="countdown">${countdownText}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // All updates page functions
+    function openAllUpdates() {
+        document.getElementById('allUpdatesPage').style.display = 'block';
+        loadAllUpdates();
+    }
+
+    function closeAllUpdates() {
+        document.getElementById('allUpdatesPage').style.display = 'none';
+    }
+
+    function loadAllUpdates() {
+        const container = document.getElementById('allUpdatesContainer');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        updates.forEach(update => {
+            const userProfile = userProfiles[update.user] || userProfiles['admin'];
+            const timeAgo = getTimeAgo(new Date(update.timestamp));
+            const priorityClass = update.priority === 'urgent' ? 'danger' : 
+                                update.priority === 'important' ? 'warning' : 'success';
+            
+            // Get comments for this update
+            const comments = JSON.parse(localStorage.getItem(`updateComments_${update.id}`)) || [];
+            
+            const updateElement = document.createElement('div');
+            updateElement.className = 'update-card';
+            updateElement.style.marginBottom = '20px';
+            updateElement.innerHTML = `
+                <div class="update-header">
+                    <div class="update-user">
+                        <div class="user-avatar">
+                            ${userProfile.avatar ? 
+                                `<img src="${userProfile.avatar}" alt="${userProfile.fullName}">` : 
+                                userProfile.fullName.charAt(0)}
+                        </div>
+                        <div>
+                            <strong>${userProfile.fullName}</strong>
+                            <div class="update-time">${timeAgo}</div>
+                        </div>
+                    </div>
+                    <span class="status-badge" style="background: var(--${priorityClass})">
+                        ${update.priority.charAt(0).toUpperCase() + update.priority.slice(1)}
+                    </span>
+                </div>
+                <div class="update-content">
+                    <h4 style="margin: 0 0 10px 0; color: var(--accent);">${update.title}</h4>
+                    <p style="margin: 0;">${update.message}</p>
+                </div>
+                ${comments.length > 0 ? `
+                    <div class="comments-section" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <h5 style="margin: 0 0 10px 0; color: var(--text-p);">Comments (${comments.length}):</h5>
+                        ${comments.slice(0, 3).map(comment => `
+                            <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                    <strong style="color: var(--accent);">${comment.user}</strong>
+                                    <small style="color: var(--text-p);">${getTimeAgo(new Date(comment.timestamp))}</small>
+                                </div>
+                                <p style="margin: 0;">${comment.message}</p>
+                            </div>
+                        `).join('')}
+                        ${comments.length > 3 ? `<p style="text-align: center; color: var(--accent); cursor: pointer;" onclick="viewAllComments('${update.id}')">View all ${comments.length} comments</p>` : ''}
+                    </div>
+                ` : ''}
+                <div class="update-actions">
+                    <button class="small-btn" onclick="likeUpdate('${update.id}')">
+                        <i class="fas fa-thumbs-up"></i>
+                    </button>
+                    <button class="small-btn" onclick="openCommentModal('${update.id}')">
+                        <i class="fas fa-comment"></i> Comment
+                    </button>
+                    <button class="small-btn" onclick="shareUpdate('${update.id}')">
+                        <i class="fas fa-share"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(updateElement);
+        });
     }
 
     // Stats page functions
@@ -1392,6 +2058,7 @@
     renderProjects();
     updateUserInfo();
     initHeroSlider();
+    loadFeaturedProjects();
     loadUpdates();
     
     if (currentUser) {
@@ -1400,13 +2067,11 @@
     
     setInterval(updateUserInfo, 60000);
 
-    // Close modals when clicking outside
+    // Disable clicking outside to close modals
     window.onclick = function(event) {
-        const modals = document.getElementsByClassName('modal');
-        for (let modal of modals) {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
+        // Only allow closing with X button
+        if (event.target.classList.contains('modal')) {
+            // Do nothing - modals can only be closed with X button
         }
     };
 </script>
