@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prospen IT & Design Control Center</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container" id="landing">
+    <header>
+        <!-- User info -->
+        <div class="user-info" id="userInfo">
+            Logged in as: <strong id="currentUserName">Guest</strong>
+            <span class="session-duration" id="sessionDuration">0 min</span>
+        </div>
+        
+        <div class="header-controls">
+            <button class="control-btn" onclick="openProfile()">
+                <i class="fas fa-user"></i> PROFILE
+            </button>
+            <button class="control-btn stats-btn" onclick="openStats()">
+                <i class="fas fa-chart-line"></i> STATS
+            </button>
+            <button class="control-btn" onclick="openSettings()">
+                <i class="fas fa-palette"></i> THEME
+            </button>
+            <button class="control-btn" onclick="openProjectModal()">
+                <i class="fas fa-plus"></i> ADD PROJECT
+            </button>
+            <button class="control-btn" onclick="toggleDarkMode()">
+                <i class="fas fa-moon"></i> MODE
+            </button>
+            <button class="control-btn" onclick="auth.logout()" style="background: var(--danger);">
+                <i class="fas fa-sign-out-alt"></i> LOGOUT
+            </button>
+        </div>
+        <h1>PROSPEN HUB</h1>
+        <p>IT & Design Unified Project Tracker 2026</p>
+    </header>
+
+    <!-- Hero Slider -->
+    <div class="hero-slider" id="heroSlider">
+        <div class="slide active">
+            <h2>PROSPEN HUB</h2>
+            <p>IT & Design Unified Project Tracker 2026</p>
+        </div>
+        <div class="slide team-slide">
+            <h2>Meet Our Team</h2>
+            <p>Admin • Junior • Buhle • AJay - Working together to deliver excellence</p>
+        </div>
+        <div class="slide stats-slide">
+            <h2>Top Performing Project</h2>
+            <p id="topProjectText">Loading top project...</p>
+        </div>
+        <div class="slide" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
+            <h2>Real-time Updates</h2>
+            <p>Track all changes with detailed history and statistics</p>
+        </div>
+        <div class="slide" style="background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);">
+            <h2>Version Control</h2>
+            <p>Complete version tracking and change management</p>
+        </div>
+        <div class="slide-controls">
+            <div class="slide-dot active" onclick="goToSlide(0)"></div>
+            <div class="slide-dot" onclick="goToSlide(1)"></div>
+            <div class="slide-dot" onclick="goToSlide(2)"></div>
+            <div class="slide-dot" onclick="goToSlide(3)"></div>
+            <div class="slide-dot" onclick="goToSlide(4)"></div>
+        </div>
+    </div>
+
+    <!-- Updates Section -->
+    <div class="updates-section">
+        <div class="updates-header">
+            <h2><i class="fas fa-bullhorn"></i> Updates</h2>
+            <button class="control-btn" onclick="openUpdateModal()">
+                <i class="fas fa-plus"></i> Post Update
+            </button>
+        </div>
+        <div class="updates-container" id="updatesContainer">
+            <!-- Updates will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Projects Grid -->
+    <div class="project-grid" id="project-grid">
+        <!-- Projects will be loaded here -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="#" class="footer-link" onclick="openVersionPage()">
+                <i class="fas fa-code-branch"></i> Version Control
+            </a>
+            <a href="#" class="footer-link" onclick="openStats()">
+                <i class="fas fa-chart-bar"></i> Statistics
+            </a>
+            <a href="#" class="footer-link" onclick="openSettings()">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </div>
+        <div class="developer-credit">
+            <i class="fas fa-code"></i> Developed by ProspenTech. www.prospentech.co.za
+        </div>
+        <p>© 2026 Prospen Hub. All rights reserved.</p>
+    </footer>
+</div>
+
+<!-- Project View -->
+<div id="project-view">
+    <button class="back-btn" onclick="closeProject()"><i class="fas fa-chevron-left"></i> RETURN TO HUB</button>
+    <div id="project-content"></div>
+</div>
+
+<!-- Stats Page -->
+<div id="statsPage" class="stats-page">
+    <div class="stats-header">
+        <h1>
+            <i class="fas fa-chart-pie"></i> System Statistics & History
+            <span class="realtime-badge">LIVE</span>
+        </h1>
+        <div class="stats-controls">
+            <button class="export-btn" onclick="exportStats()">
+                <i class="fas fa-download"></i> Export Data
+            </button>
+            <button class="back-btn" onclick="closeStats()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="statsContainer">
+        <!-- Stats content will be loaded here -->
+    </div>
+</div>
+
+<!-- Version Page -->
+<div id="versionPage" class="version-page">
+    <div class="version-content">
+        <div class="version-header">
+            <h1>Prospen Hub - Version Control</h1>
+            <p>IT & Design Control Center v2.0</p>
+            <button class="back-btn" onclick="closeVersionPage()" style="margin-top: 20px;">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+        
+        <div class="version-info">
+            <h3 style="color: var(--accent); margin-top: 0;">=== Prospen Hub Control Center ===</h3>
+            <p><strong>Contributors:</strong> ProspenTech<br>
+            <strong>Tags:</strong> project-management, team-collaboration, tracking, analytics, real-time<br>
+            <strong>Requires at least:</strong> Modern Browser<br>
+            <strong>Tested up to:</strong> Chrome 120, Firefox 120, Safari 17<br>
+            <strong>Stable tag:</strong> 2.0.0<br>
+            <strong>License:</strong> GPL v2 or later<br>
+            <strong>License URI:</strong> https://www.gnu.org/licenses/gpl-2.0.html</p>
+            
+            <p>Advanced project management system with real-time tracking, user analytics, and comprehensive history logging.</p>
+        </div>
+
+        <div class="version-section">
+            <h3>== Description ==</h3>
+            <p>Prospen Hub Control Center is a comprehensive project management system designed for IT and Design teams. The system provides:</p>
+            <ul>
+                <li><strong>Project Management:</strong> Create, track, and manage multiple projects with detailed timelines</li>
+                <li><strong>Team Collaboration:</strong> Assign tasks, track progress, and manage team members</li>
+                <li><strong>Real-time Tracking:</strong> Live updates on project changes and user activities</li>
+                <li><strong>Statistics & Analytics:</strong> Detailed reports on user activities, project status, and team performance</li>
+                <li><strong>Version Control:</strong> Complete history of all changes with timestamps and user attribution</li>
+                <li><strong>User Management:</strong> Multi-user system with role-based access (admin, Junior, Buhle, AJay)</li>
+                <li><strong>Theme Customization:</strong> Dark/light modes with customizable colors</li>
+            </ul>
+        </div>
+
+        <div class="version-section">
+            <h3>== Installation ==</h3>
+            <ol>
+                <li>Open login.html in a modern web browser</li>
+                <li>Login with any user (admin, Junior, Buhle, AJay) - password is same as username</li>
+                <li>Start creating and managing projects immediately</li>
+                <li>All data is stored locally in your browser</li>
+            </ol>
+        </div>
+
+        <div class="version-section">
+            <h3>== Features ==</h3>
+            <ul>
+                <li>Real-time project tracking with countdown timers</li>
+                <li>Comprehensive activity logging</li>
+                <li>User session tracking and online status</li>
+                <li>Team member management</li>
+                <li>Task allocation and progress tracking</li>
+                <li>Weekly timeline updates with "Updated By" tracking</li>
+                <li>Statistics and analytics dashboard</li>
+                <li>Data export functionality</li>
+                <li>Update board for team announcements</li>
+                <li>User profile management with avatar support</li>
+                <li>Responsive design for all devices</li>
+            </ul>
+        </div>
+
+        <div class="version-section">
+            <h3>== Changelog ==</h3>
+            <p><strong>= 2.0.0 =</strong><br>
+            * Added hero slider with multiple slides<br>
+            * Added Updates section for team announcements<br>
+            * Added Version Control page<br>
+            * Added user profile management with avatar support<br>
+            * Added footer with developer credit and links<br>
+            * Fixed header button overlap issues<br>
+            * Improved responsive design<br>
+            * Enhanced statistics display<br>
+            * Added project performance tracking</p>
+
+            <p><strong>= 1.0.0 =</strong><br>
+            * Initial release<br>
+            * Complete project management system<br>
+            * User authentication system<br>
+            * Real-time activity tracking<br>
+            * Statistics and history module<br>
+            * Theme customization<br>
+            * Local storage persistence</p>
+        </div>
+
+        <div class="version-section">
+            <h3>== Frequently Asked Questions ==</h3>
+            <p><strong>How do I reset my data?</strong><br>
+            Clear your browser's localStorage for this site.</p>
+            
+            <p><strong>Can I export my project data?</strong><br>
+            Yes, use the Export Data button in the Statistics page.</p>
+            
+            <p><strong>How are user sessions tracked?</strong><br>
+            Sessions are tracked automatically when users login and logout.</p>
+            
+            <p><strong>Can I customize the theme colors?</strong><br>
+            Yes, use the Theme button to access color customization options.</p>
+        </div>
+
+        <div class="version-section">
+            <h3>== Support ==</h3>
+            <p>For support, visit <strong>https://prospentech.co.za</strong></p>
+            <p>Report issues or suggest features through our contact form.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Project Modal -->
+<div id="projectModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add New Project</h2>
+            <button class="close-btn" onclick="closeProjectModal()">&times;</button>
+        </div>
+        <form id="projectForm" onsubmit="saveProject(event)">
+            <input type="hidden" id="projectId">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="projectName">Project Name *</label>
+                    <input type="text" id="projectName" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectIcon">Icon Class (FontAwesome)</label>
+                    <input type="text" id="projectIcon" placeholder="fas fa-chart-line" value="fas fa-project-diagram">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="projectLead">Project Lead *</label>
+                    <input type="text" id="projectLead" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectStatus">Status *</label>
+                    <select id="projectStatus" required>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                        <option value="On Hold">On Hold</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="projectDesc">Description *</label>
+                <textarea id="projectDesc" required></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="projectStart">Start Date *</label>
+                    <input type="date" id="projectStart" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectDue">Due Date *</label>
+                    <input type="date" id="projectDue" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="projectType">Project Type *</label>
+                <select id="projectType" required>
+                    <option value="Design">Design</option>
+                    <option value="Web">Web</option>
+                    <option value="Both (Design / Web)">Both (Design / Web)</option>
+                    <option value="IT">IT</option>
+                    <option value="Mobile Development">Mobile Development</option>
+                    <option value="Marketing">Marketing</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Team Members</label>
+                <div id="teamMembersContainer">
+                    <!-- Team members will be added here -->
+                </div>
+                <button type="button" class="btn-secondary" onclick="addTeamMember()" style="margin-top: 10px;">
+                    <i class="fas fa-plus"></i> Add Team Member
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Tasks</label>
+                <div id="tasksContainer">
+                    <!-- Tasks will be added here -->
+                </div>
+                <button type="button" class="btn-secondary" onclick="addTask()" style="margin-top: 10px;">
+                    <i class="fas fa-plus"></i> Add Task
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="projectNotes">Notes</label>
+                <textarea id="projectNotes"></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeProjectModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Save Project</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Theme Settings</h2>
+            <button class="close-btn" onclick="closeSettings()">&times;</button>
+        </div>
+        
+        <div class="settings-section">
+            <h3>Dark/Light Mode</h3>
+            <div class="toggle-group">
+                <span>Dark Mode</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeToggle" checked onchange="toggleDarkMode()">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span>Light Mode</span>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Card Colors</h3>
+            <div class="color-grid">
+                <div class="color-option active" style="background: #1e293b;" onclick="setCardColor('#1e293b')"></div>
+                <div class="color-option" style="background: #334155;" onclick="setCardColor('#334155')"></div>
+                <div class="color-option" style="background: #0f172a;" onclick="setCardColor('#0f172a')"></div>
+                <div class="color-option" style="background: #1e1b4b;" onclick="setCardColor('#1e1b4b')"></div>
+                <div class="color-option" style="background: #1c1917;" onclick="setCardColor('#1c1917')"></div>
+                <div class="color-option" style="background: #064e3b;" onclick="setCardColor('#064e3b')"></div>
+                <div class="color-option" style="background: #451a03;" onclick="setCardColor('#451a03')"></div>
+                <div class="color-option" style="background: #500724;" onclick="setCardColor('#500724')"></div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Accent Colors</h3>
+            <div class="color-grid">
+                <div class="color-option active" style="background: #38bdf8;" onclick="setAccentColor('#38bdf8')"></div>
+                <div class="color-option" style="background: #0284c7;" onclick="setAccentColor('#0284c7')"></div>
+                <div class="color-option" style="background: #22c55e;" onclick="setAccentColor('#22c55e')"></div>
+                <div class="color-option" style="background: #eab308;" onclick="setAccentColor('#eab308')"></div>
+                <div class="color-option" style="background: #f97316;" onclick="setAccentColor('#f97316')"></div>
+                <div class="color-option" style="background: #ef4444;" onclick="setAccentColor('#ef4444')"></div>
+                <div class="color-option" style="background: #a855f7;" onclick="setAccentColor('#a855f7')"></div>
+                <div class="color-option" style="background: #ec4899;" onclick="setAccentColor('#ec4899')"></div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="btn-secondary" onclick="resetColors()">Reset Colors</button>
+            <button type="button" class="btn-primary" onclick="closeSettings()">Apply Settings</button>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>My Profile</h2>
+            <button class="close-btn" onclick="closeProfile()">&times;</button>
+        </div>
+        
+        <div class="form-group" style="text-align: center;">
+            <div class="profile-avatar" onclick="document.getElementById('avatarInput').click()" id="profileAvatar">
+                <span id="avatarInitials">A</span>
+                <div class="avatar-upload">Click to change</div>
+            </div>
+            <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)" style="display: none;">
+            <h3 id="profileUsername">Admin</h3>
+            <p id="profileRole">System Administrator</p>
+        </div>
+
+        <form id="profileForm" onsubmit="updateProfile(event)">
+            <div class="form-group">
+                <label for="profileFullName">Full Name</label>
+                <input type="text" id="profileFullName" value="Administrator">
+            </div>
+
+            <div class="form-group">
+                <label for="profileEmail">Email Address</label>
+                <input type="email" id="profileEmail" value="admin@prospentech.co.za">
+            </div>
+
+            <div class="form-group">
+                <label for="currentPassword">Current Password</label>
+                <input type="password" id="currentPassword" placeholder="Enter current password">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" placeholder="Enter new password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="profileBio">Bio</label>
+                <textarea id="profileBio" placeholder="Tell us about yourself...">System administrator responsible for managing the Prospen Hub platform.</textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeProfile()">Cancel</button>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Update Modal -->
+<div id="updateModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Post Update</h2>
+            <button class="close-btn" onclick="closeUpdateModal()">&times;</button>
+        </div>
+        
+        <form id="updateForm" onsubmit="postUpdate(event)">
+            <div class="form-group">
+                <label for="updateTitle">Update Title</label>
+                <input type="text" id="updateTitle" placeholder="Enter update title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="updateMessage">Update Message</label>
+                <textarea id="updateMessage" placeholder="What's new?" rows="6" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="updatePriority">Priority</label>
+                <select id="updatePriority">
+                    <option value="normal">Normal</option>
+                    <option value="important">Important</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeUpdateModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Post Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="auth.js"></script>
+<script src="stats.js"></script>
+<script>
+    // Initialize default projects
+    let projects = JSON.parse(localStorage.getItem('prospenProjects')) || {
+        'dm': {
+            id: 'dm',
+            name: "Digital Marketing",
+            type: "Both (Design / Web)",
+            lead: "Junior Tladi",
+            start: "2026-01-12",
+            due: "2026-01-30",
+            icon: "fas fa-chart-line",
+            desc: "Centralised tracker to plan, assign, monitor, and report digital marketing projects, tasks, owners, priorities, timelines, progress, and performance outcomes effectively.",
+            status: "In Progress",
+            members: [
+                {name: "Junior Tladi", role: "Digital Designer/Content Manager", resp: "Manage Social Media, Content Design, Email Banners", contact: "+27 73 238 0711"},
+                {name: "Ajay Manganyi", role: "Web Developer", resp: "SEO Implementation, Keywords, Track conversions", contact: "+27 73 231 4863"},
+                {name: "Buhle Khuzwayo", role: "Web Designer", resp: "Design Landing pages for ads", contact: "+27 66 321 6197"}
+            ],
+            tasks: [
+                {id: "07", name: "Design Videos", cat: "Content", who: "Junior Tladi", prio: "High", due: "2026-01-30", status: "In progress"},
+                {id: "08", name: "Design Email Banners", cat: "Design", who: "Junior Tladi", prio: "High", due: "2026-01-30", status: "In progress"},
+                {id: "09", name: "Update SEO keywords", cat: "Web", who: "Ajay Manganyi", prio: "High", due: "2026-01-30", status: "In progress"},
+                {id: "10", name: "Design landing pages", cat: "Design", who: "Buhle Khuzwayo", prio: "High", due: "2026-01-30", status: "In progress"}
+            ],
+            timeline: [
+                {wk: "02", range: "19 Jan - 23 Jan 2026", planned: "Content Launch", comp: "Initial Banners", risk: "None", next: "Social Campaign", by: "21 Jan 2026"},
+                {wk: "02", range: "12 Jan - 16 Jan 2026", planned: "Project Kickoff", comp: "Planning phase", risk: "None", next: "Task assignment", by: "Junior Tladi"}
+            ],
+            notes: "The project has started."
+        },
+        'el': {
+            id: 'el',
+            name: "Prospen eLearning",
+            type: "Both (Design / Web)",
+            lead: "Buhle Khuzwayo",
+            start: "2026-01-12",
+            due: "2026-01-30",
+            icon: "fas fa-graduation-cap",
+            desc: "This document is used to track projects, tasks, and responsibilities for the Prospen elearning development team. It clearly shows who is handling what, current status, and deadlines.",
+            status: "In Progress",
+            members: [
+                {name: "Buhle Khuzwayo", role: "Instructional/Web/UI Designer", resp: "Front/Back-end, Updating courses, System Maintenance", contact: "+27 66 321 6197"},
+                {name: "Ajay Manganyi", role: "Web Developer", resp: "Develop course layouts, Payment gateway integration", contact: "+27 73 231 4863"},
+                {name: "Junior Tladi", role: "Content Producer/Video Editor", resp: "Editing videos, creating voice-overs", contact: "+27 73 238 0711"}
+            ],
+            tasks: [
+                {id: "07", name: "Design Videos", cat: "Content", who: "Junior Tladi", prio: "High", due: "2026-01-30", status: "In progress"},
+                {id: "08", name: "Design Course Layout", cat: "Design/Frontend", who: "Buhle Khuzwayo", prio: "High", due: "2026-01-23", status: "In progress"},
+                {id: "09", name: "Develop Course Layout", cat: "Develop/Frontend", who: "Ajay Manganyi", prio: "High", due: "2026-01-23", status: "In progress"},
+                {id: "11", name: "Implement Payment Gateway", cat: "Backend", who: "Ajay Manganyi", prio: "High", due: "2026-01-30", status: "In progress"},
+                {id: "14", name: "Question Bank", cat: "QA", who: "Buhle Khuzwayo", prio: "High", due: "2026-01-30", status: "In progress"}
+            ],
+            timeline: [
+                {wk: "02", range: "12 Jan - 16 Jan 2026", planned: "Design Videos for Workplace Harassment", comp: "Designed videos for all modules", risk: "-", next: "Course Upload", by: "16 Jan 2026"},
+                {wk: "02", range: "12 Jan - 16 Jan 2026", planned: "Upload Workplace Harassment", comp: "Slides, Questions, Videos Uploaded", risk: "-", next: "Next Course", by: "16 Jan 2026"},
+                {wk: "02", range: "12 Jan - 16 Jan 2026", planned: "Performance Management Videos", comp: "Uploaded videos, Created questions", risk: "-", next: "Final QA", by: "16 Jan 2026"}
+            ],
+            notes: "Integrating secure payment gateways and scalable layouts."
+        }
+    };
+
+    // Load theme settings
+    const themeSettings = JSON.parse(localStorage.getItem('prospenTheme')) || {
+        darkMode: true,
+        cardColor: '#1e293b',
+        accentColor: '#38bdf8'
+    };
+
+    // Load updates
+    let updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [
+        {
+            id: '1',
+            title: 'Welcome to Prospen Hub!',
+            message: 'Welcome to the new Prospen Hub control center. This is where we track all our IT and Design projects.',
+            user: 'admin',
+            timestamp: new Date().toISOString(),
+            priority: 'important'
+        },
+        {
+            id: '2',
+            title: 'System Update Complete',
+            message: 'The new login system and statistics tracking have been successfully implemented.',
+            user: 'admin',
+            timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+            priority: 'normal'
+        }
+    ];
+
+    // Load user profiles
+    let userProfiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {
+        'admin': {
+            fullName: 'Administrator',
+            email: 'admin@prospentech.co.za',
+            bio: 'System administrator responsible for managing the Prospen Hub platform.',
+            avatar: null,
+            role: 'System Administrator'
+        },
+        'Junior': {
+            fullName: 'Junior Tladi',
+            email: 'junior@prospentech.co.za',
+            bio: 'Digital Designer and Content Manager',
+            avatar: null,
+            role: 'Digital Designer/Content Manager'
+        },
+        'Buhle': {
+            fullName: 'Buhle Khuzwayo',
+            email: 'buhle@prospentech.co.za',
+            bio: 'Instructional/Web/UI Designer',
+            avatar: null,
+            role: 'Instructional/Web/UI Designer'
+        },
+        'AJay': {
+            fullName: 'AJay Manganyi',
+            email: 'ajay@prospentech.co.za',
+            bio: 'Web Developer',
+            avatar: null,
+            role: 'Web Developer'
+        }
+    };
+
+    // Auth system initialization
+    let currentUser = auth.getCurrentUser();
+    let currentSlide = 0;
+    let slideInterval;
+
+    // Update user info display
+    function updateUserInfo() {
+        if (currentUser) {
+            document.getElementById('currentUserName').textContent = currentUser.username;
+            
+            // Update session duration
+            const duration = auth.getSessionDuration();
+            document.getElementById('sessionDuration').textContent = duration + ' min';
+        }
+    }
+
+    // Initialize hero slider
+    function initHeroSlider() {
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.slide-dot');
+        
+        // Show initial slide
+        slides.forEach((slide, index) => {
+            slide.classList.remove('active');
+            dots[index].classList.remove('active');
+        });
+        
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
+        
+        // Update top project
+        updateTopProject();
+        
+        // Start automatic slideshow
+        clearInterval(slideInterval);
+        slideInterval = setInterval(nextSlide, 5000);
+    }
+
+    function nextSlide() {
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.slide-dot');
+        
+        slides[currentSlide].classList.remove('active');
+        dots[currentSlide].classList.remove('active');
+        
+        currentSlide = (currentSlide + 1) % slides.length;
+        
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
+    }
+
+    function goToSlide(index) {
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.slide-dot');
+        
+        slides[currentSlide].classList.remove('active');
+        dots[currentSlide].classList.remove('active');
+        
+        currentSlide = index;
+        
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
+        
+        // Reset interval
+        clearInterval(slideInterval);
+        slideInterval = setInterval(nextSlide, 5000);
+    }
+
+    function updateTopProject() {
+        let bestProject = null;
+        let maxProgress = 0;
+        
+        Object.values(projects).forEach(project => {
+            const totalTasks = project.tasks.length;
+            const completedTasks = project.tasks.filter(t => t.status === 'Completed').length;
+            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            
+            if (progress > maxProgress) {
+                maxProgress = progress;
+                bestProject = project;
+            }
+        });
+        
+        if (bestProject) {
+            document.getElementById('topProjectText').textContent = 
+                `${bestProject.name} - ${Math.round(maxProgress)}% Complete`;
+        }
+    }
+
+    // Load and render updates
+    function loadUpdates() {
+        const container = document.getElementById('updatesContainer');
+        container.innerHTML = '';
+        
+        updates.slice(0, 6).forEach(update => {
+            const userProfile = userProfiles[update.user] || userProfiles['admin'];
+            const timeAgo = getTimeAgo(new Date(update.timestamp));
+            const priorityClass = update.priority === 'urgent' ? 'danger' : 
+                                update.priority === 'important' ? 'warning' : 'success';
+            
+            const updateElement = document.createElement('div');
+            updateElement.className = 'update-card';
+            updateElement.innerHTML = `
+                <div class="update-header">
+                    <div class="update-user">
+                        <div class="user-avatar">
+                            ${userProfile.avatar ? 
+                                `<img src="${userProfile.avatar}" alt="${userProfile.fullName}">` : 
+                                userProfile.fullName.charAt(0)}
+                        </div>
+                        <div>
+                            <strong>${userProfile.fullName}</strong>
+                            <div class="update-time">${timeAgo}</div>
+                        </div>
+                    </div>
+                    <span class="status-badge" style="background: var(--${priorityClass})">
+                        ${update.priority.charAt(0).toUpperCase() + update.priority.slice(1)}
+                    </span>
+                </div>
+                <div class="update-content">
+                    <h4 style="margin: 0 0 10px 0; color: var(--accent);">${update.title}</h4>
+                    <p style="margin: 0;">${update.message}</p>
+                </div>
+                <div class="update-actions">
+                    <button class="small-btn" onclick="likeUpdate('${update.id}')">
+                        <i class="fas fa-thumbs-up"></i>
+                    </button>
+                    <button class="small-btn" onclick="commentOnUpdate('${update.id}')">
+                        <i class="fas fa-comment"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(updateElement);
+        });
+    }
+
+    function getTimeAgo(date) {
+        const now = new Date();
+        const diff = now - date;
+        
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 1) return 'Just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        
+        return date.toLocaleDateString();
+    }
+
+    function openUpdateModal() {
+        document.getElementById('updateModal').style.display = 'flex';
+    }
+
+    function closeUpdateModal() {
+        document.getElementById('updateModal').style.display = 'none';
+        document.getElementById('updateForm').reset();
+    }
+
+    function postUpdate(event) {
+        event.preventDefault();
+        
+        const title = document.getElementById('updateTitle').value;
+        const message = document.getElementById('updateMessage').value;
+        const priority = document.getElementById('updatePriority').value;
+        
+        const newUpdate = {
+            id: 'update_' + Date.now(),
+            title: title,
+            message: message,
+            user: currentUser.username,
+            timestamp: new Date().toISOString(),
+            priority: priority
+        };
+        
+        updates.unshift(newUpdate);
+        localStorage.setItem('prospenUpdates', JSON.stringify(updates));
+        
+        // Record activity
+        auth.recordActivity('update_post', `Posted update: "${title}"`);
+        
+        loadUpdates();
+        closeUpdateModal();
+        
+        alert('Update posted successfully!');
+    }
+
+    function likeUpdate(updateId) {
+        // Implementation for liking updates
+        alert('Like feature coming soon!');
+    }
+
+    function commentOnUpdate(updateId) {
+        const comment = prompt('Enter your comment:');
+        if (comment) {
+            auth.recordActivity('comment', `Commented on update: "${comment}"`);
+            alert('Comment added!');
+        }
+    }
+
+    // Profile functions
+    function openProfile() {
+        if (!currentUser) return;
+        
+        const profile = userProfiles[currentUser.username] || userProfiles['admin'];
+        const avatarElement = document.getElementById('profileAvatar');
+        
+        // Set avatar
+        if (profile.avatar) {
+            avatarElement.innerHTML = `<img src="${profile.avatar}" alt="${profile.fullName}">
+                                      <div class="avatar-upload">Click to change</div>`;
+        } else {
+            avatarElement.innerHTML = `<span id="avatarInitials">${profile.fullName.charAt(0)}</span>
+                                      <div class="avatar-upload">Click to change</div>`;
+        }
+        
+        // Set profile info
+        document.getElementById('profileUsername').textContent = profile.fullName;
+        document.getElementById('profileRole').textContent = profile.role;
+        document.getElementById('profileFullName').value = profile.fullName;
+        document.getElementById('profileEmail').value = profile.email;
+        document.getElementById('profileBio').value = profile.bio;
+        
+        document.getElementById('profileModal').style.display = 'flex';
+    }
+
+    function closeProfile() {
+        document.getElementById('profileModal').style.display = 'none';
+    }
+
+    function handleAvatarUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file.');
+            return;
+        }
+        
+        if (file.size > 2 * 1024 * 1024) { // 2MB limit
+            alert('Image size should be less than 2MB.');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatarData = e.target.result;
+            
+            // Update profile
+            if (currentUser && userProfiles[currentUser.username]) {
+                userProfiles[currentUser.username].avatar = avatarData;
+                localStorage.setItem('prospenProfiles', JSON.stringify(userProfiles));
+                
+                // Update avatar display
+                const avatarElement = document.getElementById('profileAvatar');
+                avatarElement.innerHTML = `<img src="${avatarData}" alt="${userProfiles[currentUser.username].fullName}">
+                                         <div class="avatar-upload">Click to change</div>`;
+                
+                // Record activity
+                auth.recordActivity('avatar_update', 'Updated profile avatar');
+                
+                alert('Avatar updated successfully!');
+            }
+        };
+        
+        reader.readAsDataURL(file);
+    }
+
+    function updateProfile(event) {
+        event.preventDefault();
+        
+        if (!currentUser) return;
+        
+        const fullName = document.getElementById('profileFullName').value;
+        const email = document.getElementById('profileEmail').value;
+        const bio = document.getElementById('profileBio').value;
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        // Update profile info
+        userProfiles[currentUser.username] = {
+            ...userProfiles[currentUser.username],
+            fullName: fullName,
+            email: email,
+            bio: bio
+        };
+        
+        // Handle password change
+        if (newPassword) {
+            if (currentPassword !== currentUser.username) {
+                alert('Current password is incorrect.');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match.');
+                return;
+            }
+            
+            // In a real app, you would hash the password and update it
+            alert('Password change feature would be implemented with backend authentication.');
+        }
+        
+        localStorage.setItem('prospenProfiles', JSON.stringify(userProfiles));
+        
+        // Record activity
+        auth.recordActivity('profile_update', 'Updated profile information');
+        
+        alert('Profile updated successfully!');
+        closeProfile();
+    }
+
+    // Version page functions
+    function openVersionPage() {
+        document.getElementById('versionPage').style.display = 'block';
+    }
+
+    function closeVersionPage() {
+        document.getElementById('versionPage').style.display = 'none';
+    }
+
+    // Existing functions (unchanged but included for completeness)
+    function applyTheme() {
+        if (themeSettings.darkMode) {
+            document.body.classList.remove('light-mode');
+        } else {
+            document.body.classList.add('light-mode');
+        }
+        
+        document.documentElement.style.setProperty('--card', themeSettings.cardColor);
+        document.documentElement.style.setProperty('--accent', themeSettings.accentColor);
+        document.documentElement.style.setProperty('--accent-glow', themeSettings.accentColor + '40');
+        
+        document.getElementById('darkModeToggle').checked = themeSettings.darkMode;
+        
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.classList.remove('active');
+            if (option.style.background === themeSettings.cardColor || 
+                option.style.backgroundColor === themeSettings.cardColor) {
+                option.classList.add('active');
+            }
+            if (option.style.background === themeSettings.accentColor || 
+                option.style.backgroundColor === themeSettings.accentColor) {
+                option.classList.add('active');
+            }
+        });
+    }
+
+    function toggleDarkMode() {
+        themeSettings.darkMode = !themeSettings.darkMode;
+        localStorage.setItem('prospenTheme', JSON.stringify(themeSettings));
+        applyTheme();
+    }
+
+    function setCardColor(color) {
+        themeSettings.cardColor = color;
+        localStorage.setItem('prospenTheme', JSON.stringify(themeSettings));
+        applyTheme();
+    }
+
+    function setAccentColor(color) {
+        themeSettings.accentColor = color;
+        localStorage.setItem('prospenTheme', JSON.stringify(themeSettings));
+        applyTheme();
+    }
+
+    function resetColors() {
+        themeSettings.cardColor = '#1e293b';
+        themeSettings.accentColor = '#38bdf8';
+        localStorage.setItem('prospenTheme', JSON.stringify(themeSettings));
+        applyTheme();
+    }
+
+    function openSettings() {
+        document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function closeSettings() {
+        document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function saveProjects() {
+        localStorage.setItem('prospenProjects', JSON.stringify(projects));
+        renderProjects();
+        updateTopProject();
+    }
+
+    function renderProjects() {
+        const grid = document.getElementById('project-grid');
+        grid.innerHTML = '';
+        
+        Object.values(projects).forEach(project => {
+            const dueDate = new Date(project.due);
+            const now = new Date();
+            const diff = dueDate - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            let countdownText = "No due date";
+            if (!isNaN(days)) {
+                if (days > 0) {
+                    countdownText = `${days} Days Remaining`;
+                } else if (days === 0) {
+                    countdownText = "Due Today!";
+                } else {
+                    countdownText = `${Math.abs(days)} Days Overdue`;
+                }
+            }
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => openProject(project.id);
+            card.innerHTML = `
+                <div class="card-actions">
+                    <button class="card-btn" onclick="editProject('${project.id}', event)">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="card-btn" onclick="deleteProject('${project.id}', event)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div style="display:flex; justify-content:space-between">
+                    <i class="${project.icon || 'fas fa-project-diagram'} fa-2x" style="color:var(--accent)"></i>
+                    <span class="status-badge">${project.status}</span>
+                </div>
+                <h3>${project.name}</h3>
+                <p>${project.desc.substring(0, 100)}${project.desc.length > 100 ? '...' : ''}</p>
+                <div><b>Lead:</b> ${project.lead}</div>
+                <div><b>Due:</b> ${formatDate(project.due)}</div>
+                <div class="countdown">${countdownText}</div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    }
+
+    function openProject(id) {
+        if (currentUser) {
+            auth.recordActivity('view', `Viewed project "${projects[id].name}"`, id);
+        }
+        
+        const p = projects[id];
+        let html = `
+            <div class="grid-layout">
+                <div class="main-col">
+                    <div class="section-box">
+                        <h2>1. Project Overview: ${p.name}</h2>
+                        <p>${p.desc}</p>
+                        <table>
+                            <tr><th>Lead</th><td>${p.lead}</td><th>Type</th><td>${p.type}</td></tr>
+                            <tr><th>Start</th><td>${formatDate(p.start)}</td><th>Status</th><td>${p.status}</td></tr>
+                        </table>
+                    </div>
+
+                    <div class="section-box">
+                        <h2>2. Task Allocation</h2>
+                        <table>
+                            <thead><tr><th>ID</th><th>Task</th><th>Assignee</th><th>Priority</th><th>Due Date</th><th>Status</th></tr></thead>
+                            <tbody>
+                                ${p.tasks.map(t => `
+                                    <tr>
+                                        <td>${t.id}</td>
+                                        <td>${t.name}</td>
+                                        <td>${t.who}</td>
+                                        <td class="priority-high">${t.prio}</td>
+                                        <td>${formatDate(t.due)}</td>
+                                        <td>${t.status}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    ${p.timeline && p.timeline.length > 0 ? `
+                    <div class="section-box">
+                        <h2>3. Weekly Timeline & Progress</h2>
+                        <table>
+                            <thead><tr><th>Week</th><th>Range</th><th>Tasks Planned</th><th>Tasks Completed</th><th>Delays/Risks</th><th>Next Focus</th><th>Updated By</th></tr></thead>
+                            <tbody>
+                                ${p.timeline.map(t => `
+                                    <tr>
+                                        <td>${t.wk}</td>
+                                        <td>${t.range}</td>
+                                        <td>${t.planned}</td>
+                                        <td>${t.comp}</td>
+                                        <td>${t.risk}</td>
+                                        <td>${t.next}</td>
+                                        <td><strong>${t.by || 'Unknown'}</strong></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div class="side-col">
+                    <div class="section-box">
+                        <h2>4. Team Roles</h2>
+                        ${p.members.map(m => `
+                            <div class="team-member">
+                                <b>${m.name}</b>
+                                <i>${m.role}</i>
+                                <div style="font-size:0.8rem; margin-top:5px;">${m.resp}</div>
+                                <div style="color:var(--accent); font-size:0.8rem;">${m.contact}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="section-box">
+                        <h2>5. Notes</h2>
+                        <p>${p.notes || 'No notes available.'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById('project-content').innerHTML = html;
+        document.getElementById('project-view').style.display = 'block';
+    }
+
+    function closeProject() { 
+        document.getElementById('project-view').style.display = 'none'; 
+    }
+
+    function openProjectModal(projectId = null) {
+        const modal = document.getElementById('projectModal');
+        const title = document.getElementById('modalTitle');
+        const form = document.getElementById('projectForm');
+        
+        if (projectId) {
+            const project = projects[projectId];
+            title.textContent = 'Edit Project';
+            document.getElementById('projectId').value = projectId;
+            document.getElementById('projectName').value = project.name;
+            document.getElementById('projectIcon').value = project.icon || 'fas fa-project-diagram';
+            document.getElementById('projectLead').value = project.lead;
+            document.getElementById('projectStatus').value = project.status;
+            document.getElementById('projectDesc').value = project.desc;
+            document.getElementById('projectStart').value = project.start;
+            document.getElementById('projectDue').value = project.due;
+            document.getElementById('projectType').value = project.type;
+            document.getElementById('projectNotes').value = project.notes || '';
+            
+            const teamContainer = document.getElementById('teamMembersContainer');
+            teamContainer.innerHTML = '';
+            project.members.forEach((member, index) => {
+                teamContainer.innerHTML += `
+                    <div class="task-item">
+                        <div>
+                            <strong>${member.name}</strong><br>
+                            <small>${member.role}</small>
+                        </div>
+                        <div class="task-actions">
+                            <button type="button" class="small-btn" onclick="editTeamMember(${index})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="small-btn" onclick="removeTeamMember(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const tasksContainer = document.getElementById('tasksContainer');
+            tasksContainer.innerHTML = '';
+            project.tasks.forEach((task, index) => {
+                tasksContainer.innerHTML += `
+                    <div class="task-item">
+                        <div>
+                            <strong>${task.name}</strong><br>
+                            <small>Assigned to: ${task.who} | Due: ${formatDate(task.due)}</small>
+                        </div>
+                        <div class="task-actions">
+                            <button type="button" class="small-btn" onclick="editTask(${index})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="small-btn" onclick="removeTask(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            title.textContent = 'Add New Project';
+            form.reset();
+            document.getElementById('projectId').value = '';
+            document.getElementById('teamMembersContainer').innerHTML = '';
+            document.getElementById('tasksContainer').innerHTML = '';
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    function closeProjectModal() {
+        document.getElementById('projectModal').style.display = 'none';
+    }
+
+    function saveProject(event) {
+        event.preventDefault();
+        
+        const form = event.target;
+        const projectId = document.getElementById('projectId').value || generateId();
+        
+        const existingProject = projects[projectId];
+        
+        projects[projectId] = {
+            id: projectId,
+            name: document.getElementById('projectName').value,
+            icon: document.getElementById('projectIcon').value,
+            lead: document.getElementById('projectLead').value,
+            status: document.getElementById('projectStatus').value,
+            desc: document.getElementById('projectDesc').value,
+            start: document.getElementById('projectStart').value,
+            due: document.getElementById('projectDue').value,
+            type: document.getElementById('projectType').value,
+            notes: document.getElementById('projectNotes').value,
+            members: existingProject?.members || [],
+            tasks: existingProject?.tasks || [],
+            timeline: existingProject?.timeline || []
+        };
+        
+        saveProjects();
+        closeProjectModal();
+        
+        const action = document.getElementById('projectId').value ? 'update' : 'create';
+        auth.recordActivity(action, `Project "${projects[projectId].name}" ${action}d`, projectId);
+        
+        alert('Project saved successfully!');
+    }
+
+    function generateId() {
+        return 'proj_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function editProject(id, event) {
+        event.stopPropagation();
+        openProjectModal(id);
+    }
+
+    function deleteProject(id, event) {
+        event.stopPropagation();
+        if (confirm('Are you sure you want to delete this project?')) {
+            const projectName = projects[id]?.name;
+            delete projects[id];
+            saveProjects();
+            
+            auth.recordActivity('delete', `Project "${projectName}" deleted`, id);
+        }
+    }
+
+    function addTeamMember() {
+        const name = prompt("Enter team member name:");
+        if (name) {
+            const role = prompt("Enter role:");
+            const resp = prompt("Enter responsibilities:");
+            const contact = prompt("Enter contact info:");
+            
+            alert("Team member will be added after saving the project.");
+        }
+    }
+
+    function addTask() {
+        const name = prompt("Enter task name:");
+        if (name) {
+            const who = prompt("Assign to:");
+            const due = prompt("Due date (YYYY-MM-DD):");
+            
+            alert("Task will be added after saving the project.");
+        }
+    }
+    
+    function updateTimeline(projectId, week, data) {
+        if (!projects[projectId]) return;
+        
+        if (!projects[projectId].timeline) {
+            projects[projectId].timeline = [];
+        }
+        
+        const timelineEntry = projects[projectId].timeline.find(t => t.wk === week) || {
+            wk: week,
+            range: data.range || '',
+            planned: data.planned || '',
+            comp: data.comp || '',
+            risk: data.risk || '',
+            next: data.next || '',
+            by: currentUser ? currentUser.username : 'Unknown'
+        };
+        
+        Object.assign(timelineEntry, data);
+        timelineEntry.by = currentUser ? currentUser.username : 'Unknown';
+        timelineEntry.updatedAt = new Date().toISOString();
+        
+        if (!projects[projectId].timeline.find(t => t.wk === week)) {
+            projects[projectId].timeline.push(timelineEntry);
+        }
+        
+        saveProjects();
+        
+        auth.recordActivity('update', `Updated timeline week ${week} for project "${projects[projectId].name}"`, projectId);
+    }
+
+    // Stats page functions
+    function openStats() {
+        document.getElementById('statsPage').style.display = 'block';
+        window.updateStatsDisplay();
+    }
+    
+    function closeStats() {
+        document.getElementById('statsPage').style.display = 'none';
+    }
+    
+    function exportStats() {
+        const activities = statsSystem.getActivities();
+        const sessions = statsSystem.getSessions();
+        
+        const data = {
+            exportDate: new Date().toISOString(),
+            activities: activities,
+            sessions: sessions,
+            currentUser: currentUser,
+            projects: projects,
+            updates: updates,
+            profiles: userProfiles
+        };
+        
+        const dataStr = JSON.stringify(data, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        
+        const exportFileDefaultName = `prospen-stats-${new Date().toISOString().split('T')[0]}.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    }
+
+    // Countdown timer
+    setInterval(() => {
+        Object.values(projects).forEach(project => {
+            const dueDate = new Date(project.due);
+            const now = new Date();
+            const diff = dueDate - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            const countdownElement = document.querySelector(`[onclick*="${project.id}"] .countdown`);
+            if (countdownElement) {
+                if (!isNaN(days)) {
+                    if (days > 0) {
+                        countdownElement.textContent = `${days} Days Remaining`;
+                    } else if (days === 0) {
+                        countdownElement.textContent = "Due Today!";
+                    } else {
+                        countdownElement.textContent = `${Math.abs(days)} Days Overdue`;
+                    }
+                }
+            }
+        });
+    }, 60000);
+
+    // Initialize
+    applyTheme();
+    renderProjects();
+    updateUserInfo();
+    initHeroSlider();
+    loadUpdates();
+    
+    if (currentUser) {
+        auth.recordActivity('view', 'Viewed dashboard');
+    }
+    
+    setInterval(updateUserInfo, 60000);
+
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+        const modals = document.getElementsByClassName('modal');
+        for (let modal of modals) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    };
+</script>
+</body>
+</html>
