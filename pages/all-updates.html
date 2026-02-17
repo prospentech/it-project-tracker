@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Updates - Prospen Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Add this BEFORE your other scripts -->
+    <script type="import" src="firebase-config.js"></script>
+    <script type="import" src="firebase-service.js"></script>
+
+    <!-- Make your other scripts type="module" -->
+    <script type="module" src="/auth.js"></script>
+    <script type="module" src="/projects.js"></script>
+    <script type="module" src="/updates.js"></script>
+    <script type="module" src="/clocking.js"></script>
+    <script type="module" src="/chatbot.js"></script>
+    <script type="module" src="/modal.js"></script>
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/stats.js"></script>
+    <script type="module" src="/main.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="stats-header">
+            <h1><i class="fas fa-bullhorn"></i> All Updates</h1>
+            <div class="stats-controls">
+                <button class="control-btn" onclick="openUpdateModal()">
+                    <i class="fas fa-plus"></i> New Update
+                </button>
+                <button class="back-btn" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-chevron-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+        
+        <div class="section-box">
+            <h2>Recent Activity & Updates</h2>
+            <div id="allUpdatesContainer">
+                <!-- All updates will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Modal -->
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Post Update</h2>
+                <button class="close-btn" onclick="closeUpdateModal()">&times;</button>
+            </div>
+            
+            <form id="updateForm" onsubmit="postUpdate(event)">
+                <div class="form-group">
+                    <label for="updateTitle">Update Title</label>
+                    <input type="text" id="updateTitle" placeholder="Enter update title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="updateMessage">Update Message</label>
+                    <textarea id="updateMessage" placeholder="What's new?" rows="6" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="updatePriority">Priority</label>
+                    <select id="updatePriority">
+                        <option value="normal">Normal</option>
+                        <option value="important">Important</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="closeUpdateModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Post Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Comment Modal -->
+    <div id="commentModal" class="modal comment-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Comment</h2>
+                <button class="close-btn" onclick="closeCommentModal()">&times;</button>
+            </div>
+            
+            <form id="commentForm" onsubmit="submitComment(event)">
+                <input type="hidden" id="commentUpdateId">
+                <div class="form-group">
+                    <label for="commentMessage">Your Comment</label>
+                    <textarea id="commentMessage" placeholder="Write your comment..." required></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="closeCommentModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Post Comment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = '../login.html';
+        }
+
+        // Initialize updates
+        document.addEventListener('DOMContentLoaded', function() {
+            initUpdates();
+            loadAllUpdates();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,3851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prospen IT and Design Project Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Poppins:wght@400;500;600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Custom Modal Styles */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .custom-modal {
+            background: var(--card);
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        .custom-modal.info {
+            border-left: 4px solid var(--accent);
+        }
+        .custom-modal.success {
+            border-left: 4px solid var(--success);
+        }
+        .custom-modal.warning {
+            border-left: 4px solid var(--warning);
+        }
+        .custom-modal.danger {
+            border-left: 4px solid var(--danger);
+        }
+        .custom-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .custom-modal-header h3 {
+            margin: 0;
+            color: var(--accent);
+        }
+        .custom-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-h);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        .custom-modal-close:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .custom-modal-body {
+            padding: 20px;
+        }
+        .custom-modal-body p {
+            margin: 0;
+            color: var(--text-h);
+        }
+        .custom-modal-footer {
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.03);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: right;
+        }
+        
+        /* Comment Modal */
+        .comment-modal textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-h);
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+        
+        /* View More Projects Button */
+        .view-more-btn {
+            display: block;
+            width: 200px;
+            margin: 40px auto;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+        .view-more-btn:hover {
+            background: #0ea5e9;
+        }
+        
+        /* Update Card with Comments */
+        .update-card .comments-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .update-card .comment-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+        
+        /* Clocking Styles */
+        .clock-btn {
+            background: var(--success);
+            color: var(--bg);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        
+        .clock-btn.clocked-in {
+            background: var(--danger);
+        }
+        
+        .clock-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .clock-status {
+            font-size: 0.8rem;
+            color: var(--text-p);
+            margin-left: 10px;
+        }
+        
+        .clock-status.on-time {
+            color: var(--success);
+        }
+        
+        .clock-status.late {
+            color: var(--danger);
+        }
+        
+        /* Tech News Styles */
+        .tech-news-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .tech-news-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+        
+        .tech-news-source {
+            font-size: 0.8rem;
+            color: var(--text-p);
+            margin-top: 10px;
+        }
+        
+        .read-more-btn {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .read-more-btn:hover {
+            background: #0ea5e9;
+        }
+        
+        /* Enhanced Chatbot Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .chatbot-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            transition: all 0.3s;
+        }
+        
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+        
+        .chatbot-window {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: var(--card);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: none;
+        }
+        
+        /* Enhanced chatbot header styling */
+        .chatbot-header {
+            background: linear-gradient(135deg, var(--accent), #0ea5e9);
+            color: var(--bg);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chatbot-header h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: var(--bg);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .chatbot-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .chatbot-message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        /* Enhanced chatbot message styling */
+        .chatbot-message.bot {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(56, 189, 248, 0.05));
+            border-left: 4px solid var(--accent);
+            color: var(--text-h);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .chatbot-message.user {
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(2, 132, 199, 0.1));
+            border-right: 4px solid #0ea5e9;
+            color: var(--bg);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .chatbot-input-area {
+            padding: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Chatbot input focus */
+        .chatbot-input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-h);
+        }
+        
+        .chatbot-input:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+        
+        .chatbot-send {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .enquiry-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Confirmation Modal for Clocking */
+        .confirmation-modal .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .confirmation-modal .btn-confirm {
+            background: var(--success);
+            color: var(--bg);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .confirmation-modal .btn-cancel {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .confirmation-modal .btn-cancel:hover {
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="landing">
+    <header>
+        <!-- User info -->
+        <div class="user-info" id="userInfo">
+            Logged in as: <strong id="currentUserName">Guest</strong>
+            <span class="session-duration" id="sessionDuration">0 min</span>
+            <button class="clock-btn" id="clockBtn" onclick="confirmClockAction()">CLOCK IN</button>
+            <span class="clock-status" id="clockStatus"></span>
+        </div>
+        
+        <div class="header-controls">
+            <button class="control-btn" onclick="openProfile()">
+                <i class="fas fa-user"></i> PROFILE
+            </button>
+            <button class="control-btn stats-btn" onclick="openStats()">
+                <i class="fas fa-chart-line"></i> STATS
+            </button>
+            <button class="control-btn" onclick="openSettings()">
+                <i class="fas fa-palette"></i> THEME
+            </button>
+            <button class="control-btn" onclick="openProjectModal()">
+                <i class="fas fa-plus"></i> ADD PROJECT
+            </button>
+            <button class="control-btn" onclick="toggleDarkMode()">
+                <i class="fas fa-moon"></i> MODE
+            </button>
+            <button class="control-btn" onclick="auth.logout()" style="background: var(--danger);">
+                <i class="fas fa-sign-out-alt"></i> LOGOUT
+            </button>
+        </div>
+        <h1>PROSPEN HUB</h1>
+        <p>IT & Design Unified Project Tracker 2026</p>
+    </header>
+
+    <!-- Hero Slider -->
+    <div class="hero-slider" id="heroSlider">
+        <div class="slide active" id="welcomeSlide">
+            <h2>Welcome!</h2>
+            <p id="welcomeMessage">Loading your dashboard...</p>
+        </div>
+        <div class="slide team-slide">
+            <h2>Meet Our Team</h2>
+            <p>Admin • Junior • Buhle • AJay - Working together to deliver excellence</p>
+        </div>
+        <div class="slide stats-slide">
+            <h2>Top Performing Project</h2>
+            <p id="topProjectText">Loading top project...</p>
+        </div>
+        <div class="slide" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
+            <h2>Real-time Updates</h2>
+            <p>Track all changes with detailed history and statistics</p>
+        </div>
+        <div class="slide" style="background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);">
+            <h2>Chat Support</h2>
+            <p>Get instant help with our AI-powered chatbot assistant</p>
+        </div>
+        <div class="slide-controls">
+            <div class="slide-dot active" onclick="goToSlide(0)"></div>
+            <div class="slide-dot" onclick="goToSlide(1)"></div>
+            <div class="slide-dot" onclick="goToSlide(2)"></div>
+            <div class="slide-dot" onclick="goToSlide(3)"></div>
+            <div class="slide-dot" onclick="goToSlide(4)"></div>
+        </div>
+    </div>
+
+    <!-- Updates Section -->
+    <div class="updates-section">
+        <div class="updates-header">
+            <h2><i class="fas fa-bullhorn"></i> Updates</h2>
+            <button class="control-btn" onclick="openUpdateModal()">
+                <i class="fas fa-plus"></i> Post Update
+            </button>
+        </div>
+        <div class="updates-container" id="updatesContainer">
+            <!-- Updates will be loaded here -->
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="view-more-btn" onclick="openAllUpdates()">
+                <i class="fas fa-eye"></i> View More Updates
+            </button>
+        </div>
+    </div>
+
+    <!-- Projects Grid (Limited to 3) -->
+    <div class="updates-section">
+        <div class="updates-header">
+            <h2><i class="fas fa-project-diagram"></i> Recent Projects</h2>
+            <button class="control-btn" onclick="openAllProjects()">
+                <i class="fas fa-list"></i> View All
+            </button>
+        </div>
+        <div class="project-grid" id="project-grid">
+            <!-- Projects will be loaded here (limited to 3) -->
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="#" class="footer-link" onclick="openTechNews()">
+                <i class="fas fa-newspaper"></i> Tech News
+            </a>
+            <a href="#" class="footer-link" onclick="openStats()">
+                <i class="fas fa-chart-bar"></i> Statistics
+            </a>
+            <a href="#" class="footer-link" onclick="openSettings()">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+            <a href="#" class="footer-link" onclick="openEnquiries()">
+                <i class="fas fa-question-circle"></i> Enquiries
+            </a>
+        </div>
+        <div class="developer-credit">
+            <i class="fas fa-code"></i> Developed by ProspenTech. www.prospentech.co.za
+        </div>
+        <p>© 2026 Prospen Hub. All rights reserved.</p>
+    </footer>
+</div>
+
+<!-- Project View -->
+<div id="project-view">
+    <button class="back-btn" onclick="closeProject()"><i class="fas fa-chevron-left"></i> RETURN TO HUB</button>
+    <div id="project-content"></div>
+</div>
+
+<!-- Stats Page -->
+<div id="statsPage" class="stats-page">
+    <div class="stats-header">
+        <h1>
+            <i class="fas fa-chart-pie"></i> System Statistics & History
+            <span class="realtime-badge">LIVE</span>
+        </h1>
+        <div class="stats-controls">
+            <button class="export-btn" onclick="exportStats()">
+                <i class="fas fa-download"></i> Export Data
+            </button>
+            <button class="back-btn" onclick="closeStats()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="statsContainer">
+        <!-- Stats content will be loaded here -->
+    </div>
+</div>
+
+<!-- Tech News Page -->
+<div id="techNewsPage" class="version-page">
+    <div class="version-content">
+        <div class="version-header">
+            <h1><i class="fas fa-newspaper"></i> Global Tech News & Trends</h1>
+            <p>Stay updated with the latest technology news and trends</p>
+            <button class="back-btn" onclick="closeTechNews()" style="margin-top: 20px;">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+        
+        <div id="techNewsFullContainer" style="margin-bottom: 30px;">
+            <!-- Full tech news will be loaded here -->
+        </div>
+
+        <div class="version-section">
+            <h3>About Tech News</h3>
+            <p>Our tech news section provides curated technology updates from reliable sources including:</p>
+            <ul>
+                <li>TechCrunch - Startup and innovation news</li>
+                <li>Wired - Technology and culture</li>
+                <li>Dev.to - Developer community updates</li>
+                <li>Security Weekly - Cybersecurity insights</li>
+                <li>Cloud Times - Cloud computing trends</li>
+                <li>Mobile Dev Journal - Mobile development updates</li>
+            </ul>
+            <p>News is refreshed automatically every hour to keep you updated with the latest trends.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Enquiries Page -->
+<div id="enquiriesPage" class="stats-page">
+    <div class="stats-header">
+        <h1><i class="fas fa-question-circle"></i> Enquiries Management</h1>
+        <div class="stats-controls">
+            <button class="export-btn" onclick="exportEnquiries()">
+                <i class="fas fa-download"></i> Export Enquiries
+            </button>
+            <button class="control-btn" onclick="markAllEnquiriesRead()">
+                <i class="fas fa-check-double"></i> Mark All Read
+            </button>
+            <button class="back-btn" onclick="closeEnquiries()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="enquiriesContainer" style="padding: 20px;">
+        <!-- Enquiries will be loaded here -->
+    </div>
+</div>
+
+<!-- All Projects Page -->
+<div id="allProjectsPage" class="stats-page">
+    <div class="stats-header">
+        <h1><i class="fas fa-project-diagram"></i> All Projects</h1>
+        <div class="stats-controls">
+            <button class="control-btn" onclick="openProjectModal()">
+                <i class="fas fa-plus"></i> New Project
+            </button>
+            <button class="back-btn" onclick="closeAllProjects()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="allProjectsContainer" class="project-grid" style="padding: 20px;">
+        <!-- All projects will be loaded here -->
+    </div>
+</div>
+
+<!-- All Updates Page -->
+<div id="allUpdatesPage" class="stats-page">
+    <div class="stats-header">
+        <h1><i class="fas fa-bullhorn"></i> All Updates</h1>
+        <div class="stats-controls">
+            <button class="control-btn" onclick="openUpdateModal()">
+                <i class="fas fa-plus"></i> New Update
+            </button>
+            <button class="back-btn" onclick="closeAllUpdates()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="allUpdatesContainer" style="padding: 20px;">
+        <!-- All updates will be loaded here -->
+    </div>
+</div>
+
+<!-- Add/Edit Project Modal -->
+<div id="projectModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add New Project</h2>
+            <button class="close-btn" onclick="closeProjectModal()">&times;</button>
+        </div>
+        <form id="projectForm" onsubmit="saveProject(event)">
+            <input type="hidden" id="projectId">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="projectName">Project Name *</label>
+                    <input type="text" id="projectName" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectIcon">Icon Class (FontAwesome)</label>
+                    <input type="text" id="projectIcon" placeholder="fas fa-chart-line" value="fas fa-project-diagram">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="projectLead">Project Lead *</label>
+                    <input type="text" id="projectLead" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectStatus">Status *</label>
+                    <select id="projectStatus" required>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                        <option value="On Hold">On Hold</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="projectDesc">Description *</label>
+                <textarea id="projectDesc" required></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="projectStart">Start Date *</label>
+                    <input type="date" id="projectStart" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectDue">Due Date *</label>
+                    <input type="date" id="projectDue" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="projectType">Project Type *</label>
+                <select id="projectType" required>
+                    <option value="Design">Design</option>
+                    <option value="Web">Web</option>
+                    <option value="Both (Design / Web)">Both (Design / Web)</option>
+                    <option value="IT">IT</option>
+                    <option value="Mobile Development">Mobile Development</option>
+                    <option value="Marketing">Marketing</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Team Members</label>
+                <div id="teamMembersContainer">
+                    <!-- Team members will be added here -->
+                </div>
+                <button type="button" class="btn-secondary" onclick="addTeamMember()" style="margin-top: 10px;">
+                    <i class="fas fa-plus"></i> Add Team Member
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Tasks</label>
+                <div id="tasksContainer">
+                    <!-- Tasks will be added here -->
+                </div>
+                <button type="button" class="btn-secondary" onclick="addTask()" style="margin-top: 10px;">
+                    <i class="fas fa-plus"></i> Add Task
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="projectNotes">Notes</label>
+                <textarea id="projectNotes"></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeProjectModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Save Project</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Theme Settings</h2>
+            <button class="close-btn" onclick="closeSettings()">&times;</button>
+        </div>
+        
+        <div class="settings-section">
+            <h3>Dark/Light Mode</h3>
+            <div class="toggle-group">
+                <span>Dark Mode</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeToggle" checked onchange="toggleDarkMode()">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span>Light Mode</span>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Font Family</h3>
+            <select id="fontFamily" onchange="setFontFamily(this.value)" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-h);">
+                <option value="'Inter', sans-serif">Inter</option>
+                <option value="'Roboto', sans-serif">Roboto</option>
+                <option value="'Open Sans', sans-serif">Open Sans</option>
+                <option value="'Poppins', sans-serif">Poppins</option>
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'Arial', sans-serif">Arial</option>
+                <option value="'Georgia', serif">Georgia</option>
+                <option value="'Courier New', monospace">Courier New</option>
+            </select>
+        </div>
+
+        <div class="settings-section">
+            <h3>Card Colors</h3>
+            <div class="color-grid">
+                <div class="color-option active" style="background: #1e293b;" onclick="setCardColor('#1e293b')"></div>
+                <div class="color-option" style="background: #334155;" onclick="setCardColor('#334155')"></div>
+                <div class="color-option" style="background: #0f172a;" onclick="setCardColor('#0f172a')"></div>
+                <div class="color-option" style="background: #1e1b4b;" onclick="setCardColor('#1e1b4b')"></div>
+                <div class="color-option" style="background: #1c1917;" onclick="setCardColor('#1c1917')"></div>
+                <div class="color-option" style="background: #064e3b;" onclick="setCardColor('#064e3b')"></div>
+                <div class="color-option" style="background: #451a03;" onclick="setCardColor('#451a03')"></div>
+                <div class="color-option" style="background: #500724;" onclick="setCardColor('#500724')"></div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Accent Colors</h3>
+            <div class="color-grid">
+                <div class="color-option active" style="background: #38bdf8;" onclick="setAccentColor('#38bdf8')"></div>
+                <div class="color-option" style="background: #0284c7;" onclick="setAccentColor('#0284c7')"></div>
+                <div class="color-option" style="background: #22c55e;" onclick="setAccentColor('#22c55e')"></div>
+                <div class="color-option" style="background: #eab308;" onclick="setAccentColor('#eab308')"></div>
+                <div class="color-option" style="background: #f97316;" onclick="setAccentColor('#f97316')"></div>
+                <div class="color-option" style="background: #ef4444;" onclick="setAccentColor('#ef4444')"></div>
+                <div class="color-option" style="background: #a855f7;" onclick="setAccentColor('#a855f7')"></div>
+                <div class="color-option" style="background: #ec4899;" onclick="setAccentColor('#ec4899')"></div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="btn-secondary" onclick="resetSettings()">Reset All</button>
+            <button type="button" class="btn-primary" onclick="closeSettings()">Apply Settings</button>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>My Profile</h2>
+            <button class="close-btn" onclick="closeProfile()">&times;</button>
+        </div>
+        
+        <div class="form-group" style="text-align: center;">
+            <div class="profile-avatar" onclick="document.getElementById('avatarInput').click()" id="profileAvatar">
+                <span id="avatarInitials">A</span>
+                <div class="avatar-upload">Click to change</div>
+            </div>
+            <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)" style="display: none;">
+            <h3 id="profileUsername">Admin</h3>
+            <p id="profileRole">System Administrator</p>
+        </div>
+
+        <form id="profileForm" onsubmit="updateProfile(event)">
+            <div class="form-group">
+                <label for="profileFullName">Full Name</label>
+                <input type="text" id="profileFullName" value="Administrator">
+            </div>
+
+            <div class="form-group">
+                <label for="profileEmail">Email Address</label>
+                <input type="email" id="profileEmail" value="admin@prospentech.co.za">
+            </div>
+
+            <div class="form-group">
+                <label for="currentPassword">Current Password</label>
+                <input type="password" id="currentPassword" placeholder="Enter current password">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" placeholder="Enter new password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="profileBio">Bio</label>
+                <textarea id="profileBio" placeholder="Tell us about yourself...">System administrator responsible for managing the Prospen Hub platform.</textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeProfile()">Cancel</button>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Update Modal -->
+<div id="updateModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Post Update</h2>
+            <button class="close-btn" onclick="closeUpdateModal()">&times;</button>
+        </div>
+        
+        <form id="updateForm" onsubmit="postUpdate(event)">
+            <div class="form-group">
+                <label for="updateTitle">Update Title</label>
+                <input type="text" id="updateTitle" placeholder="Enter update title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="updateMessage">Update Message</label>
+                <textarea id="updateMessage" placeholder="What's new?" rows="6" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="updatePriority">Priority</label>
+                <select id="updatePriority">
+                    <option value="normal">Normal</option>
+                    <option value="important">Important</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeUpdateModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Post Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Comment Modal -->
+<div id="commentModal" class="modal comment-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add Comment</h2>
+            <button class="close-btn" onclick="closeCommentModal()">&times;</button>
+        </div>
+        
+        <form id="commentForm" onsubmit="submitComment(event)">
+            <input type="hidden" id="commentUpdateId">
+            <div class="form-group">
+                <label for="commentMessage">Your Comment</label>
+                <textarea id="commentMessage" placeholder="Write your comment..." required></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeCommentModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Post Comment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Updated Chatbot -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="enquiry-indicator" id="enquiryIndicator" style="display: none;">!</div>
+        <button class="chatbot-toggle" onclick="toggleChatbot()">
+            <i class="fas fa-robot"></i>
+        </button>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h3><i class="fas fa-brain"></i> NEXA AI Assistant</h3>
+                <button class="chatbot-close" onclick="toggleChatbot()">&times;</button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <!-- Chat messages will be loaded here -->
+            </div>
+            <div class="chatbot-input-area" id="chatbotInputArea">
+                <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Ask NEXA about projects, tasks, or updates..." onkeypress="handleChatInput(event)">
+                <button class="chatbot-send" onclick="sendChatMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="loginSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="logoutSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="clockInSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="clockOutSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-game-show-buzz-in-667.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="notificationSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="auth.js"></script>
+    <script src="stats.js"></script>
+    <script>
+        // Initialize default projects
+        let projects = JSON.parse(localStorage.getItem('prospenProjects')) || {
+            'dm': {
+                id: 'dm',
+                name: "Digital Marketing",
+                type: "Both (Design / Web)",
+                lead: "Junior Tladi",
+                start: "2026-01-12",
+                due: "2026-01-30",
+                icon: "fas fa-chart-line",
+                desc: "Centralised tracker to plan, assign, monitor, and report digital marketing projects, tasks, owners, priorities, timelines, progress, and performance outcomes effectively.",
+                status: "In Progress",
+                members: [
+                    {name: "Junior Tladi", role: "Digital Designer/Content Manager", resp: "Manage Social Media, Content Design, Email Banners", contact: "+27 73 238 0711"},
+                    {name: "Ajay Manganyi", role: "Web Developer", resp: "SEO Implementation, Keywords, Track conversions", contact: "+27 73 231 4863"},
+                    {name: "Buhle Khuzwayo", role: "Web Designer", resp: "Design Landing pages for ads", contact: "+27 66 321 6197"}
+                ],
+                tasks: [
+                    {id: "07", name: "Design Videos", cat: "Content", who: "Junior Tladi", prio: "High", due: "2026-01-30", status: "In progress"},
+                    {id: "08", name: "Design Email Banners", cat: "Design", who: "Junior Tladi", prio: "High", due: "2026-01-30", status: "In progress"},
+                    {id: "09", name: "Update SEO keywords", cat: "Web", who: "Ajay Manganyi", prio: "High", due: "2026-01-30", status: "In progress"},
+                    {id: "10", name: "Design landing pages", cat: "Design", who: "Buhle Khuzwayo", prio: "High", due: "2026-01-30", status: "In progress"}
+                ],
+                timeline: [
+                    {wk: "02", range: "19 Jan - 23 Jan 2026", planned: "Content Launch", comp: "Initial Banners", risk: "None", next: "Social Campaign", by: "21 Jan 2026"},
+                    {wk: "02", range: "12 Jan - 16 Jan 2026", planned: "Project Kickoff", comp: "Planning phase", risk: "None", next: "Task assignment", by: "Junior Tladi"}
+                ],
+                notes: "The project has started."
+            },
+            'el': {
+                id: 'el',
+                name: "Prospen eLearning",
+                type: "Both (Design / Web)",
+                lead: "Buhle Khuzwayo",
+                start: "2026-01-12",
+                due: "2026-01-30",
+                icon: "fas fa-graduation-cap",
+                desc: "This document is used to track projects, tasks, and responsibilities for the Prospen elearning development team. It clearly shows who is handling what, current status, and deadlines.",
+                status: "In Progress",
+                members: [
+                    {name: "Buhle Khuzwayo", role: "Instructional/Web/UI Designer", resp: "Front/Back-end, Updating courses, System Maintenance", contact: "+27 66 321 6197"},
+                    {name: "Ajay Manganyi", role: "Web Developer", resp: "Develop course layouts, Payment gateway integration", contact: "+27 73 231 4863"},
+                    {name: "Junior Tladi", role: "Content Producer/Video Editor", resp: "Editing videos, creating voice-overs", contact: "+27 73 238 0711"}
+                ],
+                tasks: [
+                    {id: "07", name: "Design Videos", cat: "Content", who: "Junior Tladi", prio: "High", due: "2026-01-30", status: "In progress"},
+                    {id: "08", name: "Design Course Layout", cat: "Design/Frontend", who: "Buhle Khuzwayo", prio: "High", due: "2026-01-23", status: "In progress"},
+                    {id: "09", name: "Develop Course Layout", cat: "Develop/Frontend", who: "Ajay Manganyi", prio: "High", due: "2026-01-23", status: "In progress"},
+                    {id: "11", name: "Implement Payment Gateway", cat: "Backend", who: "Ajay Manganyi", prio: "High", due: "2026-01-30", status: "In progress"},
+                    {id: "14", name: "Question Bank", cat: "QA", who: "Buhle Khuzwayo", prio: "High", due: "2026-01-30", status: "In progress"}
+                ],
+                timeline: [
+                    {wk: "02", range: "12 Jan - 16 Jan 2026", planned: "Design Videos for Workplace Harassment", comp: "Designed videos for all modules", risk: "-", next: "Course Upload", by: "16 Jan 2026"},
+                    {wk: "02", range: "12 Jan - 16 Jan 2026", planned: "Upload Workplace Harassment", comp: "Slides, Questions, Videos Uploaded", risk: "-", next: "Next Course", by: "16 Jan 2026"},
+                    {wk: "02", range: "12 Jan - 16 Jan 2026", planned: "Performance Management Videos", comp: "Uploaded videos, Created questions", risk: "-", next: "Final QA", by: "16 Jan 2026"}
+                ],
+                notes: "Integrating secure payment gateways and scalable layouts."
+            }
+        };
+
+        // Load theme settings with user-specific preferences
+        let currentUser = auth.getCurrentUser();
+        let username = currentUser ? currentUser.username : 'default';
+        let themeSettings = JSON.parse(localStorage.getItem('prospenTheme_' + username)) || {
+            darkMode: true,
+            cardColor: '#1e293b',
+            accentColor: '#38bdf8',
+            fontFamily: "'Inter', sans-serif"
+        };
+
+        // Load updates
+        let updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [
+            {
+                id: '1',
+                title: 'Welcome to Prospen Hub!',
+                message: 'Welcome to the new Prospen Hub control center. This is where we track all our IT and Design projects.',
+                user: 'admin',
+                timestamp: new Date().toISOString(),
+                priority: 'important'
+            },
+            {
+                id: '2',
+                title: 'System Update Complete',
+                message: 'The new login system and statistics tracking have been successfully implemented.',
+                user: 'admin',
+                timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+                priority: 'normal'
+            }
+        ];
+
+        // Load user profiles
+        let userProfiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {
+            'admin': {
+                fullName: 'Administrator',
+                email: 'admin@prospentech.co.za',
+                bio: 'System administrator responsible for managing the Prospen Hub platform.',
+                avatar: null,
+                role: 'System Administrator'
+            },
+            'Junior': {
+                fullName: 'Junior Tladi',
+                email: 'junior@prospentech.co.za',
+                bio: 'Digital Designer and Content Manager',
+                avatar: null,
+                role: 'Digital Designer/Content Manager'
+            },
+            'Buhle': {
+                fullName: 'Buhle Khuzwayo',
+                email: 'buhle@prospentech.co.za',
+                bio: 'Instructional/Web/UI Designer',
+                avatar: null,
+                role: 'Instructional/Web/UI Designer'
+            },
+            'AJay': {
+                fullName: 'AJay Manganyi',
+                email: 'ajay@prospentech.co.za',
+                bio: 'Web Developer',
+                avatar: null,
+                role: 'Web Developer'
+            }
+        };
+
+        // Load enquiries
+        let enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
+        let unreadEnquiries = enquiries.filter(e => !e.read).length;
+
+        // Clocking system
+        let clockingSystem = {
+            workingHours: {
+                start: 7.5, // 7:30 AM as 7.5 hours
+                end: 16.5,  // 4:30 PM as 16.5 hours
+                days: [1, 2, 3, 4, 5] // Monday to Friday (1 = Monday, 5 = Friday)
+            },
+            
+            getClockingStatus: function(username) {
+                return JSON.parse(localStorage.getItem('clockingStatus_' + username)) || {
+                    clockedIn: false,
+                    clockInTime: null,
+                    clockOutTime: null,
+                    lastClockDate: null
+                };
+            },
+            
+            setClockingStatus: function(username, status) {
+                localStorage.setItem('clockingStatus_' + username, JSON.stringify(status));
+            },
+            
+            getClockingHistory: function(username) {
+                return JSON.parse(localStorage.getItem('clockingHistory_' + username)) || [];
+            },
+            
+            addToHistory: function(username, entry) {
+                let history = this.getClockingHistory(username);
+                history.unshift(entry);
+                // Keep only last 100 entries
+                localStorage.setItem('clockingHistory_' + username, JSON.stringify(history.slice(0, 100)));
+            },
+            
+            isWorkingDay: function() {
+                const today = new Date();
+                const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+                return this.workingHours.days.includes(dayOfWeek);
+            },
+            
+            isWithinWorkingHours: function() {
+                if (!this.isWorkingDay()) return false;
+                
+                const now = new Date();
+                const currentHour = now.getHours() + (now.getMinutes() / 60);
+                
+                return currentHour >= this.workingHours.start && currentHour <= this.workingHours.end;
+            },
+            
+            getClockInStatus: function(clockInTime) {
+                const clockInDate = new Date(clockInTime);
+                const clockInHour = clockInDate.getHours() + (clockInDate.getMinutes() / 60);
+                const startHour = this.workingHours.start;
+                
+                if (clockInHour < startHour) {
+                    const minutesEarly = Math.round((startHour - clockInHour) * 60);
+                    return { 
+                        status: 'early', 
+                        hours: Math.floor(minutesEarly / 60),
+                        minutes: minutesEarly % 60
+                    };
+                } else if (clockInHour > startHour) {
+                    const minutesLate = Math.round((clockInHour - startHour) * 60);
+                    return { 
+                        status: 'late', 
+                        hours: Math.floor(minutesLate / 60),
+                        minutes: minutesLate % 60
+                    };
+                } else {
+                    return { status: 'on-time', hours: 0, minutes: 0 };
+                }
+            },
+            
+            calculateWorkDuration: function(clockInTime, clockOutTime) {
+                const start = new Date(clockInTime);
+                const end = new Date(clockOutTime);
+                const diffMs = end - start;
+                
+                const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                return { hours, minutes };
+            }
+        };
+
+        // Tech news data
+        const techNewsSources = [
+            {
+                title: "AI Development Trends 2026",
+                description: "The latest advancements in artificial intelligence show significant improvements in natural language processing and computer vision applications.",
+                source: "TechCrunch",
+                url: "https://techcrunch.com/ai-trends-2026",
+                category: "Artificial Intelligence"
+            },
+            {
+                title: "Quantum Computing Breakthrough",
+                description: "Researchers have achieved a new milestone in quantum computing stability, bringing practical quantum applications closer to reality.",
+                source: "Wired",
+                url: "https://wired.com/quantum-computing-breakthrough",
+                category: "Quantum Computing"
+            },
+            {
+                title: "Web Development Framework Updates",
+                description: "New versions of popular JavaScript frameworks introduce improved performance and developer experience features.",
+                source: "Dev.to",
+                url: "https://dev.to/web-dev-updates",
+                category: "Web Development"
+            },
+            {
+                title: "Cybersecurity Threats Analysis",
+                description: "Latest report shows an increase in sophisticated phishing attacks targeting corporate networks and cloud infrastructure.",
+                source: "Security Weekly",
+                url: "https://securityweekly.com/threat-analysis",
+                category: "Cybersecurity"
+            },
+            {
+                title: "Cloud Computing Cost Optimization",
+                description: "New tools and strategies help companies reduce cloud spending while maintaining performance and scalability.",
+                source: "Cloud Times",
+                url: "https://cloudtimes.com/cost-optimization",
+                category: "Cloud Computing"
+            },
+            {
+                title: "Mobile App Development Trends",
+                description: "Cross-platform frameworks continue to gain popularity with improved native performance and developer tools.",
+                source: "Mobile Dev Journal",
+                url: "https://mobiledevjournal.com/trends-2026",
+                category: "Mobile Development"
+            }
+        ];
+
+        // Intelligent Chatbot System - NEXA AI Assistant
+        let chatbot = {
+            conversationState: 'idle',
+            currentAction: null,
+            actionData: {},
+            userData: {
+                name: '',
+                email: '',
+                enquiry: ''
+            },
+            context: {
+                lastProjects: [],
+                lastUpdates: [],
+                lastTasks: []
+            },
+            
+            init: function() {
+                const chatHistory = JSON.parse(localStorage.getItem('nexaChatHistory')) || [];
+                this.displayChatHistory(chatHistory);
+                
+                // If no history, start with welcome message
+                if (chatHistory.length === 0) {
+                    this.addBotMessage("👋 Hello! I'm **NEXA**, your AI assistant for the Prospen Tech Project Tracker. I can help you with:\n\n• 📊 Project information & status\n• 📅 Deadlines & timelines\n• 👥 Team assignments\n• 🔄 Recent updates\n• 📝 Adding/updating tasks & projects\n\nWhat would you like to know about our projects today?", true);
+                }
+                
+                // Listen for real-time updates
+                this.setupRealTimeUpdates();
+            },
+            
+            setupRealTimeUpdates: function() {
+                // Update bot when new projects or updates are added
+                const originalSaveProjects = window.saveProjects;
+                window.saveProjects = function() {
+                    const result = originalSaveProjects.apply(this, arguments);
+                    chatbot.notifyNewData();
+                    return result;
+                };
+                
+                // Override postUpdate to trigger notifications
+                const originalPostUpdate = window.postUpdate;
+                window.postUpdate = function(event) {
+                    const result = originalPostUpdate.apply(this, arguments);
+                    chatbot.notifyNewData();
+                    return result;
+                };
+            },
+            
+            notifyNewData: function() {
+                // Could add notification for new data
+                // For now, just update internal context
+                this.updateContext();
+            },
+            
+            updateContext: function() {
+                // Update context with latest data
+                this.context.lastProjects = Object.values(projects).slice(0, 5);
+                this.context.lastUpdates = updates.slice(0, 5);
+                
+                // Collect all tasks from all projects
+                this.context.lastTasks = [];
+                Object.values(projects).forEach(project => {
+                    project.tasks.forEach(task => {
+                        this.context.lastTasks.push({
+                            ...task,
+                            projectName: project.name
+                        });
+                    });
+                });
+                this.context.lastTasks = this.context.lastTasks.slice(0, 10);
+            },
+            
+            addBotMessage: function(text, isMarkdown = false) {
+                const messagesContainer = document.getElementById('chatbotMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chatbot-message bot';
+                
+                if (isMarkdown) {
+                    // Simple markdown parsing
+                    text = text
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n/g, '<br>')
+                        .replace(/•/g, '•')
+                        .replace(/📊|📅|👥|🔄|📝/g, match => `<span style="font-size:1.2em">${match}</span>`);
+                    messageDiv.innerHTML = text;
+                } else {
+                    messageDiv.textContent = text;
+                }
+                
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Save to history
+                this.saveToHistory({ type: 'bot', text: text, timestamp: new Date().toISOString() });
+            },
+            
+            addUserMessage: function(text) {
+                const messagesContainer = document.getElementById('chatbotMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chatbot-message user';
+                messageDiv.textContent = text;
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Save to history
+                this.saveToHistory({ type: 'user', text: text, timestamp: new Date().toISOString() });
+            },
+            
+            saveToHistory: function(message) {
+                let history = JSON.parse(localStorage.getItem('nexaChatHistory')) || [];
+                history.push(message);
+                localStorage.setItem('nexaChatHistory', JSON.stringify(history.slice(-100)));
+            },
+            
+            displayChatHistory: function(history) {
+                const messagesContainer = document.getElementById('chatbotMessages');
+                messagesContainer.innerHTML = '';
+                
+                history.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `chatbot-message ${msg.type}`;
+                    
+                    if (msg.type === 'bot') {
+                        // Parse markdown for bot messages
+                        let text = msg.text || '';
+                        text = text
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\n/g, '<br>')
+                            .replace(/•/g, '•')
+                            .replace(/📊|📅|👥|🔄|📝|👋|✅|❌|⚠️|🔍/g, match => `<span style="font-size:1.2em">${match}</span>`);
+                        messageDiv.innerHTML = text;
+                    } else {
+                        messageDiv.textContent = msg.text || '';
+                    }
+                    
+                    messagesContainer.appendChild(messageDiv);
+                });
+                
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            },
+            
+            processMessage: function(inputText) {
+                this.addUserMessage(inputText);
+                this.updateContext();
+                
+                // Process based on conversation state
+                switch(this.conversationState) {
+                    case 'idle':
+                        this.processUserQuery(inputText);
+                        break;
+                    case 'awaitingProjectSelection':
+                        this.handleProjectSelection(inputText);
+                        break;
+                    case 'awaitingTaskDetails':
+                        this.handleTaskDetails(inputText);
+                        break;
+                    case 'awaitingTaskSelection':
+                        this.handleTaskSelection(inputText);
+                        break;
+                    case 'awaitingUpdateDetails':
+                        this.handleUpdateDetails(inputText);
+                        break;
+                    case 'awaitingProjectDetails':
+                        this.handleProjectDetails(inputText);
+                        break;
+                    case 'awaitingConfirmation':
+                        this.handleConfirmation(inputText);
+                        break;
+                    case 'awaitingEnquiryName':
+                        this.handleEnquiryName(inputText);
+                        break;
+                    case 'awaitingEnquiryEmail':
+                        this.handleEnquiryEmail(inputText);
+                        break;
+                    case 'awaitingEnquiryMessage':
+                        this.handleEnquiryMessage(inputText);
+                        break;
+                }
+            },
+            
+            processUserQuery: function(query) {
+                query = query.toLowerCase().trim();
+                
+                // Project queries
+                if (query.includes('what project') || query.includes('show project') || query.includes('list project')) {
+                    this.handleProjectQuery(query);
+                }
+                // Status queries
+                else if (query.includes('status') || query.includes('progress')) {
+                    this.handleStatusQuery(query);
+                }
+                // Deadline queries
+                else if (query.includes('due') || query.includes('deadline') || query.includes('overdue') || query.includes('timeline')) {
+                    this.handleDeadlineQuery(query);
+                }
+                // Team queries
+                else if (query.includes('team') || query.includes('who is') || query.includes('assign') || 
+                        query.includes('junior') || query.includes('buhle') || query.includes('ajay') || query.includes('admin')) {
+                    this.handleTeamQuery(query);
+                }
+                // Update queries
+                else if (query.includes('update') || query.includes('recent') || query.includes('change') || 
+                        query.includes('activity') || query.includes('what\'s new')) {
+                    this.handleUpdateQuery(query);
+                }
+                // Statistics queries
+                else if (query.includes('how many') || query.includes('statistics') || query.includes('dashboard') || 
+                        query.includes('summary') || query.includes('analytics')) {
+                    this.handleStatsQuery();
+                }
+                // Add task queries
+                else if (query.includes('add task') || query.includes('new task') || query.includes('create task')) {
+                    this.initiateAddTask();
+                }
+                // Add project queries
+                else if (query.includes('add project') || query.includes('new project') || query.includes('create project')) {
+                    this.initiateAddProject();
+                }
+                // Add update queries
+                else if (query.includes('add update') || query.includes('post update') || query.includes('new update')) {
+                    this.initiateAddUpdate();
+                }
+                // Update task queries
+                else if (query.includes('update task') || query.includes('change task') || query.includes('modify task')) {
+                    this.initiateUpdateTask();
+                }
+                // Help queries
+                else if (query.includes('help') || query.includes('how to') || query.includes('guide')) {
+                    this.showHelp();
+                }
+                // Enquiry queries
+                else if (query.includes('enquiry') || query.includes('contact') || query.includes('support') || 
+                        query.includes('help me') || query.includes('question')) {
+                    this.initiateEnquiry();
+                }
+                // Greetings
+                else if (query.includes('hello') || query.includes('hi') || query.includes('hey')) {
+                    this.addBotMessage("👋 Hello! I'm NEXA. How can I assist you with your projects today?");
+                }
+                // Default - try to understand
+                else {
+                    this.handleGenericQuery(query);
+                }
+            },
+            
+            handleProjectQuery: function(query) {
+                const now = new Date();
+                
+                if (query.includes('active') || query.includes('in progress')) {
+                    const activeProjects = Object.values(projects).filter(p => p.status === 'In Progress');
+                    if (activeProjects.length > 0) {
+                        let response = "**Active Projects:**\n\n";
+                        activeProjects.forEach(project => {
+                            const dueDate = new Date(project.due);
+                            const days = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                            response += `• **${project.name}** - Due in ${days} days (${formatDate(project.due)})\n`;
+                        });
+                        this.addBotMessage(response, true);
+                    } else {
+                        this.addBotMessage("There are currently no active projects.");
+                    }
+                }
+                else if (query.includes('complete')) {
+                    const completedProjects = Object.values(projects).filter(p => p.status === 'Completed');
+                    if (completedProjects.length > 0) {
+                        let response = "**Completed Projects:**\n\n";
+                        completedProjects.forEach(project => {
+                            response += `• **${project.name}** - Completed\n`;
+                        });
+                        this.addBotMessage(response, true);
+                    } else {
+                        this.addBotMessage("There are no completed projects yet.");
+                    }
+                }
+                else if (query.includes('overdue')) {
+                    const overdueProjects = Object.values(projects).filter(p => {
+                        const dueDate = new Date(p.due);
+                        return dueDate < now && p.status !== 'Completed';
+                    });
+                    if (overdueProjects.length > 0) {
+                        let response = "**Overdue Projects:**\n\n";
+                        overdueProjects.forEach(project => {
+                            const dueDate = new Date(project.due);
+                            const daysOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
+                            response += `• **${project.name}** - ${daysOverdue} days overdue\n`;
+                        });
+                        this.addBotMessage(response, true);
+                    } else {
+                        this.addBotMessage("Great news! No projects are currently overdue.");
+                    }
+                }
+                else if (query.includes('all') || query.includes('list')) {
+                    const allProjects = Object.values(projects);
+                    if (allProjects.length > 0) {
+                        let response = "**All Projects:**\n\n";
+                        allProjects.forEach(project => {
+                            const dueDate = new Date(project.due);
+                            const days = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                            const statusIcon = project.status === 'Completed' ? '✅' : 
+                                            project.status === 'In Progress' ? '🔄' : 
+                                            project.status === 'On Hold' ? '⏸️' : '📋';
+                            response += `• ${statusIcon} **${project.name}** - ${project.status}, Due in ${days} days\n`;
+                        });
+                        this.addBotMessage(response, true);
+                    }
+                }
+                else {
+                    // Try to find specific project
+                    const projectNames = Object.values(projects).map(p => p.name.toLowerCase());
+                    const matchedProject = projectNames.find(name => query.includes(name));
+                    
+                    if (matchedProject) {
+                        const project = Object.values(projects).find(p => p.name.toLowerCase() === matchedProject);
+                        if (project) {
+                            const dueDate = new Date(project.due);
+                            const days = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                            
+                            let response = `**${project.name}**\n\n`;
+                            response += `**Status:** ${project.status}\n`;
+                            response += `**Lead:** ${project.lead}\n`;
+                            response += `**Type:** ${project.type}\n`;
+                            response += `**Due:** ${formatDate(project.due)} (${days} days from now)\n`;
+                            response += `**Description:** ${project.desc.substring(0, 150)}...\n\n`;
+                            
+                            // Show team members
+                            response += `**Team:**\n`;
+                            project.members.forEach(member => {
+                                response += `• ${member.name} - ${member.role}\n`;
+                            });
+                            
+                            this.addBotMessage(response, true);
+                        }
+                    } else {
+                        this.addBotMessage("I found these projects. Which one would you like to know more about?\n\n" + 
+                            Object.values(projects).map(p => `• ${p.name}`).join('\n'));
+                    }
+                }
+            },
+            
+            handleStatusQuery: function(query) {
+                const allProjects = Object.values(projects);
+                const statusCount = {};
+                
+                allProjects.forEach(project => {
+                    statusCount[project.status] = (statusCount[project.status] || 0) + 1;
+                });
+                
+                let response = "**Project Status Overview:**\n\n";
+                Object.entries(statusCount).forEach(([status, count]) => {
+                    const icon = status === 'Completed' ? '✅' : 
+                                status === 'In Progress' ? '🔄' : 
+                                status === 'On Hold' ? '⏸️' : '📋';
+                    response += `${icon} **${status}:** ${count} project${count !== 1 ? 's' : ''}\n`;
+                });
+                
+                // Add progress information
+                const totalProjects = allProjects.length;
+                const completedProjects = statusCount['Completed'] || 0;
+                const completionRate = totalProjects > 0 ? Math.round((completedProjects / totalProjects) * 100) : 0;
+                
+                response += `\n**Overall Progress:** ${completionRate}% complete`;
+                
+                this.addBotMessage(response, true);
+            },
+            
+            handleDeadlineQuery: function(query) {
+                const now = new Date();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const nextWeek = new Date();
+                nextWeek.setDate(nextWeek.getDate() + 7);
+                
+                const nextMonth = new Date();
+                nextMonth.setMonth(nextMonth.getMonth() + 1);
+                
+                if (query.includes('today') || query.includes('due today')) {
+                    const todayProjects = Object.values(projects).filter(p => {
+                        const dueDate = new Date(p.due);
+                        dueDate.setHours(0, 0, 0, 0);
+                        return dueDate.getTime() === today.getTime() && p.status !== 'Completed';
+                    });
+                    
+                    if (todayProjects.length > 0) {
+                        let response = "**Projects Due Today:**\n\n";
+                        todayProjects.forEach(project => {
+                            response += `• **${project.name}** - ${project.lead}\n`;
+                        });
+                        this.addBotMessage(response, true);
+                    } else {
+                        this.addBotMessage("No projects are due today.");
+                    }
+                }
+                else if (query.includes('week') || query.includes('this week')) {
+                    const weekProjects = Object.values(projects).filter(p => {
+                        const dueDate = new Date(p.due);
+                        return dueDate >= today && dueDate <= nextWeek && p.status !== 'Completed';
+                    });
+                    
+                    if (weekProjects.length > 0) {
+                        let response = "**Projects Due This Week:**\n\n";
+                        weekProjects.forEach(project => {
+                            const dueDate = new Date(project.due);
+                            const days = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                            response += `• **${project.name}** - Due in ${days} days (${formatDate(project.due)})\n`;
+                        });
+                        this.addBotMessage(response, true);
+                    } else {
+                        this.addBotMessage("No projects are due this week.");
+                    }
+                }
+                else if (query.includes('month') || query.includes('next month')) {
+                    const monthProjects = Object.values(projects).filter(p => {
+                        const dueDate = new Date(p.due);
+                        return dueDate >= today && dueDate <= nextMonth && p.status !== 'Completed';
+                    });
+                    
+                    if (monthProjects.length > 0) {
+                        let response = "**Projects Due Next Month:**\n\n";
+                        monthProjects.forEach(project => {
+                            const dueDate = new Date(project.due);
+                            const days = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                            response += `• **${project.name}** - Due in ${days} days (${formatDate(project.due)})\n`;
+                        });
+                        this.addBotMessage(response, true);
+                    } else {
+                        this.addBotMessage("No projects are due next month.");
+                    }
+                }
+                else if (query.includes('overdue')) {
+                    const overdueProjects = Object.values(projects).filter(p => {
+                        const dueDate = new Date(p.due);
+                        return dueDate < now && p.status !== 'Completed';
+                    });
+                    
+                    if (overdueProjects.length > 0) {
+                        let response = "**Overdue Projects:**\n\n";
+                        overdueProjects.forEach(project => {
+                            const dueDate = new Date(project.due);
+                            const daysOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
+                            const hoursOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60));
+                            
+                            if (daysOverdue >= 1) {
+                                response += `• **${project.name}** - ${daysOverdue} day${daysOverdue !== 1 ? 's' : ''} overdue\n`;
+                            } else {
+                                response += `• **${project.name}** - ${hoursOverdue} hour${hoursOverdue !== 1 ? 's' : ''} overdue\n`;
+                            }
+                        });
+                        this.addBotMessage(response, true);
+                    } else {
+                        this.addBotMessage("Great! No projects are currently overdue.");
+                    }
+                }
+            },
+            
+            handleTeamQuery: function(query) {
+                const allProjects = Object.values(projects);
+                
+                // Check for specific team member
+                const teamMembers = ['Junior', 'Buhle', 'AJay', 'admin'];
+                const mentionedMember = teamMembers.find(member => 
+                    query.toLowerCase().includes(member.toLowerCase())
+                );
+                
+                if (mentionedMember) {
+                    const memberProjects = allProjects.filter(project => 
+                        project.lead === mentionedMember || 
+                        project.members.some(m => m.name === mentionedMember)
+                    );
+                    
+                    if (memberProjects.length > 0) {
+                        let response = `**${mentionedMember}'s Projects:**\n\n`;
+                        
+                        memberProjects.forEach(project => {
+                            // Find their role in this project
+                            const memberInfo = project.members.find(m => m.name === mentionedMember);
+                            const role = memberInfo ? memberInfo.role : (project.lead === mentionedMember ? 'Project Lead' : 'Team Member');
+                            
+                            response += `• **${project.name}** - ${role} (${project.status})\n`;
+                            
+                            // Add their specific tasks if any
+                            const memberTasks = project.tasks.filter(task => 
+                                task.who && task.who.toLowerCase().includes(mentionedMember.toLowerCase())
+                            );
+                            
+                            if (memberTasks.length > 0) {
+                                response += `  Tasks: ${memberTasks.map(t => t.name).join(', ')}\n`;
+                            }
+                        });
+                        
+                        this.addBotMessage(response, true);
+                    } else {
+                        this.addBotMessage(`${mentionedMember} is not currently assigned to any projects.`);
+                    }
+                } else {
+                    // Show team overview
+                    const teamOverview = {};
+                    
+                    allProjects.forEach(project => {
+                        project.members.forEach(member => {
+                            if (!teamOverview[member.name]) {
+                                teamOverview[member.name] = {
+                                    projects: [],
+                                    role: member.role
+                                };
+                            }
+                            teamOverview[member.name].projects.push(project.name);
+                        });
+                    });
+                    
+                    let response = "**Team Overview:**\n\n";
+                    Object.entries(teamOverview).forEach(([name, data]) => {
+                        response += `• **${name}** - ${data.role}\n`;
+                        response += `  Projects: ${data.projects.join(', ')}\n\n`;
+                    });
+                    
+                    this.addBotMessage(response, true);
+                }
+            },
+            
+            handleUpdateQuery: function(query) {
+                if (updates.length === 0) {
+                    this.addBotMessage("There are no updates yet.");
+                    return;
+                }
+                
+                const now = new Date();
+                const today = new Date().toDateString();
+                
+                if (query.includes('today') || query.includes('recent')) {
+                    const todayUpdates = updates.filter(update => 
+                        new Date(update.timestamp).toDateString() === today
+                    );
+                    
+                    if (todayUpdates.length > 0) {
+                        let response = "**Today's Updates:**\n\n";
+                        todayUpdates.forEach(update => {
+                            const time = new Date(update.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            response += `• **${update.title}** (${time})\n`;
+                            response += `  ${update.message.substring(0, 80)}...\n`;
+                            response += `  By: ${update.user}\n\n`;
+                        });
+                        this.addBotMessage(response, true);
+                    } else {
+                        this.addBotMessage("No updates have been posted today.");
+                    }
+                }
+                else if (query.includes('latest') || query.includes('last')) {
+                    const recentUpdates = updates.slice(0, 5);
+                    let response = "**Recent Updates:**\n\n";
+                    
+                    recentUpdates.forEach(update => {
+                        const timeAgo = getTimeAgo(new Date(update.timestamp));
+                        response += `• **${update.title}** (${timeAgo})\n`;
+                        response += `  ${update.message.substring(0, 60)}...\n`;
+                        response += `  By: ${update.user}\n\n`;
+                    });
+                    
+                    this.addBotMessage(response, true);
+                }
+                else {
+                    // Show all updates count
+                    const updatesByUser = {};
+                    updates.forEach(update => {
+                        updatesByUser[update.user] = (updatesByUser[update.user] || 0) + 1;
+                    });
+                    
+                    let response = `**Total Updates:** ${updates.length}\n\n`;
+                    response += "**Updates by User:**\n";
+                    Object.entries(updatesByUser).forEach(([user, count]) => {
+                        response += `• ${user}: ${count} update${count !== 1 ? 's' : ''}\n`;
+                    });
+                    
+                    this.addBotMessage(response, true);
+                }
+            },
+            
+            handleStatsQuery: function() {
+                const allProjects = Object.values(projects);
+                const now = new Date();
+                
+                // Calculate stats
+                const totalProjects = allProjects.length;
+                const activeProjects = allProjects.filter(p => p.status === 'In Progress').length;
+                const completedProjects = allProjects.filter(p => p.status === 'Completed').length;
+                const overdueProjects = allProjects.filter(p => {
+                    const dueDate = new Date(p.due);
+                    return dueDate < now && p.status !== 'Completed';
+                }).length;
+                
+                // Calculate total tasks
+                let totalTasks = 0;
+                let completedTasks = 0;
+                let overdueTasks = 0;
+                
+                allProjects.forEach(project => {
+                    totalTasks += project.tasks.length;
+                    project.tasks.forEach(task => {
+                        if (task.status === 'Completed') completedTasks++;
+                        const dueDate = new Date(task.due);
+                        if (dueDate < now && task.status !== 'Completed') overdueTasks++;
+                    });
+                });
+                
+                // Team online status
+                const onlineUsers = Object.values(JSON.parse(localStorage.getItem('currentSessions')) || {})
+                    .filter(session => session.online).length;
+                
+                let response = "📊 **Dashboard Summary**\n\n";
+                response += "**Projects:**\n";
+                response += `• Total: ${totalProjects}\n`;
+                response += `• Active: ${activeProjects}\n`;
+                response += `• Completed: ${completedProjects}\n`;
+                response += `• Overdue: ${overdueProjects}\n\n`;
+                
+                response += "**Tasks:**\n";
+                response += `• Total: ${totalTasks}\n`;
+                response += `• Completed: ${completedTasks}\n`;
+                response += `• Overdue: ${overdueTasks}\n\n`;
+                
+                response += "**Team:**\n";
+                response += `• Online: ${onlineUsers}/4 members\n`;
+                response += `• Recent updates: ${updates.length}\n\n`;
+                
+                response += "**Timeline:**\n";
+                const upcomingProjects = allProjects.filter(p => {
+                    const dueDate = new Date(p.due);
+                    const days = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                    return days <= 7 && days > 0 && p.status !== 'Completed';
+                }).length;
+                response += `• Projects due in next 7 days: ${upcomingProjects}`;
+                
+                this.addBotMessage(response, true);
+            },
+            
+            initiateAddTask: function() {
+                this.conversationState = 'awaitingProjectSelection';
+                this.currentAction = 'addTask';
+                this.actionData = {};
+                
+                let projectList = "**Select a project for the new task:**\n\n";
+                Object.values(projects).forEach((project, index) => {
+                    projectList += `${index + 1}. ${project.name}\n`;
+                });
+                
+                this.addBotMessage("I'll help you add a new task. " + projectList + "\nPlease enter the project number or name:", true);
+            },
+            
+            handleProjectSelection: function(input) {
+                const allProjects = Object.values(projects);
+                let selectedProject = null;
+                
+                // Check if input is a number
+                const numberMatch = input.match(/\d+/);
+                if (numberMatch) {
+                    const index = parseInt(numberMatch[0]) - 1;
+                    if (index >= 0 && index < allProjects.length) {
+                        selectedProject = allProjects[index];
+                    }
+                }
+                
+                // Check if input matches a project name
+                if (!selectedProject) {
+                    selectedProject = allProjects.find(p => 
+                        p.name.toLowerCase().includes(input.toLowerCase())
+                    );
+                }
+                
+                if (selectedProject) {
+                    this.actionData.projectId = selectedProject.id;
+                    this.actionData.projectName = selectedProject.name;
+                    
+                    if (this.currentAction === 'addTask') {
+                        this.conversationState = 'awaitingTaskDetails';
+                        this.addBotMessage(`Great! You've selected **${selectedProject.name}**. Now, please provide:\n\n1. Task name\n2. Assignee (who)\n3. Due date (YYYY-MM-DD)\n4. Priority (High/Medium/Low)\n5. Category\n\nYou can provide all at once or I'll ask for each one.`, true);
+                    }
+                } else {
+                    this.addBotMessage("I couldn't find that project. Please try again with the project name or number from the list.");
+                }
+            },
+            
+            handleTaskDetails: function(input) {
+                if (!this.actionData.taskName) {
+                    this.actionData.taskName = input;
+                    this.addBotMessage("Task name set. Who should this task be assigned to?");
+                }
+                else if (!this.actionData.assignee) {
+                    this.actionData.assignee = input;
+                    this.addBotMessage("Assignee set. What's the due date? (Format: YYYY-MM-DD)");
+                }
+                else if (!this.actionData.dueDate) {
+                    // Validate date
+                    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                    if (dateRegex.test(input)) {
+                        this.actionData.dueDate = input;
+                        this.addBotMessage("Due date set. What's the priority? (High/Medium/Low)");
+                    } else {
+                        this.addBotMessage("Please use the format YYYY-MM-DD for the due date.");
+                    }
+                }
+                else if (!this.actionData.priority) {
+                    this.actionData.priority = input;
+                    this.addBotMessage("Priority set. What category does this task belong to?");
+                }
+                else if (!this.actionData.category) {
+                    this.actionData.category = input;
+                    
+                    // Confirm all details
+                    let confirmation = "**Please confirm the new task details:**\n\n";
+                    confirmation += `**Project:** ${this.actionData.projectName}\n`;
+                    confirmation += `**Task:** ${this.actionData.taskName}\n`;
+                    confirmation += `**Assignee:** ${this.actionData.assignee}\n`;
+                    confirmation += `**Due Date:** ${this.actionData.dueDate}\n`;
+                    confirmation += `**Priority:** ${this.actionData.priority}\n`;
+                    confirmation += `**Category:** ${this.actionData.category}\n\n`;
+                    confirmation += "Type 'yes' to add this task, or 'no' to start over.";
+                    
+                    this.conversationState = 'awaitingConfirmation';
+                    this.addBotMessage(confirmation, true);
+                }
+            },
+            
+            handleConfirmation: function(input) {
+                if (input.toLowerCase() === 'yes') {
+                    if (this.currentAction === 'addTask') {
+                        this.addTaskToProject();
+                    }
+                } else if (input.toLowerCase() === 'no') {
+                    this.conversationState = 'idle';
+                    this.currentAction = null;
+                    this.actionData = {};
+                    this.addBotMessage("Task creation cancelled. What would you like to do instead?");
+                } else {
+                    this.addBotMessage("Please type 'yes' to confirm or 'no' to cancel.");
+                }
+            },
+            
+            addTaskToProject: function() {
+                if (!projects[this.actionData.projectId]) {
+                    this.addBotMessage("Error: Project not found. Please try again.");
+                    this.resetConversation();
+                    return;
+                }
+                
+                // Generate task ID
+                const taskId = `task_${Date.now()}`;
+                
+                // Add task to project
+                projects[this.actionData.projectId].tasks.push({
+                    id: taskId,
+                    name: this.actionData.taskName,
+                    who: this.actionData.assignee,
+                    due: this.actionData.dueDate,
+                    prio: this.actionData.priority,
+                    cat: this.actionData.category,
+                    status: 'In progress'
+                });
+                
+                // Update project
+                projects[this.actionData.projectId].lastUpdated = new Date().toISOString();
+                projects[this.actionData.projectId].lastUpdatedBy = currentUser ? currentUser.username : 'NEXA Assistant';
+                
+                // Save to localStorage
+                localStorage.setItem('prospenProjects', JSON.stringify(projects));
+                
+                // Record activity
+                if (currentUser) {
+                    auth.recordActivity('create', `Added task "${this.actionData.taskName}" to project "${this.actionData.projectName}"`, this.actionData.projectId);
+                }
+                
+                // Refresh UI
+                renderProjects();
+                
+                // Success message
+                this.addBotMessage(`✅ Task **"${this.actionData.taskName}"** has been successfully added to **${this.actionData.projectName}**!\n\nThe project has been updated and all team members can now see this new task.`, true);
+                
+                this.resetConversation();
+            },
+            
+            initiateAddProject: function() {
+                this.conversationState = 'awaitingProjectDetails';
+                this.currentAction = 'addProject';
+                this.actionData = {};
+                
+                this.addBotMessage("I'll help you create a new project. Let's start with the project name:", true);
+            },
+            
+            handleProjectDetails: function(input) {
+                if (!this.actionData.name) {
+                    this.actionData.name = input;
+                    this.addBotMessage("Project name set. What's the project description?");
+                }
+                else if (!this.actionData.description) {
+                    this.actionData.description = input;
+                    this.addBotMessage("Description set. Who is the project lead?");
+                }
+                else if (!this.actionData.lead) {
+                    this.actionData.lead = input;
+                    this.addBotMessage("Project lead set. What's the start date? (YYYY-MM-DD)");
+                }
+                else if (!this.actionData.startDate) {
+                    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                    if (dateRegex.test(input)) {
+                        this.actionData.startDate = input;
+                        this.addBotMessage("Start date set. What's the due date? (YYYY-MM-DD)");
+                    } else {
+                        this.addBotMessage("Please use the format YYYY-MM-DD for the start date.");
+                    }
+                }
+                else if (!this.actionData.dueDate) {
+                    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                    if (dateRegex.test(input)) {
+                        this.actionData.dueDate = input;
+                        
+                        // Confirm all details
+                        let confirmation = "**Please confirm the new project details:**\n\n";
+                        confirmation += `**Project Name:** ${this.actionData.name}\n`;
+                        confirmation += `**Description:** ${this.actionData.description}\n`;
+                        confirmation += `**Project Lead:** ${this.actionData.lead}\n`;
+                        confirmation += `**Start Date:** ${this.actionData.startDate}\n`;
+                        confirmation += `**Due Date:** ${this.actionData.dueDate}\n\n`;
+                        confirmation += "Type 'yes' to create this project, or 'no' to start over.";
+                        
+                        this.conversationState = 'awaitingConfirmation';
+                        this.addBotMessage(confirmation, true);
+                    } else {
+                        this.addBotMessage("Please use the format YYYY-MM-DD for the due date.");
+                    }
+                }
+            },
+            
+            initiateAddUpdate: function() {
+                this.conversationState = 'awaitingUpdateDetails';
+                this.currentAction = 'addUpdate';
+                this.actionData = {};
+                
+                this.addBotMessage("I'll help you post a new update. What's the title of your update?", true);
+            },
+            
+            handleUpdateDetails: function(input) {
+                if (!this.actionData.title) {
+                    this.actionData.title = input;
+                    this.addBotMessage("Update title set. What's your update message?");
+                }
+                else if (!this.actionData.message) {
+                    this.actionData.message = input;
+                    
+                    // Confirm
+                    let confirmation = "**Please confirm your update:**\n\n";
+                    confirmation += `**Title:** ${this.actionData.title}\n`;
+                    confirmation += `**Message:** ${this.actionData.message}\n\n`;
+                    confirmation += "Type 'yes' to post this update, or 'no' to start over.";
+                    
+                    this.conversationState = 'awaitingConfirmation';
+                    this.addBotMessage(confirmation, true);
+                }
+            },
+            
+            initiateUpdateTask: function() {
+                this.conversationState = 'awaitingProjectSelection';
+                this.currentAction = 'updateTask';
+                this.actionData = {};
+                
+                let projectList = "**Select a project to update a task:**\n\n";
+                Object.values(projects).forEach((project, index) => {
+                    if (project.tasks.length > 0) {
+                        projectList += `${index + 1}. ${project.name} (${project.tasks.length} tasks)\n`;
+                    }
+                });
+                
+                this.addBotMessage("I'll help you update a task. " + projectList + "\nPlease enter the project number or name:", true);
+            },
+            
+            showHelp: function() {
+                let helpText = "🤖 **NEXA AI Assistant - Help Guide**\n\n";
+                helpText += "**I can help you with:**\n\n";
+                helpText += "📂 **Project Information:**\n";
+                helpText += "• \"What projects are active?\"\n";
+                helpText += "• \"Show me overdue projects\"\n";
+                helpText += "• \"What's the status of [project name]?\"\n\n";
+                
+                helpText += "📅 **Deadlines & Timeline:**\n";
+                helpText += "• \"What's due this week?\"\n";
+                helpText += "• \"Show me overdue tasks\"\n";
+                helpText += "• \"What projects are due next month?\"\n\n";
+                
+                helpText += "👥 **Team & Assignments:**\n";
+                helpText += "• \"What projects is Junior working on?\"\n";
+                helpText += "• \"Who last updated [project]?\"\n";
+                helpText += "• \"Show team overview\"\n\n";
+                
+                helpText += "🔄 **Updates & Activity:**\n";
+                helpText += "• \"Show recent updates\"\n";
+                helpText += "• \"What changed today?\"\n";
+                helpText += "• \"Who posted the latest update?\"\n\n";
+                
+                helpText += "📊 **Dashboard & Statistics:**\n";
+                helpText += "• \"How many total projects?\"\n";
+                helpText += "• \"Give me a dashboard summary\"\n";
+                helpText += "• \"What's our progress?\"\n\n";
+                
+                helpText += "📝 **Actions (I can guide you):**\n";
+                helpText += "• \"Add a new task\"\n";
+                helpText += "• \"Create a new project\"\n";
+                helpText += "• \"Post an update\"\n\n";
+                
+                helpText += "**Real-time Features:**\n";
+                helpText += "• All data is live and shared across team members\n";
+                helpText += "• See who's online and active\n";
+                helpText += "• Get instant notifications for important changes";
+                
+                this.addBotMessage(helpText, true);
+            },
+            
+            initiateEnquiry: function() {
+                this.conversationState = 'awaitingEnquiryName';
+                this.currentAction = 'enquiry';
+                this.userData = { name: '', email: '', enquiry: '' };
+                
+                this.addBotMessage("I'd be happy to help you with an enquiry. Let's start with your name:", true);
+            },
+            
+            handleEnquiryName: function(input) {
+                this.userData.name = input;
+                this.conversationState = 'awaitingEnquiryEmail';
+                this.addBotMessage(`Thanks ${input}. What's your email address?`);
+            },
+            
+            handleEnquiryEmail: function(input) {
+                // Basic email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailRegex.test(input)) {
+                    this.userData.email = input;
+                    this.conversationState = 'awaitingEnquiryMessage';
+                    this.addBotMessage("Great! Now, please tell me about your enquiry. What would you like to know or ask about our projects?");
+                } else {
+                    this.addBotMessage("Please enter a valid email address.");
+                }
+            },
+            
+            handleEnquiryMessage: function(input) {
+                this.userData.enquiry = input;
+                
+                // Confirm enquiry
+                let confirmation = "**Please confirm your enquiry details:**\n\n";
+                confirmation += `**Name:** ${this.userData.name}\n`;
+                confirmation += `**Email:** ${this.userData.email}\n`;
+                confirmation += `**Enquiry:** ${this.userData.enquiry}\n\n`;
+                confirmation += "Type 'yes' to submit your enquiry, or 'no' to start over.";
+                
+                this.conversationState = 'awaitingConfirmation';
+                this.addBotMessage(confirmation, true);
+            },
+            
+            saveEnquiry: function() {
+                const enquiry = {
+                    id: 'enquiry_' + Date.now(),
+                    name: this.userData.name,
+                    email: this.userData.email,
+                    enquiry: this.userData.enquiry,
+                    timestamp: new Date().toISOString(),
+                    read: false,
+                    status: 'new'
+                };
+                
+                let allEnquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
+                allEnquiries.unshift(enquiry);
+                localStorage.setItem('prospenEnquiries', JSON.stringify(allEnquiries));
+                
+                // Update unread count
+                unreadEnquiries = allEnquiries.filter(e => !e.read).length;
+                updateEnquiryIndicator();
+                
+                // Show thank you message in chatbot (NO POPUP)
+                this.addBotMessage(`✅ Thank you for your enquiry, ${this.userData.name}! Our team will review it and get back to you soon at ${this.userData.email}.`);
+                
+                // Reset chatbot to idle state
+                this.resetConversation();
+                
+                // Start new conversation
+                setTimeout(() => {
+                    this.addBotMessage("Is there anything else I can help you with regarding your projects?");
+                }, 1000);
+            },
+            
+            handleGenericQuery: function(query) {
+                // Try to understand the intent
+                if (query.includes('thank') || query.includes('thanks')) {
+                    this.addBotMessage("You're welcome! Is there anything else I can help you with?");
+                }
+                else if (query.includes('bye') || query.includes('goodbye')) {
+                    this.addBotMessage("Goodbye! Feel free to ask me anything about your projects whenever you need help.");
+                }
+                else if (query.includes('who are you') || query.includes('what are you')) {
+                    this.addBotMessage("I'm **NEXA**, your AI assistant for the Prospen Tech Project Tracker. I help teams manage projects, track deadlines, and stay updated on progress.");
+                }
+                else {
+                    // If we don't understand, offer help
+                    this.addBotMessage("I'm not sure I understand. Here's what I can help you with:\n\n• Project information & status\n• Deadlines & timelines\n• Team assignments\n• Recent updates\n• Adding/updating tasks\n\nTry asking something like \"What projects are active?\" or \"Show me recent updates.\"", true);
+                }
+            },
+            
+            resetConversation: function() {
+                this.conversationState = 'idle';
+                this.currentAction = null;
+                this.actionData = {};
+                this.userData = { name: '', email: '', enquiry: '' };
+            }
+        };
+
+        // Update the formatDate function to be available globally
+        window.formatDate = function(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        };
+
+        // Update the getTimeAgo function to handle hours properly
+        window.getTimeAgo = function(date) {
+            const now = new Date();
+            const diff = now - date;
+            
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ${minutes % 60}m ago`;
+            if (days < 7) return `${days}d ago`;
+            
+            return date.toLocaleDateString();
+        };
+
+        let currentSlide = 0;
+        let slideInterval;
+
+        // Custom modal function to replace default alerts
+        function showCustomModal(title, message, type = 'info') {
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal ${type}">
+                    <div class="custom-modal-header">
+                        <h3>${title}</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Sound functions
+        function playSound(soundId) {
+            const sound = document.getElementById(soundId);
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Audio play failed:", e));
+            }
+        }
+
+        // Clocking functions with confirmation
+        function confirmClockAction() {
+            if (!currentUser) {
+                showCustomModal('Error', 'Please login to use clocking system', 'danger');
+                return;
+            }
+            
+            const status = clockingSystem.getClockingStatus(currentUser.username);
+            const action = status.clockedIn ? 'out' : 'in';
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay confirmation-modal';
+            modal.innerHTML = `
+                <div class="custom-modal ${status.clockedIn ? 'warning' : 'info'}">
+                    <div class="custom-modal-header">
+                        <h3>Confirm Clock ${action.toUpperCase()}</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>Are you sure you want to clock ${action} at ${time}?</p>
+                        <div class="btn-group">
+                            <button class="btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                            <button class="btn-confirm" onclick="performClock${action === 'in' ? 'In' : 'Out'}()">Confirm Clock ${action.toUpperCase()}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function performClockIn() {
+            document.querySelector('.custom-modal-overlay').remove();
+            
+            const status = clockingSystem.getClockingStatus(currentUser.username);
+            const now = new Date();
+            
+            status.clockedIn = true;
+            status.clockInTime = now.toISOString();
+            status.lastClockDate = now.toDateString();
+            
+            const clockStatus = clockingSystem.getClockInStatus(status.clockInTime);
+            let message = `Clocked in at ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}. `;
+            
+            if (clockStatus.status === 'early') {
+                if (clockStatus.hours > 0) {
+                    message += `You're ${clockStatus.hours} hour${clockStatus.hours > 1 ? 's' : ''} and ${clockStatus.minutes} minute${clockStatus.minutes !== 1 ? 's' : ''} early.`;
+                } else {
+                    message += `You're ${clockStatus.minutes} minute${clockStatus.minutes !== 1 ? 's' : ''} early.`;
+                }
+                document.getElementById('clockStatus').className = 'clock-status on-time';
+                document.getElementById('clockStatus').textContent = 'Early';
+            } else if (clockStatus.status === 'late') {
+                if (clockStatus.hours > 0) {
+                    message += `You're ${clockStatus.hours} hour${clockStatus.hours > 1 ? 's' : ''} and ${clockStatus.minutes} minute${clockStatus.minutes !== 1 ? 's' : ''} late.`;
+                } else {
+                    message += `You're ${clockStatus.minutes} minute${clockStatus.minutes !== 1 ? 's' : ''} late.`;
+                }
+                document.getElementById('clockStatus').className = 'clock-status late';
+                document.getElementById('clockStatus').textContent = 'Late';
+            } else {
+                message += 'You\'re right on time!';
+                document.getElementById('clockStatus').className = 'clock-status on-time';
+                document.getElementById('clockStatus').textContent = 'On Time';
+            }
+            
+            if (!clockingSystem.isWorkingDay()) {
+                message += ' (Note: Today is not a regular working day)';
+            }
+            
+            showCustomModal('Clocked In', message, clockStatus.status === 'late' ? 'warning' : 'success');
+            playSound('clockInSound');
+            
+            // Update button
+            document.getElementById('clockBtn').textContent = 'CLOCK OUT';
+            document.getElementById('clockBtn').className = 'clock-btn clocked-in';
+            
+            clockingSystem.setClockingStatus(currentUser.username, status);
+        }
+
+        function performClockOut() {
+            document.querySelector('.custom-modal-overlay').remove();
+            
+            const status = clockingSystem.getClockingStatus(currentUser.username);
+            const now = new Date();
+            
+            status.clockedIn = false;
+            status.clockOutTime = now.toISOString();
+            
+            // Calculate work duration
+            const duration = clockingSystem.calculateWorkDuration(status.clockInTime, status.clockOutTime);
+            const clockOutTime = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Add to history
+            clockingSystem.addToHistory(currentUser.username, {
+                date: now.toDateString(),
+                clockIn: new Date(status.clockInTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                clockOut: clockOutTime,
+                duration: `${duration.hours}h ${duration.minutes}m`,
+                type: clockingSystem.isWorkingDay() ? 'Regular' : 'Non-working day'
+            });
+            
+            // Show summary
+            let durationText = '';
+            if (duration.hours > 0) {
+                durationText += `${duration.hours} hour${duration.hours > 1 ? 's' : ''}`;
+                if (duration.minutes > 0) {
+                    durationText += ` and ${duration.minutes} minute${duration.minutes !== 1 ? 's' : ''}`;
+                }
+            } else {
+                durationText = `${duration.minutes} minute${duration.minutes !== 1 ? 's' : ''}`;
+            }
+            
+            const message = `Clocked out at ${clockOutTime}. You worked for ${durationText} today.`;
+            showCustomModal('Clocked Out', message, 'info');
+            playSound('clockOutSound');
+            
+            // Update button
+            document.getElementById('clockBtn').textContent = 'CLOCK IN';
+            document.getElementById('clockBtn').className = 'clock-btn';
+            document.getElementById('clockStatus').textContent = '';
+            document.getElementById('clockStatus').className = 'clock-status';
+            
+            clockingSystem.setClockingStatus(currentUser.username, status);
+        }
+
+        function updateClockDisplay() {
+            if (!currentUser) return;
+            
+            const status = clockingSystem.getClockingStatus(currentUser.username);
+            const btn = document.getElementById('clockBtn');
+            const statusSpan = document.getElementById('clockStatus');
+            
+            if (status.clockedIn) {
+                btn.textContent = 'CLOCK OUT';
+                btn.className = 'clock-btn clocked-in';
+                
+                // Update status if clocked in
+                if (status.clockInTime) {
+                    const clockStatus = clockingSystem.getClockInStatus(status.clockInTime);
+                    let statusText = '';
+                    if (clockStatus.status === 'late') {
+                        if (clockStatus.hours > 0) {
+                            statusText = `${clockStatus.hours}h ${clockStatus.minutes}m late`;
+                        } else {
+                            statusText = `${clockStatus.minutes}m late`;
+                        }
+                    } else if (clockStatus.status === 'early') {
+                        if (clockStatus.hours > 0) {
+                            statusText = `${clockStatus.hours}h ${clockStatus.minutes}m early`;
+                        } else {
+                            statusText = `${clockStatus.minutes}m early`;
+                        }
+                    } else {
+                        statusText = 'On Time';
+                    }
+                    
+                    statusSpan.textContent = statusText;
+                    statusSpan.className = 'clock-status ' + 
+                        (clockStatus.status === 'late' ? 'late' : 'on-time');
+                }
+            } else {
+                btn.textContent = 'CLOCK IN';
+                btn.className = 'clock-btn';
+                statusSpan.textContent = '';
+                statusSpan.className = 'clock-status';
+            }
+        }
+
+        // Update user info display
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('currentUserName').textContent = currentUser.username;
+                
+                // Update session duration
+                const duration = auth.getSessionDuration();
+                document.getElementById('sessionDuration').textContent = duration + ' min';
+                
+                // Update clock display
+                updateClockDisplay();
+            }
+        }
+
+        // Update welcome message
+        function updateWelcomeMessage() {
+            if (currentUser) {
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                const pendingTasks = getPendingTaskCount();
+                welcomeMessage.textContent = `Welcome ${currentUser.username}, you have ${pendingTasks} tasks pending.`;
+            }
+        }
+
+        function getPendingTaskCount() {
+            let total = 0;
+            Object.values(projects).forEach(project => {
+                project.tasks.forEach(task => {
+                    if (task.status !== 'Completed') {
+                        total++;
+                    }
+                });
+            });
+            return total;
+        }
+
+        // Initialize hero slider
+        function initHeroSlider() {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.slide-dot');
+            
+            // Show initial slide
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                dots[index].classList.remove('active');
+            });
+            
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+            
+            // Update welcome message
+            updateWelcomeMessage();
+            
+            // Update top project
+            updateTopProject();
+            
+            // Start automatic slideshow
+            clearInterval(slideInterval);
+            slideInterval = setInterval(nextSlide, 5000);
+        }
+
+        function nextSlide() {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.slide-dot');
+            
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            
+            currentSlide = (currentSlide + 1) % slides.length;
+            
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        function goToSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.slide-dot');
+            
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            
+            currentSlide = index;
+            
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+            
+            // Reset interval
+            clearInterval(slideInterval);
+            slideInterval = setInterval(nextSlide, 5000);
+        }
+
+        function updateTopProject() {
+            let bestProject = null;
+            let maxProgress = 0;
+            
+            Object.values(projects).forEach(project => {
+                const totalTasks = project.tasks.length;
+                const completedTasks = project.tasks.filter(t => t.status === 'Completed').length;
+                const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+                
+                if (progress > maxProgress) {
+                    maxProgress = progress;
+                    bestProject = project;
+                }
+            });
+            
+            if (bestProject) {
+                document.getElementById('topProjectText').textContent = 
+                    `${bestProject.name} - ${Math.round(maxProgress)}% Complete`;
+            }
+        }
+
+        // Load and render updates (limited to 3)
+        function loadUpdates() {
+            const container = document.getElementById('updatesContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            updates.slice(0, 3).forEach(update => {
+                const userProfile = userProfiles[update.user] || userProfiles['admin'];
+                const timeAgo = getTimeAgo(new Date(update.timestamp));
+                const priorityClass = update.priority === 'urgent' ? 'danger' : 
+                                    update.priority === 'important' ? 'warning' : 'success';
+                
+                // Get first comment if any
+                const comments = JSON.parse(localStorage.getItem(`updateComments_${update.id}`)) || [];
+                const firstComment = comments[0];
+                
+                const updateElement = document.createElement('div');
+                updateElement.className = 'update-card';
+                updateElement.innerHTML = `
+                    <div class="update-header">
+                        <div class="update-user">
+                            <div class="user-avatar">
+                                ${userProfile.avatar ? 
+                                    `<img src="${userProfile.avatar}" alt="${userProfile.fullName}">` : 
+                                    userProfile.fullName.charAt(0)}
+                            </div>
+                            <div>
+                                <strong>${userProfile.fullName}</strong>
+                                <div class="update-time">${timeAgo}</div>
+                            </div>
+                        </div>
+                        <span class="status-badge" style="background: var(--${priorityClass})">
+                            ${update.priority.charAt(0).toUpperCase() + update.priority.slice(1)}
+                        </span>
+                    </div>
+                    <div class="update-content">
+                        <h4 style="margin: 0 0 10px 0; color: var(--accent);">${update.title}</h4>
+                        <p style="margin: 0;">${update.message}</p>
+                    </div>
+                    ${firstComment ? `
+                        <div class="comments-section">
+                            <div class="comment-item">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                    <strong style="color: var(--accent);">${firstComment.user}</strong>
+                                    <small style="color: var(--text-p);">${getTimeAgo(new Date(firstComment.timestamp))}</small>
+                                </div>
+                                <p style="margin: 0; font-size: 0.9rem;">${firstComment.message}</p>
+                            </div>
+                            ${comments.length > 1 ? `<p style="text-align: center; color: var(--accent); cursor: pointer; font-size: 0.9rem;" onclick="viewUpdateComments('${update.id}')">View ${comments.length - 1} more comment(s)</p>` : ''}
+                        </div>
+                    ` : ''}
+                    <div class="update-actions">
+                        <button class="small-btn" onclick="likeUpdate('${update.id}')">
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                        <button class="small-btn" onclick="openCommentModal('${update.id}')">
+                            <i class="fas fa-comment"></i>
+                        </button>
+                        <button class="small-btn" onclick="shareUpdate('${update.id}')">
+                            <i class="fas fa-share"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(updateElement);
+            });
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diff = now - date;
+            
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        function viewUpdateComments(updateId) {
+            const comments = JSON.parse(localStorage.getItem(`updateComments_${updateId}`)) || [];
+            let commentsHtml = '<h3>All Comments</h3>';
+            comments.forEach(comment => {
+                commentsHtml += `
+                    <div style="margin-bottom: 15px; padding: 15px; background: var(--card); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong style="color: var(--accent);">${comment.user}</strong>
+                            <small style="color: var(--text-p);">${new Date(comment.timestamp).toLocaleString()}</small>
+                        </div>
+                        <p style="margin: 0;">${comment.message}</p>
+                    </div>
+                `;
+            });
+            
+            showCustomModal('Comments', commentsHtml, 'info');
+        }
+
+        function openUpdateModal() {
+            document.getElementById('updateModal').style.display = 'flex';
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('updateModal').style.display = 'none';
+            document.getElementById('updateForm').reset();
+        }
+
+        function postUpdate(event) {
+            if (event) event.preventDefault();
+            
+            let title, message, priority;
+            
+            if (event) {
+                title = document.getElementById('updateTitle').value;
+                message = document.getElementById('updateMessage').value;
+                priority = document.getElementById('updatePriority').value;
+            } else {
+                // For direct call from button
+                openUpdateModal();
+                return;
+            }
+            
+            const newUpdate = {
+                id: 'update_' + Date.now(),
+                title: title,
+                message: message,
+                user: currentUser.username,
+                timestamp: new Date().toISOString(),
+                priority: priority
+            };
+            
+            updates.unshift(newUpdate);
+            localStorage.setItem('prospenUpdates', JSON.stringify(updates));
+            
+            // Record activity
+            auth.recordActivity('update_post', `Posted update: "${title}"`);
+            
+            loadUpdates();
+            closeUpdateModal();
+            
+            showCustomModal('Success', 'Update posted successfully!', 'success');
+        }
+
+        function likeUpdate(updateId) {
+            let likes = JSON.parse(localStorage.getItem(`updateLikes_${updateId}`)) || [];
+            if (!likes.includes(currentUser.username)) {
+                likes.push(currentUser.username);
+                localStorage.setItem(`updateLikes_${updateId}`, JSON.stringify(likes));
+                showCustomModal('Success', 'You liked this update!', 'success');
+            } else {
+                showCustomModal('Info', 'You already liked this update', 'info');
+            }
+        }
+
+        function shareUpdate(updateId) {
+            const update = updates.find(u => u.id === updateId);
+            if (update) {
+                const shareText = `${update.title}: ${update.message}`;
+                if (navigator.share) {
+                    navigator.share({
+                        title: update.title,
+                        text: update.message,
+                        url: window.location.href
+                    });
+                } else {
+                    navigator.clipboard.writeText(shareText);
+                    showCustomModal('Success', 'Update copied to clipboard!', 'success');
+                }
+            }
+        }
+
+        function openCommentModal(updateId) {
+            document.getElementById('commentUpdateId').value = updateId;
+            document.getElementById('commentModal').style.display = 'flex';
+        }
+
+        function closeCommentModal() {
+            document.getElementById('commentModal').style.display = 'none';
+            document.getElementById('commentForm').reset();
+        }
+
+        function submitComment(event) {
+            event.preventDefault();
+            
+            const updateId = document.getElementById('commentUpdateId').value;
+            const message = document.getElementById('commentMessage').value;
+            
+            if (!message.trim()) return;
+            
+            const comments = JSON.parse(localStorage.getItem(`updateComments_${updateId}`)) || [];
+            const newComment = {
+                id: 'comment_' + Date.now(),
+                user: currentUser.username,
+                message: message,
+                timestamp: new Date().toISOString()
+            };
+            comments.push(newComment);
+            localStorage.setItem(`updateComments_${updateId}`, JSON.stringify(comments));
+            
+            // Record activity
+            auth.recordActivity('comment', `Commented on update`, updateId);
+            
+            closeCommentModal();
+            
+            // Refresh updates display
+            if (document.getElementById('allUpdatesPage').style.display === 'block') {
+                loadAllUpdates();
+            }
+            loadUpdates();
+            
+            showCustomModal('Success', 'Comment added successfully!', 'success');
+        }
+
+        // Profile functions
+        function openProfile() {
+            if (!currentUser) return;
+            
+            const profile = userProfiles[currentUser.username] || userProfiles['admin'];
+            const avatarElement = document.getElementById('profileAvatar');
+            
+            // Set avatar
+            if (profile.avatar) {
+                avatarElement.innerHTML = `<img src="${profile.avatar}" alt="${profile.fullName}">
+                                          <div class="avatar-upload">Click to change</div>`;
+            } else {
+                avatarElement.innerHTML = `<span id="avatarInitials">${profile.fullName.charAt(0)}</span>
+                                          <div class="avatar-upload">Click to change</div>`;
+            }
+            
+            // Set profile info
+            document.getElementById('profileUsername').textContent = profile.fullName;
+            document.getElementById('profileRole').textContent = profile.role;
+            document.getElementById('profileFullName').value = profile.fullName;
+            document.getElementById('profileEmail').value = profile.email;
+            document.getElementById('profileBio').value = profile.bio;
+            
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        function closeProfile() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                showCustomModal('Error', 'Please select an image file.', 'danger');
+                return;
+            }
+            
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                showCustomModal('Error', 'Image size should be less than 2MB.', 'danger');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const avatarData = e.target.result;
+                
+                // Update profile
+                if (currentUser && userProfiles[currentUser.username]) {
+                    userProfiles[currentUser.username].avatar = avatarData;
+                    localStorage.setItem('prospenProfiles', JSON.stringify(userProfiles));
+                    
+                    // Update avatar display
+                    const avatarElement = document.getElementById('profileAvatar');
+                    avatarElement.innerHTML = `<img src="${avatarData}" alt="${userProfiles[currentUser.username].fullName}">
+                                             <div class="avatar-upload">Click to change</div>`;
+                    
+                    // Record activity
+                    auth.recordActivity('avatar_update', 'Updated profile avatar');
+                    
+                    showCustomModal('Success', 'Avatar updated successfully!', 'success');
+                }
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        function updateProfile(event) {
+            event.preventDefault();
+            
+            if (!currentUser) return;
+            
+            const fullName = document.getElementById('profileFullName').value;
+            const email = document.getElementById('profileEmail').value;
+            const bio = document.getElementById('profileBio').value;
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Update profile info
+            userProfiles[currentUser.username] = {
+                ...userProfiles[currentUser.username],
+                fullName: fullName,
+                email: email,
+                bio: bio
+            };
+            
+            // Handle password change
+            if (newPassword) {
+                if (currentPassword !== currentUser.username) {
+                    showCustomModal('Error', 'Current password is incorrect.', 'danger');
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    showCustomModal('Error', 'New passwords do not match.', 'danger');
+                    return;
+                }
+                
+                // In a real app, you would hash the password and update it
+                showCustomModal('Info', 'Password change feature would be implemented with backend authentication.', 'info');
+            }
+            
+            localStorage.setItem('prospenProfiles', JSON.stringify(userProfiles));
+            
+            // Record activity
+            auth.recordActivity('profile_update', 'Updated profile information');
+            
+            showCustomModal('Success', 'Profile updated successfully!', 'success');
+            closeProfile();
+        }
+
+        // Tech News functions
+        function openTechNews() {
+            document.getElementById('techNewsPage').style.display = 'block';
+            loadFullTechNews();
+        }
+
+        function closeTechNews() {
+            document.getElementById('techNewsPage').style.display = 'none';
+        }
+
+        function loadFullTechNews() {
+            const container = document.getElementById('techNewsFullContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            // Show all tech news items
+            techNewsSources.forEach(news => {
+                const newsElement = document.createElement('div');
+                newsElement.className = 'tech-news-card';
+                newsElement.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <h4 style="margin: 0; color: var(--accent);">${news.title}</h4>
+                        <span style="background: rgba(56, 189, 248, 0.1); color: var(--accent); padding: 3px 8px; border-radius: 12px; font-size: 0.8rem;">
+                            ${news.category}
+                        </span>
+                    </div>
+                    <p style="color: var(--text-p); margin-bottom: 15px;">${news.description}</p>
+                    <div class="tech-news-source">
+                        <i class="fas fa-newspaper"></i> Source: ${news.source}
+                    </div>
+                    <a href="${news.url}" target="_blank" class="read-more-btn">
+                        <i class="fas fa-external-link-alt"></i> Read More
+                    </a>
+                `;
+                container.appendChild(newsElement);
+            });
+        }
+
+        // Enquiry functions
+        function updateEnquiryIndicator() {
+            const indicator = document.getElementById('enquiryIndicator');
+            if (unreadEnquiries > 0) {
+                indicator.style.display = 'flex';
+                indicator.textContent = unreadEnquiries > 9 ? '9+' : unreadEnquiries;
+            } else {
+                indicator.style.display = 'none';
+            }
+        }
+
+        function showEnquiryNotification(enquiry) {
+            playSound('notificationSound');
+            
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal info">
+                    <div class="custom-modal-header">
+                        <h3>New Enquiry Received</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p><strong>From:</strong> ${enquiry.name}</p>
+                        <p><strong>Email:</strong> ${enquiry.email}</p>
+                        <p><strong>Message:</strong> ${enquiry.enquiry.substring(0, 100)}${enquiry.enquiry.length > 100 ? '...' : ''}</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Dismiss</button>
+                        <button class="btn-primary" onclick="openEnquiries(); this.parentElement.parentElement.parentElement.remove()">View Enquiries</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function openEnquiries() {
+            document.getElementById('enquiriesPage').style.display = 'block';
+            loadEnquiries();
+        }
+
+        function closeEnquiries() {
+            document.getElementById('enquiriesPage').style.display = 'none';
+        }
+
+        function loadEnquiries() {
+            const container = document.getElementById('enquiriesContainer');
+            if (!container) return;
+            
+            enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
+            
+            if (enquiries.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-p); font-size: 1.2rem;">No enquiries yet.</p>';
+                return;
+            }
+            
+            let html = `
+                <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                    ${enquiries.map((enquiry, index) => `
+                        <div class="update-card" style="background: ${!enquiry.read ? 'rgba(56, 189, 248, 0.1)' : 'var(--card)'}; border-left: 4px solid ${!enquiry.read ? 'var(--accent)' : 'var(--text-p)'};">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h4 style="margin: 0 0 5px 0; color: var(--accent);">Enquiry from ${enquiry.name}</h4>
+                                    <small style="color: var(--text-p);">${new Date(enquiry.timestamp).toLocaleString()}</small>
+                                    ${!enquiry.read ? '<span style="background: var(--accent); color: var(--bg); padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; margin-left: 10px;">NEW</span>' : ''}
+                                </div>
+                                <div>
+                                    <button class="small-btn" onclick="markEnquiryRead('${enquiry.id}')" title="Mark as read">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="small-btn" onclick="deleteEnquiry('${enquiry.id}')" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <p><strong>Email:</strong> ${enquiry.email}</p>
+                                <p><strong>Enquiry:</strong> ${enquiry.enquiry}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function markEnquiryRead(enquiryId) {
+            let allEnquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
+            const enquiryIndex = allEnquiries.findIndex(e => e.id === enquiryId);
+            
+            if (enquiryIndex !== -1) {
+                allEnquiries[enquiryIndex].read = true;
+                allEnquiries[enquiryIndex].status = 'read';
+                localStorage.setItem('prospenEnquiries', JSON.stringify(allEnquiries));
+                
+                enquiries = allEnquiries;
+                unreadEnquiries = enquiries.filter(e => !e.read).length;
+                updateEnquiryIndicator();
+                loadEnquiries();
+            }
+        }
+
+        function markAllEnquiriesRead() {
+            let allEnquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
+            allEnquiries.forEach(enquiry => {
+                enquiry.read = true;
+                enquiry.status = 'read';
+            });
+            
+            localStorage.setItem('prospenEnquiries', JSON.stringify(allEnquiries));
+            enquiries = allEnquiries;
+            unreadEnquiries = 0;
+            updateEnquiryIndicator();
+            loadEnquiries();
+            
+            showCustomModal('Success', 'All enquiries marked as read!', 'success');
+        }
+
+        function deleteEnquiry(enquiryId) {
+            let allEnquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
+            const enquiryIndex = allEnquiries.findIndex(e => e.id === enquiryId);
+            
+            if (enquiryIndex !== -1) {
+                const enquiryName = allEnquiries[enquiryIndex].name;
+                allEnquiries.splice(enquiryIndex, 1);
+                localStorage.setItem('prospenEnquiries', JSON.stringify(allEnquiries));
+                
+                enquiries = allEnquiries;
+                unreadEnquiries = enquiries.filter(e => !e.read).length;
+                updateEnquiryIndicator();
+                loadEnquiries();
+                
+                showCustomModal('Success', `Enquiry from ${enquiryName} deleted!`, 'success');
+            }
+        }
+
+        function exportEnquiries() {
+            const dataStr = JSON.stringify(enquiries, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `prospen-enquiries-${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        // Chatbot functions
+        function toggleChatbot() {
+            const chatbotWindow = document.getElementById('chatbotWindow');
+            if (chatbotWindow.style.display === 'flex') {
+                chatbotWindow.style.display = 'none';
+            } else {
+                chatbotWindow.style.display = 'flex';
+                chatbot.init();
+                // Focus on input
+                setTimeout(() => {
+                    document.getElementById('chatbotInput').focus();
+                }, 100);
+            }
+        }
+
+        function handleChatInput(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatbotInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                chatbot.processMessage(message);
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // Initialize chatbot
+        function initChatbot() {
+            // Initialize chatbot context
+            chatbot.updateContext();
+        }
+
+        // Call initChatbot after projects are loaded
+        initChatbot();
+
+        // Real-time user status updates
+        function updateOnlineStatus() {
+            if (!currentUser) return;
+            
+            const currentSessions = JSON.parse(localStorage.getItem('currentSessions')) || {};
+            const now = new Date();
+            
+            // Update current user's last active time
+            currentSessions[currentUser.username] = {
+                ...currentSessions[currentUser.username],
+                username: currentUser.username,
+                lastActive: now.toISOString(),
+                online: true,
+                loginTime: currentSessions[currentUser.username]?.loginTime || currentUser.loginTime
+            };
+            
+            localStorage.setItem('currentSessions', JSON.stringify(currentSessions));
+            
+            // Update stats display if open
+            if (document.getElementById('statsPage').style.display === 'block') {
+                window.updateStatsDisplay();
+            }
+        }
+
+        // Update status every 30 seconds
+        setInterval(updateOnlineStatus, 30000);
+
+        // Also update on user interaction
+        document.addEventListener('click', updateOnlineStatus);
+        document.addEventListener('keypress', updateOnlineStatus);
+
+        // Theme functions
+        function applyTheme() {
+            if (themeSettings.darkMode) {
+                document.body.classList.remove('light-mode');
+            } else {
+                document.body.classList.add('light-mode');
+            }
+            
+            document.documentElement.style.setProperty('--card', themeSettings.cardColor);
+            document.documentElement.style.setProperty('--accent', themeSettings.accentColor);
+            document.documentElement.style.setProperty('--accent-glow', themeSettings.accentColor + '40');
+            document.body.style.fontFamily = themeSettings.fontFamily;
+            
+            document.getElementById('darkModeToggle').checked = themeSettings.darkMode;
+            document.getElementById('fontFamily').value = themeSettings.fontFamily;
+            
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('active');
+                if (option.style.background === themeSettings.cardColor || 
+                    option.style.backgroundColor === themeSettings.cardColor) {
+                    option.classList.add('active');
+                }
+                if (option.style.background === themeSettings.accentColor || 
+                    option.style.backgroundColor === themeSettings.accentColor) {
+                    option.classList.add('active');
+                }
+            });
+        }
+
+        function toggleDarkMode() {
+            themeSettings.darkMode = !themeSettings.darkMode;
+            localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
+            applyTheme();
+        }
+
+        function setCardColor(color) {
+            themeSettings.cardColor = color;
+            localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
+            applyTheme();
+        }
+
+        function setAccentColor(color) {
+            themeSettings.accentColor = color;
+            localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
+            applyTheme();
+        }
+
+        function setFontFamily(font) {
+            themeSettings.fontFamily = font;
+            localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
+            applyTheme();
+        }
+
+        function resetSettings() {
+            themeSettings.darkMode = true;
+            themeSettings.cardColor = '#1e293b';
+            themeSettings.accentColor = '#38bdf8';
+            themeSettings.fontFamily = "'Inter', sans-serif";
+            localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
+            applyTheme();
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function saveProjects() {
+            localStorage.setItem('prospenProjects', JSON.stringify(projects));
+            renderProjects();
+            updateTopProject();
+            return true;
+        }
+
+        // Render projects (limited to 3 on main page)
+        function renderProjects() {
+            const grid = document.getElementById('project-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            // Sort projects by last updated
+            const sortedProjects = Object.values(projects).sort((a, b) => {
+                const timeA = a.lastUpdated ? new Date(a.lastUpdated) : new Date(a.start);
+                const timeB = b.lastUpdated ? new Date(b.lastUpdated) : new Date(b.start);
+                return timeB - timeA;
+            });
+            
+            // Show only 3 most recent projects on main page
+            sortedProjects.slice(0, 3).forEach(project => {
+                const dueDate = new Date(project.due);
+                const now = new Date();
+                const diff = dueDate - now;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                
+                let countdownText = "No due date";
+                if (!isNaN(days)) {
+                    if (days > 0) {
+                        countdownText = `${days} Days Remaining`;
+                    } else if (days === 0) {
+                        countdownText = "Due Today!";
+                    } else {
+                        countdownText = `${Math.abs(days)} Days Overdue`;
+                    }
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openProject(project.id);
+                card.innerHTML = `
+                    <div class="card-actions">
+                        <button class="card-btn" onclick="editProject('${project.id}', event)">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="card-btn" onclick="deleteProject('${project.id}', event)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div style="display:flex; justify-content:space-between">
+                        <i class="${project.icon || 'fas fa-project-diagram'} fa-2x" style="color:var(--accent)"></i>
+                        <span class="status-badge">${project.status}</span>
+                    </div>
+                    <h3>${project.name}</h3>
+                    <p>${project.desc.substring(0, 100)}${project.desc.length > 100 ? '...' : ''}</p>
+                    <div><b>Lead:</b> ${project.lead}</div>
+                    <div><b>Due:</b> ${formatDate(project.due)}</div>
+                    <div><b>Last Updated:</b> ${project.lastUpdatedBy ? `By ${project.lastUpdatedBy}` : 'Never'}</div>
+                    <div class="countdown">${countdownText}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        function openProject(id) {
+            if (currentUser) {
+                auth.recordActivity('view', `Viewed project "${projects[id].name}"`, id);
+            }
+            
+            const p = projects[id];
+            let html = `
+                <div class="grid-layout">
+                    <div class="main-col">
+                        <div class="section-box">
+                            <h2>1. Project Overview: ${p.name}</h2>
+                            <p>${p.desc}</p>
+                            <table>
+                                <tr><th>Lead</th><td>${p.lead}</td><th>Type</th><td>${p.type}</td></tr>
+                                <tr><th>Start</th><td>${formatDate(p.start)}</td><th>Status</th><td>${p.status}</td></tr>
+                                <tr><th>Last Updated</th><td colspan="3">${p.lastUpdated ? formatDate(p.lastUpdated) + ' by ' + p.lastUpdatedBy : 'Never'}</td></tr>
+                            </table>
+                        </div>
+
+                        <div class="section-box">
+                            <h2>2. Task Allocation</h2>
+                            <table>
+                                <thead><tr><th>ID</th><th>Task</th><th>Assignee</th><th>Priority</th><th>Due Date</th><th>Status</th></tr></thead>
+                                <tbody>
+                                    ${p.tasks.map(t => `
+                                        <tr>
+                                            <td>${t.id}</td>
+                                            <td>${t.name}</td>
+                                            <td>${t.who}</td>
+                                            <td class="priority-high">${t.prio}</td>
+                                            <td>${formatDate(t.due)}</td>
+                                            <td>${t.status}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        ${p.timeline && p.timeline.length > 0 ? `
+                        <div class="section-box">
+                            <h2>3. Weekly Timeline & Progress</h2>
+                            <table>
+                                <thead><tr><th>Week</th><th>Range</th><th>Tasks Planned</th><th>Tasks Completed</th><th>Delays/Risks</th><th>Next Focus</th><th>Updated By</th></tr></thead>
+                                <tbody>
+                                    ${p.timeline.map(t => `
+                                        <tr>
+                                            <td>${t.wk}</td>
+                                            <td>${t.range}</td>
+                                            <td>${t.planned}</td>
+                                            <td>${t.comp}</td>
+                                            <td>${t.risk}</td>
+                                            <td>${t.next}</td>
+                                            <td><strong>${t.by || 'Unknown'}</strong></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="side-col">
+                        <div class="section-box">
+                            <h2>4. Team Roles</h2>
+                            ${p.members.map(m => `
+                                <div class="team-member">
+                                    <b>${m.name}</b>
+                                    <i>${m.role}</i>
+                                    <div style="font-size:0.8rem; margin-top:5px;">${m.resp}</div>
+                                    <div style="color:var(--accent); font-size:0.8rem;">${m.contact}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="section-box">
+                            <h2>5. Notes</h2>
+                            <p>${p.notes || 'No notes available.'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('project-content').innerHTML = html;
+            document.getElementById('project-view').style.display = 'block';
+        }
+
+        function closeProject() { 
+            document.getElementById('project-view').style.display = 'none'; 
+        }
+
+        function openProjectModal(projectId = null) {
+            const modal = document.getElementById('projectModal');
+            const title = document.getElementById('modalTitle');
+            const form = document.getElementById('projectForm');
+            
+            if (projectId) {
+                const project = projects[projectId];
+                title.textContent = 'Edit Project';
+                document.getElementById('projectId').value = projectId;
+                document.getElementById('projectName').value = project.name;
+                document.getElementById('projectIcon').value = project.icon || 'fas fa-project-diagram';
+                document.getElementById('projectLead').value = project.lead;
+                document.getElementById('projectStatus').value = project.status;
+                document.getElementById('projectDesc').value = project.desc;
+                document.getElementById('projectStart').value = project.start;
+                document.getElementById('projectDue').value = project.due;
+                document.getElementById('projectType').value = project.type;
+                document.getElementById('projectNotes').value = project.notes || '';
+                
+                const teamContainer = document.getElementById('teamMembersContainer');
+                teamContainer.innerHTML = '';
+                project.members.forEach((member, index) => {
+                    teamContainer.innerHTML += `
+                        <div class="task-item">
+                            <div>
+                                <strong>${member.name}</strong><br>
+                                <small>${member.role}</small>
+                            </div>
+                            <div class="task-actions">
+                                <button type="button" class="small-btn" onclick="editTeamMember('${projectId}', ${index})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="small-btn" onclick="removeTeamMember('${projectId}', ${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                const tasksContainer = document.getElementById('tasksContainer');
+                tasksContainer.innerHTML = '';
+                project.tasks.forEach((task, index) => {
+                    tasksContainer.innerHTML += `
+                        <div class="task-item">
+                            <div>
+                                <strong>${task.name}</strong><br>
+                                <small>Assigned to: ${task.who} | Due: ${formatDate(task.due)}</small>
+                            </div>
+                            <div class="task-actions">
+                                <button type="button" class="small-btn" onclick="editTask('${projectId}', ${index})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="small-btn" onclick="removeTask('${projectId}', ${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                title.textContent = 'Add New Project';
+                form.reset();
+                document.getElementById('projectId').value = '';
+                document.getElementById('teamMembersContainer').innerHTML = '';
+                document.getElementById('tasksContainer').innerHTML = '';
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').style.display = 'none';
+        }
+
+        function saveProject(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const projectId = document.getElementById('projectId').value || generateId();
+            
+            const existingProject = projects[projectId];
+            
+            projects[projectId] = {
+                id: projectId,
+                name: document.getElementById('projectName').value,
+                icon: document.getElementById('projectIcon').value,
+                lead: document.getElementById('projectLead').value,
+                status: document.getElementById('projectStatus').value,
+                desc: document.getElementById('projectDesc').value,
+                start: document.getElementById('projectStart').value,
+                due: document.getElementById('projectDue').value,
+                type: document.getElementById('projectType').value,
+                notes: document.getElementById('projectNotes').value,
+                members: existingProject?.members || [],
+                tasks: existingProject?.tasks || [],
+                timeline: existingProject?.timeline || [],
+                lastUpdated: new Date().toISOString(),
+                lastUpdatedBy: currentUser.username
+            };
+            
+            saveProjects();
+            closeProjectModal();
+            
+            const action = document.getElementById('projectId').value ? 'update' : 'create';
+            auth.recordActivity(action, `Project "${projects[projectId].name}" ${action}d`, projectId);
+            
+            showCustomModal('Success', 'Project saved successfully!', 'success');
+        }
+
+        function generateId() {
+            return 'proj_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function editProject(id, event) {
+            event.stopPropagation();
+            openProjectModal(id);
+        }
+
+        function deleteProject(id, event) {
+            event.stopPropagation();
+            
+            const projectName = projects[id]?.name;
+            
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal danger">
+                    <div class="custom-modal-header">
+                        <h3>Confirm Delete</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>Are you sure you want to delete project "${projectName}"? This action cannot be undone.</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                        <button class="btn-primary" style="background: var(--danger);" onclick="confirmDeleteProject('${id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function confirmDeleteProject(id) {
+            const projectName = projects[id]?.name;
+            delete projects[id];
+            saveProjects();
+            
+            auth.recordActivity('delete', `Project "${projectName}" deleted`, id);
+            
+            document.querySelector('.custom-modal-overlay').remove();
+            showCustomModal('Success', 'Project deleted successfully!', 'success');
+        }
+
+        function addTeamMember() {
+            const name = prompt("Enter team member name:");
+            if (name) {
+                const role = prompt("Enter role:");
+                const resp = prompt("Enter responsibilities:");
+                const contact = prompt("Enter contact info:");
+                
+                showCustomModal('Info', 'Team member will be added after saving the project.', 'info');
+            }
+        }
+        
+        function editTeamMember(projectId, index) {
+            const member = projects[projectId].members[index];
+            const newName = prompt("Edit team member name:", member.name);
+            if (newName) {
+                const newRole = prompt("Edit role:", member.role);
+                const newResp = prompt("Edit responsibilities:", member.resp);
+                const newContact = prompt("Edit contact info:", member.contact);
+                
+                showCustomModal('Info', 'Team member will be updated after saving the project.', 'info');
+            }
+        }
+        
+        function removeTeamMember(projectId, index) {
+            projects[projectId].members.splice(index, 1);
+            showCustomModal('Info', 'Team member will be removed after saving the project.', 'info');
+        }
+
+        function addTask() {
+            const name = prompt("Enter task name:");
+            if (name) {
+                const who = prompt("Assign to:");
+                const due = prompt("Due date (YYYY-MM-DD):");
+                
+                showCustomModal('Info', 'Task will be added after saving the project.', 'info');
+            }
+        }
+        
+        function editTask(projectId, index) {
+            const task = projects[projectId].tasks[index];
+            const newName = prompt("Edit task name:", task.name);
+            if (newName) {
+                const newWho = prompt("Edit assignee:", task.who);
+                const newDue = prompt("Edit due date (YYYY-MM-DD):", task.due);
+                
+                showCustomModal('Info', 'Task will be updated after saving the project.', 'info');
+            }
+        }
+        
+        function removeTask(projectId, index) {
+            projects[projectId].tasks.splice(index, 1);
+            showCustomModal('Info', 'Task will be removed after saving the project.', 'info');
+        }
+        
+        function updateTimeline(projectId, week, data) {
+            if (!projects[projectId]) return;
+            
+            if (!projects[projectId].timeline) {
+                projects[projectId].timeline = [];
+            }
+            
+            const timelineEntry = projects[projectId].timeline.find(t => t.wk === week) || {
+                wk: week,
+                range: data.range || '',
+                planned: data.planned || '',
+                comp: data.comp || '',
+                risk: data.risk || '',
+                next: data.next || '',
+                by: currentUser ? currentUser.username : 'Unknown'
+            };
+            
+            Object.assign(timelineEntry, data);
+            timelineEntry.by = currentUser ? currentUser.username : 'Unknown';
+            timelineEntry.updatedAt = new Date().toISOString();
+            
+            if (!projects[projectId].timeline.find(t => t.wk === week)) {
+                projects[projectId].timeline.push(timelineEntry);
+            }
+            
+            saveProjects();
+            
+            auth.recordActivity('update', `Updated timeline week ${week} for project "${projects[projectId].name}"`, projectId);
+        }
+
+        // All projects page functions
+        function openAllProjects() {
+            document.getElementById('allProjectsPage').style.display = 'block';
+            renderAllProjects();
+        }
+
+        function closeAllProjects() {
+            document.getElementById('allProjectsPage').style.display = 'none';
+        }
+
+        function renderAllProjects() {
+            const container = document.getElementById('allProjectsContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            Object.values(projects).forEach(project => {
+                const dueDate = new Date(project.due);
+                const now = new Date();
+                const diff = dueDate - now;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                
+                let countdownText = "No due date";
+                if (!isNaN(days)) {
+                    if (days > 0) {
+                        countdownText = `${days} Days Remaining`;
+                    } else if (days === 0) {
+                        countdownText = "Due Today!";
+                    } else {
+                        countdownText = `${Math.abs(days)} Days Overdue`;
+                    }
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => {
+                    closeAllProjects();
+                    setTimeout(() => openProject(project.id), 100);
+                };
+                card.innerHTML = `
+                    <div class="card-actions">
+                        <button class="card-btn" onclick="editProject('${project.id}', event)">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="card-btn" onclick="deleteProject('${project.id}', event)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div style="display:flex; justify-content:space-between">
+                        <i class="${project.icon || 'fas fa-project-diagram'} fa-2x" style="color:var(--accent)"></i>
+                        <span class="status-badge">${project.status}</span>
+                    </div>
+                    <h3>${project.name}</h3>
+                    <p>${project.desc.substring(0, 100)}${project.desc.length > 100 ? '...' : ''}</p>
+                    <div><b>Lead:</b> ${project.lead}</div>
+                    <div><b>Due:</b> ${formatDate(project.due)}</div>
+                    <div><b>Last Updated:</b> ${project.lastUpdatedBy ? `By ${project.lastUpdatedBy}` : 'Never'}</div>
+                    <div class="countdown">${countdownText}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // All updates page functions
+        function openAllUpdates() {
+            document.getElementById('allUpdatesPage').style.display = 'block';
+            loadAllUpdates();
+        }
+
+        function closeAllUpdates() {
+            document.getElementById('allUpdatesPage').style.display = 'none';
+        }
+
+        function loadAllUpdates() {
+            const container = document.getElementById('allUpdatesContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            updates.forEach(update => {
+                const userProfile = userProfiles[update.user] || userProfiles['admin'];
+                const timeAgo = getTimeAgo(new Date(update.timestamp));
+                const priorityClass = update.priority === 'urgent' ? 'danger' : 
+                                    update.priority === 'important' ? 'warning' : 'success';
+                
+                // Get comments for this update
+                const comments = JSON.parse(localStorage.getItem(`updateComments_${update.id}`)) || [];
+                
+                const updateElement = document.createElement('div');
+                updateElement.className = 'update-card';
+                updateElement.style.marginBottom = '20px';
+                updateElement.innerHTML = `
+                    <div class="update-header">
+                        <div class="update-user">
+                            <div class="user-avatar">
+                                ${userProfile.avatar ? 
+                                    `<img src="${userProfile.avatar}" alt="${userProfile.fullName}">` : 
+                                    userProfile.fullName.charAt(0)}
+                            </div>
+                            <div>
+                                <strong>${userProfile.fullName}</strong>
+                                <div class="update-time">${timeAgo}</div>
+                            </div>
+                        </div>
+                        <span class="status-badge" style="background: var(--${priorityClass})">
+                            ${update.priority.charAt(0).toUpperCase() + update.priority.slice(1)}
+                        </span>
+                    </div>
+                    <div class="update-content">
+                        <h4 style="margin: 0 0 10px 0; color: var(--accent);">${update.title}</h4>
+                        <p style="margin: 0;">${update.message}</p>
+                    </div>
+                    ${comments.length > 0 ? `
+                        <div class="comments-section" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <h5 style="margin: 0 0 10px 0; color: var(--text-p);">Comments (${comments.length}):</h5>
+                            ${comments.slice(0, 3).map(comment => `
+                                <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                        <strong style="color: var(--accent);">${comment.user}</strong>
+                                        <small style="color: var(--text-p);">${getTimeAgo(new Date(comment.timestamp))}</small>
+                                    </div>
+                                    <p style="margin: 0;">${comment.message}</p>
+                                </div>
+                            `).join('')}
+                            ${comments.length > 3 ? `<p style="text-align: center; color: var(--accent); cursor: pointer;" onclick="viewAllComments('${update.id}')">View all ${comments.length} comments</p>` : ''}
+                        </div>
+                    ` : ''}
+                    <div class="update-actions">
+                        <button class="small-btn" onclick="likeUpdate('${update.id}')">
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                        <button class="small-btn" onclick="openCommentModal('${update.id}')">
+                            <i class="fas fa-comment"></i> Comment
+                        </button>
+                        <button class="small-btn" onclick="shareUpdate('${update.id}')">
+                            <i class="fas fa-share"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(updateElement);
+            });
+        }
+
+        // Stats page functions
+        function openStats() {
+            document.getElementById('statsPage').style.display = 'block';
+            window.updateStatsDisplay();
+        }
+        
+        function closeStats() {
+            document.getElementById('statsPage').style.display = 'none';
+        }
+        
+        function exportStats() {
+            const activities = statsSystem.getActivities();
+            const sessions = statsSystem.getSessions();
+            
+            const data = {
+                exportDate: new Date().toISOString(),
+                activities: activities,
+                sessions: sessions,
+                currentUser: currentUser,
+                projects: projects,
+                updates: updates,
+                profiles: userProfiles,
+                enquiries: enquiries
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `prospen-stats-${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        // Countdown timer
+        setInterval(() => {
+            Object.values(projects).forEach(project => {
+                const dueDate = new Date(project.due);
+                const now = new Date();
+                const diff = dueDate - now;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                
+                const countdownElement = document.querySelector(`[onclick*="${project.id}"] .countdown`);
+                if (countdownElement) {
+                    if (!isNaN(days)) {
+                        if (days > 0) {
+                            countdownElement.textContent = `${days} Days Remaining`;
+                        } else if (days === 0) {
+                            countdownElement.textContent = "Due Today!";
+                        } else {
+                            countdownElement.textContent = `${Math.abs(days)} Days Overdue`;
+                        }
+                    }
+                }
+            });
+        }, 60000);
+
+        // Initialize
+        applyTheme();
+        renderProjects();
+        updateUserInfo();
+        initHeroSlider();
+        loadUpdates();
+        updateEnquiryIndicator();
+        
+        if (currentUser) {
+            auth.recordActivity('view', 'Viewed dashboard');
+            playSound('loginSound');
+        }
+        
+        setInterval(updateUserInfo, 60000);
+
+        // Disable clicking outside to close modals
+        window.onclick = function(event) {
+            // Only allow closing with X button
+            if (event.target.classList.contains('modal')) {
+                // Do nothing - modals can only be closed with X button
+            }
+        };
+    </script>
+</body>
+</html>

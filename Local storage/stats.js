@@ -1,4 +1,4 @@
-// statistics.js
+// Statistics and history module
 class StatsSystem {
     constructor() {
         this.statsInterval = null;
@@ -13,7 +13,6 @@ class StatsSystem {
     }
 
     getActivities() {
-        // Get from localStorage as fallback, but we'll primarily use Firebase
         return JSON.parse(localStorage.getItem('userActivities')) || [];
     }
 
@@ -27,30 +26,16 @@ class StatsSystem {
 
     getStatsByUser(user) {
         const activities = this.getActivities();
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const userActivities = activities.filter(a => a.user === user);
         
-        const userActivities = activities.filter(a => 
-            a.user === user && new Date(a.timestamp) >= sevenDaysAgo
-        );
-        
-        const sessions = this.getSessions().filter(s => 
-            s.user === user && new Date(s.logoutTime || s.loginTime) >= sevenDaysAgo
-        );
-        
+        const sessions = this.getSessions().filter(s => s.user === user);
         const currentSession = this.getCurrentSessions()[user];
         
         let currentDuration = 0;
         if (currentSession && currentSession.loginTime) {
             const loginTime = new Date(currentSession.loginTime);
             const currentTime = new Date();
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            
-            // Only count if session started within last 7 days
-            if (loginTime >= sevenDaysAgo) {
-                currentDuration = Math.round((currentTime - loginTime) / 1000 / 60);
-            }
+            currentDuration = Math.round((currentTime - loginTime) / 1000 / 60);
         }
         
         let totalSessionTime = sessions.reduce((sum, session) => sum + (session.duration || 0), 0);
@@ -58,15 +43,13 @@ class StatsSystem {
             totalSessionTime += currentDuration;
         }
         
-        const sessionCount = sessions.length + (currentSession && currentDuration > 0 ? 1 : 0);
-        
         return {
             totalActions: userActivities.length,
             lastLogin: this.getLastLogin(user),
             todayActions: this.getTodayActions(user),
             favoriteAction: this.getMostCommonAction(user),
-            sessionCount: sessionCount,
-            avgSessionDuration: sessionCount > 0 ? Math.round(totalSessionTime / sessionCount) : 0,
+            sessionCount: sessions.length + (currentSession ? 1 : 0),
+            avgSessionDuration: sessions.length > 0 ? Math.round(totalSessionTime / (sessions.length + (currentSession ? 1 : 0))) : 0,
             currentSessionDuration: currentDuration,
             isOnline: currentSession ? currentSession.online : false
         };
@@ -90,12 +73,7 @@ class StatsSystem {
 
     getMostCommonAction(user) {
         const activities = this.getActivities();
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
-        const userActivities = activities.filter(a => 
-            a.user === user && new Date(a.timestamp) >= sevenDaysAgo
-        );
+        const userActivities = activities.filter(a => a.user === user);
         
         const actionCounts = {};
         userActivities.forEach(a => {
@@ -122,11 +100,7 @@ class StatsSystem {
 
     getRecentUpdates() {
         const activities = this.getActivities();
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
         return activities
-            .filter(a => new Date(a.timestamp) >= sevenDaysAgo)
             .filter(a => a.action.includes('update') || a.action.includes('edit') || 
                      a.action === 'login' || a.action === 'logout' || 
                      a.action === 'create' || a.action === 'delete' || 
@@ -138,7 +112,6 @@ class StatsSystem {
 
     getUserOnlineStatus() {
         const currentSessions = this.getCurrentSessions();
-        // Use actual usernames from the system
         const users = ['admin', 'Junior', 'Buhle', 'AJay'];
         const status = {};
         
@@ -199,14 +172,9 @@ class StatsSystem {
         const activities = this.getActivities();
         const userCounts = {};
         
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
-        activities
-            .filter(a => new Date(a.timestamp) >= sevenDaysAgo)
-            .forEach(activity => {
-                userCounts[activity.user] = (userCounts[activity.user] || 0) + 1;
-            });
+        activities.forEach(activity => {
+            userCounts[activity.user] = (userCounts[activity.user] || 0) + 1;
+        });
         
         return Object.entries(userCounts)
             .map(([user, count]) => ({ user, count }))
@@ -218,9 +186,6 @@ class StatsSystem {
         const users = ['admin', 'Junior', 'Buhle', 'AJay'];
         const stats = {};
         
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
         users.forEach(user => {
             const history = JSON.parse(localStorage.getItem('clockingHistory_' + user)) || [];
             const currentStatus = JSON.parse(localStorage.getItem('clockingStatus_' + user)) || {
@@ -230,7 +195,9 @@ class StatsSystem {
             
             const lastWeekHistory = history.filter(entry => {
                 const entryDate = new Date(entry.date);
-                return entryDate >= sevenDaysAgo;
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                return entryDate >= weekAgo;
             });
             
             let totalMinutes = 0;
@@ -305,9 +272,6 @@ class StatsSystem {
         const now = new Date();
         const today = now.toDateString();
         
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
         return {
             totalEnquiries: enquiries.length,
             newEnquiries: enquiries.filter(e => !e.read).length,
@@ -317,7 +281,8 @@ class StatsSystem {
             }).length,
             recentEnquiries: enquiries.filter(e => {
                 const enquiryDate = new Date(e.timestamp);
-                return enquiryDate >= sevenDaysAgo;
+                const daysDiff = Math.round((now - enquiryDate) / (1000 * 60 * 60 * 24));
+                return daysDiff <= 7;
             }).length
         };
     }
@@ -342,7 +307,7 @@ window.updateStatsDisplay = function() {
 
     let html = `
         <div class="section-box">
-            <h2><i class="fas fa-tachometer-alt"></i> System Overview (Last 7 Days)</h2>
+            <h2><i class="fas fa-tachometer-alt"></i> System Overview</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
                 <div style="background: rgba(56, 189, 248, 0.1); padding: 20px; border-radius: 10px; text-align: center; border-left: 4px solid var(--accent);">
                     <h3 style="margin: 0 0 10px 0; color: var(--accent);">Total Projects</h3>
@@ -364,7 +329,7 @@ window.updateStatsDisplay = function() {
         </div>
 
         <div class="section-box">
-            <h2><i class="fas fa-envelope"></i> Enquiry Statistics (Last 7 Days)</h2>
+            <h2><i class="fas fa-envelope"></i> Enquiry Statistics</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
                 <div style="background: rgba(56, 189, 248, 0.1); padding: 20px; border-radius: 10px; text-align: center; border-left: 4px solid var(--accent);">
                     <h3 style="margin: 0 0 10px 0; color: var(--accent);">Total Enquiries</h3>
@@ -402,6 +367,9 @@ window.updateStatsDisplay = function() {
                 </div>
                 ${data.online ? `
                     <div style="font-size: 0.8rem; color: var(--text-p); margin-top: 8px;">
+                        <i class="fas fa-clock"></i> Current Session: ${data.duration} min
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-p); margin-top: 4px;">
                         <i class="fas fa-play-circle"></i> Started: ${data.sessionStart}
                     </div>
                 ` : `
@@ -418,7 +386,7 @@ window.updateStatsDisplay = function() {
         </div>
 
         <div class="section-box">
-            <h2><i class="fas fa-trophy"></i> Top Contributors (Last 7 Days)</h2>
+            <h2><i class="fas fa-trophy"></i> Top Contributors</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
     `;
 
@@ -430,6 +398,9 @@ window.updateStatsDisplay = function() {
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <strong style="color: ${color}">${index + 1}. ${contributor.user}</strong>
                     <span style="background: ${color}; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem;">${contributor.count} actions</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-p); margin-top: 8px;">
+                    <i class="fas fa-chart-line"></i> Active contributor
                 </div>
             </div>
         `;
@@ -482,7 +453,7 @@ window.updateStatsDisplay = function() {
         </div>
 
         <div class="section-box">
-            <h2><i class="fas fa-chart-line"></i> Clocking Statistics (Last 7 Days)</h2>
+            <h2><i class="fas fa-chart-line"></i> Clocking Statistics</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
     `;
 
@@ -524,7 +495,7 @@ window.updateStatsDisplay = function() {
         </div>
 
         <div class="section-box">
-            <h2><i class="fas fa-history"></i> Recent Activity Timeline (Last 7 Days)</h2>
+            <h2><i class="fas fa-history"></i> Recent Activity Timeline</h2>
             <div style="margin-top: 15px;">
     `;
 
@@ -560,7 +531,7 @@ window.updateStatsDisplay = function() {
             </table>
         `;
     } else {
-        html += `<p style="text-align: center; color: var(--text-p);">No recent activity in the last 7 days</p>`;
+        html += `<p style="text-align: center; color: var(--text-p);">No recent activity</p>`;
     }
 
     html += `
@@ -568,7 +539,7 @@ window.updateStatsDisplay = function() {
         </div>
 
         <div class="section-box">
-            <h2><i class="fas fa-chart-bar"></i> User Statistics (Last 7 Days)</h2>
+            <h2><i class="fas fa-chart-bar"></i> User Statistics</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
     `;
 
@@ -600,6 +571,11 @@ window.updateStatsDisplay = function() {
                     <div style="margin-bottom: 8px;">
                         <i class="fas fa-clock"></i> Avg Session: <strong>${userStats.avgSessionDuration} min</strong>
                     </div>
+                    ${userStats.isOnline ? `
+                        <div style="margin-bottom: 8px;">
+                            <i class="fas fa-play-circle"></i> Current: <strong>${userStats.currentSessionDuration} min</strong>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -613,9 +589,11 @@ window.updateStatsDisplay = function() {
             <h2><i class="fas fa-info-circle"></i> Statistics Information</h2>
             <p style="color: var(--text-p); font-size: 0.9rem;">
                 <i class="fas fa-sync-alt"></i> Statistics update every 30 seconds<br>
-                <i class="fas fa-calendar-week"></i> All statistics show data from the last 7 days only<br>
+                <i class="fas fa-database"></i> Tracking all user activities across the system<br>
                 <i class="fas fa-user-check"></i> Online status based on activity within last 5 minutes<br>
-                <i class="fas fa-clock"></i> Clocking system tracks Monday-Friday, 7:30 AM to 4:30 PM
+                <i class="fas fa-project-diagram"></i> Project stats include all team members' contributions<br>
+                <i class="fas fa-clock"></i> Clocking system tracks Monday-Friday, 7:30 AM to 4:30 PM<br>
+                <i class="fas fa-chart-line"></i> Clocking stats show average hours per day for last 7 days
             </p>
         </div>
     `;
@@ -640,10 +618,7 @@ function getActionColor(action) {
         'clock_in': '#22c55e',
         'clock_out': '#ef4444',
         'clock': '#3b82f6',
-        'enquiry': '#a855f7',
-        'task_create': '#38bdf8',
-        'task_update': '#f59e0b',
-        'task_delete': '#ef4444'
+        'enquiry': '#a855f7'
     };
     return colors[action] || '#6b7280';
 }

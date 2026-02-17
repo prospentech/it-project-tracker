@@ -43,7 +43,7 @@ header {
     text-align: center; 
     margin-bottom: 50px; 
     position: relative;
-    padding-top: 80px;
+    padding-top: 80px; /* Added more padding to prevent overlap */
 }
 
 header h1 { 
@@ -82,6 +82,26 @@ header h1 {
 }
 
 .control-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+}
+
+.stats-btn {
+    background: var(--card);
+    color: var(--text-h);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.stats-btn:hover {
     background: var(--accent);
     color: var(--bg);
     border-color: var(--accent);
@@ -298,25 +318,6 @@ header h1 {
 .update-actions {
     display: flex;
     gap: 10px;
-}
-
-.small-btn {
-    background: rgba(255,255,255,0.1);
-    border: none;
-    color: var(--text-h);
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-}
-
-.small-btn:hover {
-    background: var(--accent);
-    color: var(--bg);
 }
 
 /* --- PROJECT VIEW --- */
@@ -641,6 +642,25 @@ input:checked + .toggle-slider:before {
     gap: 5px;
 }
 
+.small-btn {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: var(--text-h);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.small-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+}
+
 /* --- CARD ACTIONS --- */
 .card-actions {
     position: absolute;
@@ -885,7 +905,72 @@ input:checked + .toggle-slider:before {
     display: none;
 }
 
-/* --- CUSTOM MODAL STYLES --- */
+/* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+    .grid-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-controls {
+        position: relative;
+        top: 0;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    
+    .user-info {
+        position: relative;
+        top: 0;
+        left: 0;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        padding-top: 120px;
+    }
+    
+    .project-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .slide h2 {
+        font-size: 2rem;
+    }
+    
+    .slide p {
+        font-size: 1rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .footer-links {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .control-btn {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .hero-slider {
+        height: 250px;
+    }
+}
+/* Add these styles to the end of your style.css file */
+
+/* Custom Modal Styles */
 .custom-modal-overlay {
     position: fixed;
     top: 0;
@@ -991,13 +1076,155 @@ input:checked + .toggle-slider:before {
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    transition: all 0.3s;
+    transition: background 0.3s;
 }
 
 .view-more-btn:hover {
     background: #0ea5e9;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px var(--accent-glow);
+}
+
+/* Update Card with Comments */
+.update-card .comments-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.update-card .comment-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+}
+
+.update-card .comment-item strong {
+    color: var(--accent);
+    font-size: 0.9rem;
+}
+
+.update-card .comment-item small {
+    color: var(--text-p);
+    font-size: 0.8rem;
+}
+
+.update-card .comment-item p {
+    margin: 5px 0 0 0;
+    font-size: 0.9rem;
+}
+
+/* All Pages Styling */
+.stats-page .project-grid {
+    padding: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+}
+
+.stats-page .card {
+    transition: all 0.3s ease;
+}
+
+.stats-page .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px var(--accent-glow);
+}
+
+/* Font Selector in Settings */
+#fontFamily {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: var(--text-h);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#fontFamily option {
+    background: var(--card);
+    color: var(--text-h);
+    padding: 10px;
+}
+
+/* Comment Modal */
+.comment-modal textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: var(--text-h);
+    margin-bottom: 15px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Featured Projects */
+.featured-project-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.featured-project-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px var(--accent-glow);
+}
+
+/* User Status Indicator */
+.user-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+}
+
+.user-status.online {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.user-status.offline {
+    color: #94a3b8;
+    background: rgba(148, 163, 184, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .custom-modal {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .view-more-btn {
+        width: 90%;
+        margin: 20px auto;
+    }
+    
+    .stats-page .project-grid {
+        grid-template-columns: 1fr;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .custom-modal-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .view-more-btn {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
 }
 
 /* Clocking Styles */
@@ -1039,6 +1266,41 @@ input:checked + .toggle-slider:before {
 .clock-status.late {
     background: rgba(239, 68, 68, 0.1);
     color: var(--danger);
+}
+
+/* Weather Widget */
+.weather-widget {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.weather-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.weather-temp {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.weather-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    font-size: 0.9rem;
+    margin-top: 15px;
+}
+
+.weather-icon {
+    font-size: 2rem;
 }
 
 /* Tech News Styles */
@@ -1086,6 +1348,45 @@ input:checked + .toggle-slider:before {
     background: #0ea5e9;
     transform: translateY(-1px);
 }
+
+/* Update footer links */
+.footer-link[onclick*="Version"] {
+    display: none; /* Hide Version Control link */
+}
+
+/* Responsive adjustments for clock button */
+@media (max-width: 768px) {
+    .clock-btn {
+        margin-top: 5px;
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .clock-status {
+        margin-left: 0;
+        margin-top: 5px;
+        display: inline-block;
+    }
+    
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .weather-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .tech-news-card {
+        padding: 15px;
+    }
+}
+
+/* Add these styles to the end of your style.css file */
 
 /* Chatbot Styles */
 .chatbot-container {
@@ -1230,6 +1531,12 @@ input:checked + .toggle-slider:before {
     animation: pulse 1s infinite;
 }
 
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
 /* Confirmation Modal Styles */
 .confirmation-modal .btn-group {
     display: flex;
@@ -1261,117 +1568,20 @@ input:checked + .toggle-slider:before {
     background: rgba(255,255,255,0.2);
 }
 
-/* Update Card with Comments */
-.update-card .comments-section {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-}
-
-.update-card .comment-item {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 8px;
-}
-
-.update-card .comment-item strong {
-    color: var(--accent);
-    font-size: 0.9rem;
-}
-
-.update-card .comment-item small {
-    color: var(--text-p);
-    font-size: 0.8rem;
-}
-
-.update-card .comment-item p {
-    margin: 5px 0 0 0;
-    font-size: 0.9rem;
-}
-
-/* Comment Modal */
-.comment-modal textarea {
-    width: 100%;
-    min-height: 120px;
-    padding: 12px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    color: var(--text-h);
-    margin-bottom: 15px;
-    resize: vertical;
-    font-family: inherit;
-}
-
-/* Featured Projects */
-.featured-project-card {
+/* Tech News Full Page */
+.tech-news-full-card {
     background: var(--card);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 15px;
-    padding: 20px;
-    cursor: pointer;
+    padding: 25px;
+    margin-bottom: 20px;
     transition: all 0.3s;
 }
 
-.featured-project-card:hover {
+.tech-news-full-card:hover {
     border-color: var(--accent);
     transform: translateY(-3px);
     box-shadow: 0 10px 25px var(--accent-glow);
-}
-
-/* User Status Indicator */
-.user-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.8rem;
-    padding: 3px 8px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.05);
-}
-
-.user-status.online {
-    color: #22c55e;
-    background: rgba(34, 197, 94, 0.1);
-}
-
-.user-status.offline {
-    color: #94a3b8;
-    background: rgba(148, 163, 184, 0.1);
-}
-
-/* All Pages Styling */
-.stats-page .project-grid {
-    padding: 20px;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-}
-
-.stats-page .card {
-    transition: all 0.3s ease;
-}
-
-.stats-page .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px var(--accent-glow);
-}
-
-/* Font Selector in Settings */
-#fontFamily {
-    width: 100%;
-    padding: 12px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    color: var(--text-h);
-    font-size: 14px;
-    cursor: pointer;
-}
-
-#fontFamily option {
-    background: var(--card);
-    color: var(--text-h);
-    padding: 10px;
 }
 
 /* Enquiry Page Styles */
@@ -1398,8 +1608,22 @@ input:checked + .toggle-slider:before {
     transform: translateY(-2px);
 }
 
-/* Update footer links */
+/* Footer Links Update */
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
 .footer-link {
+    color: var(--accent);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s;
     padding: 10px 15px;
     border-radius: 8px;
     background: rgba(255,255,255,0.05);
@@ -1407,58 +1631,13 @@ input:checked + .toggle-slider:before {
 }
 
 .footer-link:hover {
+    color: var(--text-h);
     background: var(--accent);
     border-color: var(--accent);
 }
 
 /* Responsive adjustments */
-@media (max-width: 1024px) {
-    .grid-layout {
-        grid-template-columns: 1fr;
-    }
-    
-    .header-controls {
-        position: relative;
-        top: 0;
-        justify-content: center;
-        margin-bottom: 20px;
-    }
-    
-    .user-info {
-        position: relative;
-        top: 0;
-        left: 0;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-}
-
 @media (max-width: 768px) {
-    header {
-        padding-top: 120px;
-    }
-    
-    .project-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .slide h2 {
-        font-size: 2rem;
-    }
-    
-    .slide p {
-        font-size: 1rem;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-    
-    .footer-links {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
     .chatbot-window {
         width: 300px;
         height: 450px;
@@ -1469,55 +1648,13 @@ input:checked + .toggle-slider:before {
         gap: 15px;
     }
     
-    .custom-modal {
-        width: 95%;
-        margin: 10px;
-    }
-    
-    .view-more-btn {
-        width: 90%;
-        margin: 20px auto;
-    }
-    
-    .stats-page .project-grid {
-        grid-template-columns: 1fr;
-        padding: 10px;
-    }
-    
-    .clock-btn {
-        margin-top: 5px;
-        margin-left: 0;
-        width: 100%;
-    }
-    
-    .clock-status {
-        margin-left: 0;
-        margin-top: 5px;
-        display: inline-block;
-    }
-    
-    .user-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+    .footer-link {
+        padding: 8px 12px;
+        font-size: 0.9rem;
     }
 }
 
 @media (max-width: 480px) {
-    header h1 {
-        font-size: 2rem;
-    }
-    
-    .control-btn {
-        padding: 6px 12px;
-        font-size: 0.9rem;
-    }
-    
-    .hero-slider {
-        height: 250px;
-    }
-    
     .chatbot-window {
         width: 280px;
         height: 400px;
@@ -1533,99 +1670,4 @@ input:checked + .toggle-slider:before {
         flex-direction: column;
         gap: 10px;
     }
-    
-    .custom-modal-header h3 {
-        font-size: 1.2rem;
-    }
-    
-    .view-more-btn {
-        padding: 10px 16px;
-        font-size: 0.9rem;
-    }
-}
-
-/* Add these styles at the end of your style.css file */
-
-/* Update list item styles - similar to enquiry card */
-.update-card {
-    background: var(--card);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 15px;
-    transition: all 0.3s;
-    cursor: pointer;
-}
-
-.update-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px var(--accent-glow);
-}
-
-.update-card.unread {
-    background: rgba(56, 189, 248, 0.1);
-    border-left: 4px solid var(--accent);
-}
-
-.update-card.read {
-    border-left: 4px solid var(--text-p);
-}
-
-/* Update container - single column */
-#updatesContainer, #allUpdatesContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-/* Make sure the update-card class is properly styled */
-.update-card .user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    overflow: hidden;
-}
-
-.update-card .user-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Comment section in update details */
-.comments-section {
-    margin-top: 20px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-top: 20px;
-}
-
-.comment-item {
-    margin-bottom: 15px;
-    padding: 10px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 8px;
-}
-
-.comment-item strong {
-    color: var(--accent);
-    display: block;
-    margin-bottom: 5px;
-}
-
-.comment-item small {
-    color: var(--text-p);
-    font-size: 0.7rem;
-    margin-left: 5px;
-}
-
-.comment-item p {
-    margin: 5px 0 0 0;
-    color: var(--text-h);
 }

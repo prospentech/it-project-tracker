@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Prospen Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Add this BEFORE your other scripts -->
+    <script type="import" src="firebase-config.js"></script>
+    <script type="import" src="firebase-service.js"></script>
+
+    <!-- Make your other scripts type="module" -->
+    <script type="module" src="/auth.js"></script>
+    <script type="module" src="/projects.js"></script>
+    <script type="module" src="/updates.js"></script>
+    <script type="module" src="/clocking.js"></script>
+    <script type="module" src="/chatbot.js"></script>
+    <script type="module" src="/modal.js"></script>
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/stats.js"></script>
+    <script type="module" src="/main.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="stats-header">
+            <h1><i class="fas fa-user"></i> My Profile</h1>
+            <div class="stats-controls">
+                <button class="back-btn" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-chevron-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div class="profile-avatar" onclick="document.getElementById('avatarInput').click()" id="profileAvatar">
+                    <span id="avatarInitials">A</span>
+                    <div class="avatar-upload">Click to change</div>
+                </div>
+                <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)" style="display: none;">
+                <h2 id="profileUsername">Admin</h2>
+                <p id="profileRole">System Administrator</p>
+            </div>
+
+            <form id="profileForm" onsubmit="updateProfile(event)">
+                <div class="form-group">
+                    <label for="profileFullName">Full Name</label>
+                    <input type="text" id="profileFullName" value="Administrator">
+                </div>
+
+                <div class="form-group">
+                    <label for="profileEmail">Email Address</label>
+                    <input type="email" id="profileEmail" value="admin@prospentech.co.za">
+                </div>
+
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" placeholder="Enter current password">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" placeholder="Enter new password">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="profileBio">Bio</label>
+                    <textarea id="profileBio" placeholder="Tell us about yourself...">System administrator responsible for managing the Prospen Hub platform.</textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="window.location.href='../index.html'">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="section-box">
+            <h3><i class="fas fa-chart-line"></i> My Statistics</h3>
+            <div id="userStatsContainer">
+                <!-- User stats will be loaded here -->
+            </div>
+        </div>
+
+        <div class="section-box">
+            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+            <div id="userActivityContainer">
+                <!-- User activity will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = '../login.html';
+        }
+
+        function loadProfile() {
+            const profiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {};
+            const profile = profiles[currentUser.username] || {
+                fullName: currentUser.username.charAt(0).toUpperCase() + currentUser.username.slice(1),
+                email: `${currentUser.username}@prospentech.co.za`,
+                bio: `${currentUser.username} user`,
+                avatar: null,
+                role: currentUser.username === 'admin' ? 'System Administrator' : 'Team Member'
+            };
+
+            const avatarElement = document.getElementById('profileAvatar');
+            if (profile.avatar) {
+                avatarElement.innerHTML = `<img src="${profile.avatar}" alt="${profile.fullName}">
+                                          <div class="avatar-upload">Click to change</div>`;
+            } else {
+                avatarElement.innerHTML = `<span id="avatarInitials">${profile.fullName.charAt(0)}</span>
+                                          <div class="avatar-upload">Click to change</div>`;
+            }
+
+            document.getElementById('profileUsername').textContent = profile.fullName;
+            document.getElementById('profileRole').textContent = profile.role;
+            document.getElementById('profileFullName').value = profile.fullName;
+            document.getElementById('profileEmail').value = profile.email;
+            document.getElementById('profileBio').value = profile.bio;
+        }
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file.');
+                return;
+            }
+            
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Image size should be less than 2MB.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const avatarData = e.target.result;
+                
+                let profiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {};
+                profiles[currentUser.username] = {
+                    ...profiles[currentUser.username],
+                    avatar: avatarData
+                };
+                localStorage.setItem('prospenProfiles', JSON.stringify(profiles));
+                
+                const avatarElement = document.getElementById('profileAvatar');
+                avatarElement.innerHTML = `<img src="${avatarData}" alt="${profiles[currentUser.username].fullName}">
+                                         <div class="avatar-upload">Click to change</div>`;
+                
+                alert('Avatar updated successfully!');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        function updateProfile(event) {
+            event.preventDefault();
+            
+            const fullName = document.getElementById('profileFullName').value;
+            const email = document.getElementById('profileEmail').value;
+            const bio = document.getElementById('profileBio').value;
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            let profiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {};
+            profiles[currentUser.username] = {
+                ...profiles[currentUser.username],
+                fullName: fullName,
+                email: email,
+                bio: bio
+            };
+            
+            if (newPassword) {
+                if (currentPassword !== currentUser.username) {
+                    alert('Current password is incorrect.');
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    alert('New passwords do not match.');
+                    return;
+                }
+                
+                alert('Password change would be implemented with backend authentication.');
+            }
+            
+            localStorage.setItem('prospenProfiles', JSON.stringify(profiles));
+            
+            alert('Profile updated successfully!');
+        }
+
+        function loadUserStats() {
+            const activities = JSON.parse(localStorage.getItem('userActivities')) || [];
+            const userActivities = activities.filter(a => a.user === currentUser.username);
+            const today = new Date().toLocaleDateString();
+            const todayActivities = userActivities.filter(a => a.date === today);
+            
+            const statsContainer = document.getElementById('userStatsContainer');
+            statsContainer.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                    <div style="background: rgba(56, 189, 248, 0.1); padding: 20px; border-radius: 10px; text-align: center; border-left: 4px solid var(--accent);">
+                        <h4 style="margin: 0 0 10px 0; color: var(--accent);">Total Actions</h4>
+                        <div style="font-size: 2rem; font-weight: bold;">${userActivities.length}</div>
+                    </div>
+                    <div style="background: rgba(34, 197, 94, 0.1); padding: 20px; border-radius: 10px; text-align: center; border-left: 4px solid var(--success);">
+                        <h4 style="margin: 0 0 10px 0; color: var(--success);">Today's Actions</h4>
+                        <div style="font-size: 2rem; font-weight: bold;">${todayActivities.length}</div>
+                    </div>
+                    <div style="background: rgba(168, 85, 247, 0.1); padding: 20px; border-radius: 10px; text-align: center; border-left: 4px solid #a855f7;">
+                        <h4 style="margin: 0 0 10px 0; color: #a855f7;">Projects Involved</h4>
+                        <div style="font-size: 2rem; font-weight: bold;">${new Set(userActivities.map(a => a.projectId).filter(id => id)).size}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadUserActivity() {
+            const activities = JSON.parse(localStorage.getItem('userActivities')) || [];
+            const userActivities = activities.filter(a => a.user === currentUser.username).slice(0, 10);
+            
+            const activityContainer = document.getElementById('userActivityContainer');
+            
+            if (userActivities.length === 0) {
+                activityContainer.innerHTML = '<p>No recent activity</p>';
+                return;
+            }
+            
+            let html = '<div style="margin-top: 15px;">';
+            userActivities.forEach(activity => {
+                html += `
+                    <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <strong style="color: var(--accent);">${activity.action.replace('_', ' ')}</strong>
+                            <small style="color: var(--text-p);">${activity.time}</small>
+                        </div>
+                        <p style="margin: 0; font-size: 0.9rem;">${activity.details}</p>
+                        ${activity.projectId ? `<small style="color: var(--accent);">Project ID: ${activity.projectId}</small>` : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            activityContainer.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProfile();
+            loadUserStats();
+            loadUserActivity();
+        });
+    </script>
+</body>
+</html>

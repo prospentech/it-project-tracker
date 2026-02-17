@@ -1,0 +1,441 @@
+<!-- All modals for the main dashboard -->
+<!-- Project View Modal -->
+<div id="project-view">
+    <button class="back-btn" onclick="closeProject()"><i class="fas fa-chevron-left"></i> RETURN TO HUB</button>
+    <div id="project-content"></div>
+</div>
+
+<!-- Stats Page -->
+<div id="statsPage" class="stats-page">
+    <div class="stats-header">
+        <h1>
+            <i class="fas fa-chart-pie"></i> System Statistics & History
+            <span class="realtime-badge">LIVE</span>
+        </h1>
+        <div class="stats-controls">
+            <button class="export-btn" onclick="exportStats()">
+                <i class="fas fa-download"></i> Export Data
+            </button>
+            <button class="back-btn" onclick="closeStats()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="statsContainer">
+        <!-- Stats content will be loaded here -->
+    </div>
+</div>
+
+<!-- Tech News Page -->
+<div id="techNewsPage" class="version-page">
+    <div class="version-content">
+        <div class="version-header">
+            <h1><i class="fas fa-newspaper"></i> Global Tech News & Trends</h1>
+            <p>Stay updated with the latest technology news and trends</p>
+            <button class="back-btn" onclick="closeTechNews()" style="margin-top: 20px;">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+        
+        <div id="techNewsFullContainer" style="margin-bottom: 30px;">
+            <!-- Full tech news will be loaded here -->
+        </div>
+
+        <div class="version-section">
+            <h3>About Tech News</h3>
+            <p>Our tech news section provides curated technology updates from reliable sources including:</p>
+            <ul>
+                <li>TechCrunch - Startup and innovation news</li>
+                <li>Wired - Technology and culture</li>
+                <li>Dev.to - Developer community updates</li>
+                <li>Security Weekly - Cybersecurity insights</li>
+                <li>Cloud Times - Cloud computing trends</li>
+                <li>Mobile Dev Journal - Mobile development updates</li>
+            </ul>
+            <p>News is refreshed automatically every hour to keep you updated with the latest trends.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Enquiries Page -->
+<div id="enquiriesPage" class="stats-page">
+    <div class="stats-header">
+        <h1><i class="fas fa-question-circle"></i> Enquiries Management</h1>
+        <div class="stats-controls">
+            <button class="export-btn" onclick="exportEnquiries()">
+                <i class="fas fa-download"></i> Export Enquiries
+            </button>
+            <button class="control-btn" onclick="markAllEnquiriesRead()">
+                <i class="fas fa-check-double"></i> Mark All Read
+            </button>
+            <button class="back-btn" onclick="closeEnquiries()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="enquiriesContainer" style="padding: 20px;">
+        <!-- Enquiries will be loaded here -->
+    </div>
+</div>
+
+<!-- All Projects Page -->
+<div id="allProjectsPage" class="stats-page">
+    <div class="stats-header">
+        <h1><i class="fas fa-project-diagram"></i> All Projects</h1>
+        <div class="stats-controls">
+            <button class="control-btn" onclick="openProjectModal()">
+                <i class="fas fa-plus"></i> New Project
+            </button>
+            <button class="back-btn" onclick="closeAllProjects()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="allProjectsContainer" class="project-grid" style="padding: 20px;">
+        <!-- All projects will be loaded here -->
+    </div>
+</div>
+
+<!-- All Updates Page -->
+<div id="allUpdatesPage" class="stats-page">
+    <div class="stats-header">
+        <h1><i class="fas fa-bullhorn"></i> All Updates</h1>
+        <div class="stats-controls">
+            <button class="control-btn" onclick="openUpdateModal()">
+                <i class="fas fa-plus"></i> New Update
+            </button>
+            <button class="back-btn" onclick="closeAllUpdates()">
+                <i class="fas fa-chevron-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    <div id="allUpdatesContainer" style="padding: 20px;">
+        <!-- All updates will be loaded here -->
+    </div>
+</div>
+
+<!-- Add/Edit Project Modal -->
+<div id="projectModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add New Project</h2>
+            <button class="close-btn" onclick="closeProjectModal()">&times;</button>
+        </div>
+        <form id="projectForm" onsubmit="saveProject(event)">
+            <input type="hidden" id="projectId">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="projectName">Project Name *</label>
+                    <input type="text" id="projectName" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectIcon">Icon Class (FontAwesome)</label>
+                    <input type="text" id="projectIcon" placeholder="fas fa-chart-line" value="fas fa-project-diagram">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="projectLead">Project Lead *</label>
+                    <input type="text" id="projectLead" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectStatus">Status *</label>
+                    <select id="projectStatus" required>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                        <option value="On Hold">On Hold</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="projectDesc">Description *</label>
+                <textarea id="projectDesc" required></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="projectStart">Start Date *</label>
+                    <input type="date" id="projectStart" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectDue">Due Date *</label>
+                    <input type="date" id="projectDue" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="projectType">Project Type *</label>
+                <select id="projectType" required>
+                    <option value="Design">Design</option>
+                    <option value="Web">Web</option>
+                    <option value="Both (Design / Web)">Both (Design / Web)</option>
+                    <option value="IT">IT</option>
+                    <option value="Mobile Development">Mobile Development</option>
+                    <option value="Marketing">Marketing</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Team Members</label>
+                <div id="teamMembersContainer">
+                    <!-- Team members will be added here -->
+                </div>
+                <button type="button" class="btn-secondary" onclick="addTeamMember()" style="margin-top: 10px;">
+                    <i class="fas fa-plus"></i> Add Team Member
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Tasks</label>
+                <div id="tasksContainer">
+                    <!-- Tasks will be added here -->
+                </div>
+                <button type="button" class="btn-secondary" onclick="addTask()" style="margin-top: 10px;">
+                    <i class="fas fa-plus"></i> Add Task
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="projectNotes">Notes</label>
+                <textarea id="projectNotes"></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeProjectModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Save Project</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Theme Settings</h2>
+            <button class="close-btn" onclick="closeSettings()">&times;</button>
+        </div>
+        
+        <div class="settings-section">
+            <h3>Dark/Light Mode</h3>
+            <div class="toggle-group">
+                <span>Dark Mode</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeToggle" checked onchange="toggleDarkMode()">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span>Light Mode</span>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Font Family</h3>
+            <select id="fontFamily" onchange="setFontFamily(this.value)" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-h);">
+                <option value="'Inter', sans-serif">Inter</option>
+                <option value="'Roboto', sans-serif">Roboto</option>
+                <option value="'Open Sans', sans-serif">Open Sans</option>
+                <option value="'Poppins', sans-serif">Poppins</option>
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'Arial', sans-serif">Arial</option>
+                <option value="'Georgia', serif">Georgia</option>
+                <option value="'Courier New', monospace">Courier New</option>
+            </select>
+        </div>
+
+        <div class="settings-section">
+            <h3>Card Colors</h3>
+            <div class="color-grid">
+                <div class="color-option active" style="background: #1e293b;" onclick="setCardColor('#1e293b')"></div>
+                <div class="color-option" style="background: #334155;" onclick="setCardColor('#334155')"></div>
+                <div class="color-option" style="background: #0f172a;" onclick="setCardColor('#0f172a')"></div>
+                <div class="color-option" style="background: #1e1b4b;" onclick="setCardColor('#1e1b4b')"></div>
+                <div class="color-option" style="background: #1c1917;" onclick="setCardColor('#1c1917')"></div>
+                <div class="color-option" style="background: #064e3b;" onclick="setCardColor('#064e3b')"></div>
+                <div class="color-option" style="background: #451a03;" onclick="setCardColor('#451a03')"></div>
+                <div class="color-option" style="background: #500724;" onclick="setCardColor('#500724')"></div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Accent Colors</h3>
+            <div class="color-grid">
+                <div class="color-option active" style="background: #38bdf8;" onclick="setAccentColor('#38bdf8')"></div>
+                <div class="color-option" style="background: #0284c7;" onclick="setAccentColor('#0284c7')"></div>
+                <div class="color-option" style="background: #22c55e;" onclick="setAccentColor('#22c55e')"></div>
+                <div class="color-option" style="background: #eab308;" onclick="setAccentColor('#eab308')"></div>
+                <div class="color-option" style="background: #f97316;" onclick="setAccentColor('#f97316')"></div>
+                <div class="color-option" style="background: #ef4444;" onclick="setAccentColor('#ef4444')"></div>
+                <div class="color-option" style="background: #a855f7;" onclick="setAccentColor('#a855f7')"></div>
+                <div class="color-option" style="background: #ec4899;" onclick="setAccentColor('#ec4899')"></div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="btn-secondary" onclick="resetSettings()">Reset All</button>
+            <button type="button" class="btn-primary" onclick="closeSettings()">Apply Settings</button>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>My Profile</h2>
+            <button class="close-btn" onclick="closeProfile()">&times;</button>
+        </div>
+        
+        <div class="form-group" style="text-align: center;">
+            <div class="profile-avatar" onclick="document.getElementById('avatarInput').click()" id="profileAvatar">
+                <span id="avatarInitials">A</span>
+                <div class="avatar-upload">Click to change</div>
+            </div>
+            <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)" style="display: none;">
+            <h3 id="profileUsername">Admin</h3>
+            <p id="profileRole">System Administrator</p>
+        </div>
+
+        <form id="profileForm" onsubmit="updateProfile(event)">
+            <div class="form-group">
+                <label for="profileFullName">Full Name</label>
+                <input type="text" id="profileFullName" value="Administrator">
+            </div>
+
+            <div class="form-group">
+                <label for="profileEmail">Email Address</label>
+                <input type="email" id="profileEmail" value="admin@prospentech.co.za">
+            </div>
+
+            <div class="form-group">
+                <label for="currentPassword">Current Password</label>
+                <input type="password" id="currentPassword" placeholder="Enter current password">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" placeholder="Enter new password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="profileBio">Bio</label>
+                <textarea id="profileBio" placeholder="Tell us about yourself...">System administrator responsible for managing the Prospen Hub platform.</textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeProfile()">Cancel</button>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Update Modal -->
+<div id="updateModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Post Update</h2>
+            <button class="close-btn" onclick="closeUpdateModal()">&times;</button>
+        </div>
+        
+        <form id="updateForm" onsubmit="postUpdate(event)">
+            <div class="form-group">
+                <label for="updateTitle">Update Title</label>
+                <input type="text" id="updateTitle" placeholder="Enter update title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="updateMessage">Update Message</label>
+                <textarea id="updateMessage" placeholder="What's new?" rows="6" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="updatePriority">Priority</label>
+                <select id="updatePriority">
+                    <option value="normal">Normal</option>
+                    <option value="important">Important</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeUpdateModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Post Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Comment Modal -->
+<div id="commentModal" class="modal comment-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add Comment</h2>
+            <button class="close-btn" onclick="closeCommentModal()">&times;</button>
+        </div>
+        
+        <form id="commentForm" onsubmit="submitComment(event)">
+            <input type="hidden" id="commentUpdateId">
+            <div class="form-group">
+                <label for="commentMessage">Your Comment</label>
+                <textarea id="commentMessage" placeholder="Write your comment..." required></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" onclick="closeCommentModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Post Comment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Confirmation Modal Template (Created dynamically) -->
+<div id="confirmationModalTemplate" style="display: none;">
+    <div class="custom-modal-overlay confirmation-modal">
+        <div class="custom-modal">
+            <div class="custom-modal-header">
+                <h3 id="confirmationTitle">Confirm Action</h3>
+                <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <p id="confirmationMessage">Are you sure you want to perform this action?</p>
+                <div class="btn-group">
+                    <button class="btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                    <button class="btn-confirm" onclick="performConfirmedAction()">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chatbot Component -->
+<div class="chatbot-container" id="chatbotContainer">
+    <div class="enquiry-indicator" id="enquiryIndicator" style="display: none;">!</div>
+    <button class="chatbot-toggle" onclick="toggleChatbot()">
+        <i class="fas fa-robot"></i>
+    </button>
+    <div class="chatbot-window" id="chatbotWindow">
+        <div class="chatbot-header">
+            <h3><i class="fas fa-brain"></i> NEXA AI Assistant</h3>
+            <button class="chatbot-close" onclick="toggleChatbot()">&times;</button>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <!-- Chat messages will be loaded here -->
+        </div>
+        <div class="chatbot-input-area" id="chatbotInputArea">
+            <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Ask NEXA about projects, tasks, or updates..." onkeypress="handleChatInput(event)">
+            <button class="chatbot-send" onclick="sendChatMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Tasks - Prospen Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Add this BEFORE your other scripts -->
+    <script type="import" src="firebase-config.js"></script>
+    <script type="import" src="firebase-service.js"></script>
+
+    <!-- Make your other scripts type="module" -->
+    <script type="module" src="/auth.js"></script>
+    <script type="module" src="/projects.js"></script>
+    <script type="module" src="/updates.js"></script>
+    <script type="module" src="/clocking.js"></script>
+    <script type="module" src="/chatbot.js"></script>
+    <script type="module" src="/modal.js"></script>
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/stats.js"></script>
+    <script type="module" src="/tasks.js"></script>
+    <script type="module" src="/main.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .status-badge.in-progress {
+            background: #f59e0b;
+        }
+        .status-badge.completed {
+            background: #22c55e;
+        }
+        .status-badge.delayed {
+            background: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="stats-header">
+            <h1><i class="fas fa-tasks"></i> Daily Tasks</h1>
+            <div class="stats-controls">
+                <button class="back-btn" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-chevron-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div id="tasksContainer">
+                <!-- Tasks will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="taskModalTitle">Add New Task</h2>
+                <button class="close-btn" onclick="closeTaskModal()">&times;</button>
+            </div>
+            <form id="taskForm" onsubmit="saveTask(event)">
+                <input type="hidden" id="taskIdField">
+                
+                <div class="form-group">
+                    <label for="taskTitle">Task Title *</label>
+                    <input type="text" id="taskTitle" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDescription">Description</label>
+                    <textarea id="taskDescription" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskAssignedTo">Assigned To *</label>
+                    <select id="taskAssignedTo" required>
+                        <option value="">Select User</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskDate">Date *</label>
+                        <input type="date" id="taskDate" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskStartTime">Start Time</label>
+                        <input type="time" id="taskStartTime">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskExpectedEndTime">Expected End Time</label>
+                        <input type="time" id="taskExpectedEndTime">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskActualEndTime">Actual End Time</label>
+                        <input type="time" id="taskActualEndTime">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskStatus">Status *</label>
+                        <select id="taskStatus" required>
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Delayed">Delayed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskNotes">Notes</label>
+                    <textarea id="taskNotes" rows="3"></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = '../login.html';
+        }
+
+        // Initialize tasks
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initTasks();
+            renderTasks();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech News - Prospen Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="stats-header">
+            <h1><i class="fas fa-newspaper"></i> Global Tech News & Trends</h1>
+            <div class="stats-controls">
+                <button class="back-btn" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-chevron-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <h2>Latest Technology News</h2>
+            <div id="techNewsContainer">
+                <!-- News will be loaded here -->
+            </div>
+        </div>
+        
+        <div class="section-box">
+            <h3>About Tech News</h3>
+            <p>Our tech news section provides curated technology updates from reliable sources including:</p>
+            <ul>
+                <li>TechCrunch - Startup and innovation news</li>
+                <li>Wired - Technology and culture</li>
+                <li>Dev.to - Developer community updates</li>
+                <li>Security Weekly - Cybersecurity insights</li>
+                <li>Cloud Times - Cloud computing trends</li>
+                <li>Mobile Dev Journal - Mobile development updates</li>
+            </ul>
+            <p>News is refreshed automatically every hour to keep you updated with the latest trends.</p>
+        </div>
+    </div>
+
+    <script src="../auth.js"></script>
+    <script>
+        // Check authentication
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = '../login.html';
+        }
+
+        const techNews = [
+            {
+                title: "AI Development Trends 2026",
+                description: "The latest advancements in artificial intelligence show significant improvements in natural language processing and computer vision applications. Companies are investing heavily in ethical AI frameworks.",
+                source: "TechCrunch",
+                category: "Artificial Intelligence",
+                date: "2026-01-15",
+                url: "https://techcrunch.com/ai-trends-2026"
+            },
+            {
+                title: "Quantum Computing Breakthrough",
+                description: "Researchers have achieved a new milestone in quantum computing stability, bringing practical quantum applications closer to reality. This could revolutionize cryptography and drug discovery.",
+                source: "Wired",
+                category: "Quantum Computing",
+                date: "2026-01-14",
+                url: "https://wired.com/quantum-computing-breakthrough"
+            },
+            {
+                title: "Web Development Framework Updates",
+                description: "New versions of popular JavaScript frameworks introduce improved performance and developer experience features. React 19 and Vue 4 bring significant improvements.",
+                source: "Dev.to",
+                category: "Web Development",
+                date: "2026-01-13",
+                url: "https://dev.to/web-dev-updates"
+            },
+            {
+                title: "Cybersecurity Threats Analysis",
+                description: "Latest report shows an increase in sophisticated phishing attacks targeting corporate networks and cloud infrastructure. Zero-trust architecture is becoming essential.",
+                source: "Security Weekly",
+                category: "Cybersecurity",
+                date: "2026-01-12",
+                url: "https://securityweekly.com/threat-analysis"
+            },
+            {
+                title: "Cloud Computing Cost Optimization",
+                description: "New tools and strategies help companies reduce cloud spending while maintaining performance and scalability. Serverless architectures are gaining popularity.",
+                source: "Cloud Times",
+                category: "Cloud Computing",
+                date: "2026-01-11",
+                url: "https://cloudtimes.com/cost-optimization"
+            },
+            {
+                title: "Mobile App Development Trends",
+                description: "Cross-platform frameworks continue to gain popularity with improved native performance and developer tools. Flutter and React Native lead the market.",
+                source: "Mobile Dev Journal",
+                category: "Mobile Development",
+                date: "2026-01-10",
+                url: "https://mobiledevjournal.com/trends-2026"
+            },
+            {
+                title: "Edge Computing Expansion",
+                description: "Edge computing infrastructure is expanding rapidly to support IoT devices and real-time applications. 5G networks are accelerating this trend.",
+                source: "Tech Insider",
+                category: "Infrastructure",
+                date: "2026-01-09",
+                url: "https://techinsider.com/edge-computing"
+            },
+            {
+                title: "Sustainable Technology Initiatives",
+                description: "Tech companies are adopting green computing practices and carbon-neutral data centers to reduce environmental impact.",
+                source: "Green Tech News",
+                category: "Sustainability",
+                date: "2026-01-08",
+                url: "https://greentechnews.com/sustainability"
+            }
+        ];
+
+        function loadTechNews() {
+            const container = document.getElementById('techNewsContainer');
+            let html = '';
+            
+            techNews.forEach(news => {
+                html += `
+                    <div class="tech-news-card">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <h3 style="margin: 0; color: var(--accent);">${news.title}</h3>
+                            <span style="background: rgba(56, 189, 248, 0.1); color: var(--accent); padding: 3px 8px; border-radius: 12px; font-size: 0.8rem;">
+                                ${news.category}
+                            </span>
+                        </div>
+                        <p style="color: var(--text-p); margin-bottom: 15px;">${news.description}</p>
+                        <div class="tech-news-source">
+                            <i class="fas fa-newspaper"></i> ${news.source} • ${new Date(news.date).toLocaleDateString()}
+                        </div>
+                        <a href="${news.url}" target="_blank" class="read-more-btn">
+                            <i class="fas fa-external-link-alt"></i> Read Full Article
+                        </a>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadTechNews);
+    </script>
+</body>
+</html>

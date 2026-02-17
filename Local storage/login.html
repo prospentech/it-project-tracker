@@ -5,22 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Prospen Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Poppins:wght@400;500;600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Add this BEFORE your other scripts -->
-    <script type="import" src="firebase-config.js"></script>
-    <script type="import" src="firebase-service.js"></script>
-
-    <script type="module" src="/auth.js"></script>
-    <script type="module" src="/projects.js"></script>
-    <script type="module" src="/updates.js"></script>
-    <script type="module" src="/clocking.js"></script>
-    <script type="module" src="/chatbot.js"></script>
-    <script type="module" src="/modal.js"></script>
-    <script type="module" src="/theme.js"></script>
-    <script type="module" src="/stats.js"></script>
-    <script type="module" src="/tasks.js"></script>
-    <script type="module" src="/main.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
         :root {
@@ -324,20 +308,20 @@
         <div class="login-box">
             <div class="login-header">
                 <h1>PROSPEN HUB</h1>
-                <p>All IT and Design Projects Control Center</p>
+                <p>IT & Design Control Center</p>
             </div>
 
             <div id="errorMessage" class="error-message"></div>
 
             <form id="loginForm" class="login-form">
                 <div class="form-group">
-                    <label for="username_field"><i class="fas fa-user"></i> Username</label>
-                    <input type="text" id="username_field" placeholder="Enter username" required autofocus>
+                    <label for="username"><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required autofocus>
                 </div>
 
                 <div class="form-group">
-                    <label for="password_field"><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="password_field" placeholder="Enter password" required>
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
                 </div>
 
                 <button type="submit" class="login-btn">
@@ -346,8 +330,7 @@
             </form>
 
             <div class="user-list">
-                <h3>Available Users (AJay, Buhle, Junior) all have same access:</h3>
-                <h3>Admin has Super Admin access:</h3>
+                <h3>Available Users (All have same access):</h3>
                 <div class="user-tags">
                     <span class="user-tag">admin</span>
                     <span class="user-tag">Junior</span>
@@ -362,9 +345,7 @@
         </div>
     </div>
 
-    <script type="module">
-        import auth from './auth.js';
-        
+    <script>
         // Apply theme for login page
         const defaultThemeSettings = {
             darkMode: true,
@@ -381,9 +362,9 @@
             const theme = JSON.parse(localStorage.getItem('prospenTheme_default')) || defaultThemeSettings;
             
             if (theme.darkMode) {
-            document.body.classList.remove('light-mode');
+                document.body.classList.remove('light-mode');
             } else {
-            document.body.classList.add('light-mode');
+                document.body.classList.add('light-mode');
             }
             
             document.documentElement.style.setProperty('--card', theme.cardColor);
@@ -393,47 +374,74 @@
         
         applyTheme();
 
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const username = document.getElementById('username_field').value.trim();
-            const password = document.getElementById('password_field').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('errorMessage');
             
-            if (username && password) {
-            const result = await auth.login(username, password);
-            
-            if (result.success) {
-                window.location.href = 'index.html';
+            if (username && password && password === username) {
+                if (['admin', 'Junior', 'Buhle', 'AJay'].includes(username)) {
+                    const loginData = {
+                        username: username,
+                        loginTime: new Date().toISOString()
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(loginData));
+                    
+                    let currentSessions = JSON.parse(localStorage.getItem('currentSessions')) || {};
+                    currentSessions[username] = {
+                        username: username,
+                        loginTime: new Date().toISOString(),
+                        lastActive: new Date().toISOString(),
+                        online: true,
+                        currentDuration: 0
+                    };
+                    localStorage.setItem('currentSessions', JSON.stringify(currentSessions));
+                    
+                    let activities = JSON.parse(localStorage.getItem('userActivities')) || [];
+                    activities.unshift({
+                        user: username,
+                        action: 'login',
+                        details: 'User logged in',
+                        timestamp: new Date().toISOString(),
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        date: new Date().toLocaleDateString()
+                    });
+                    localStorage.setItem('userActivities', JSON.stringify(activities.slice(0, 500)));
+                    
+                    window.location.href = 'index.html';
+                } else {
+                    showCustomModal('Invalid Username', 'Please use one of the available usernames: admin, Junior, Buhle, or AJay', 'danger');
+                }
             } else {
-                showCustomModal('Login Failed', result.error || 'Invalid credentials. Use password as shown.', 'danger');
+                showCustomModal('Invalid Credentials', 'Please use username as password (e.g., "admin" for both fields)', 'danger');
             }
-            } else {
-            showCustomModal('Invalid Input', 'Please enter username and password', 'danger');
+            
+            function showCustomModal(title, message, type = 'danger') {
+                const modal = document.createElement('div');
+                modal.className = 'custom-modal-overlay';
+                modal.innerHTML = `
+                    <div class="custom-modal ${type}">
+                        <div class="custom-modal-header">
+                            <h3>${title}</h3>
+                            <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                        </div>
+                        <div class="custom-modal-body">
+                            <p>${message}</p>
+                        </div>
+                        <div class="custom-modal-footer">
+                            <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">OK</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
             }
         });
 
-        function showCustomModal(title, message, type = 'danger') {
-            const modal = document.createElement('div');
-            modal.className = 'custom-modal-overlay';
-            modal.innerHTML = `
-            <div class="custom-modal ${type}">
-                <div class="custom-modal-header">
-                <h3>${title}</h3>
-                <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
-                </div>
-                <div class="custom-modal-body">
-                <p>${message}</p>
-                </div>
-                <div class="custom-modal-footer">
-                <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">OK</button>
-                </div>
-            </div>
-            `;
-            document.body.appendChild(modal);
-        }
-
+        // Auto-focus on username field
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('username_field').focus();
+            document.getElementById('username').focus();
         });
     </script>
 </body>
