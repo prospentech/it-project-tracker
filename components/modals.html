@@ -60,10 +60,10 @@
 <!-- Enquiries Page -->
 <div id="enquiriesPage" class="stats-page">
     <div class="stats-header">
-        <h1><i class="fas fa-question-circle"></i> Enquiries Management</h1>
+        <h1><i class="fas fa-question-circle"></i> Suggestions Management</h1>
         <div class="stats-controls">
             <button class="export-btn" onclick="exportEnquiries()">
-                <i class="fas fa-download"></i> Export Enquiries
+                <i class="fas fa-download"></i> Export Suggestions
             </button>
             <button class="control-btn" onclick="markAllEnquiriesRead()">
                 <i class="fas fa-check-double"></i> Mark All Read
@@ -246,31 +246,90 @@
             </select>
         </div>
 
+        <!-- Background Colors - Expanded -->
         <div class="settings-section">
-            <h3>Card Colors</h3>
-            <div class="color-grid">
-                <div class="color-option active" style="background: #1e293b;" onclick="setCardColor('#1e293b')"></div>
-                <div class="color-option" style="background: #334155;" onclick="setCardColor('#334155')"></div>
-                <div class="color-option" style="background: #0f172a;" onclick="setCardColor('#0f172a')"></div>
-                <div class="color-option" style="background: #1e1b4b;" onclick="setCardColor('#1e1b4b')"></div>
-                <div class="color-option" style="background: #1c1917;" onclick="setCardColor('#1c1917')"></div>
-                <div class="color-option" style="background: #064e3b;" onclick="setCardColor('#064e3b')"></div>
-                <div class="color-option" style="background: #451a03;" onclick="setCardColor('#451a03')"></div>
-                <div class="color-option" style="background: #500724;" onclick="setCardColor('#500724')"></div>
+            <h3>Background Colors</h3>
+            <div class="color-grid" style="grid-template-columns: repeat(6, 1fr);">
+                <div class="color-option" style="background: #FFFFFF;" onclick="setBackgroundColor('#FFFFFF')" title="White"></div>
+                <div class="color-option" style="background: #F8FAFC;" onclick="setBackgroundColor('#F8FAFC')" title="Off White"></div>
+                <div class="color-option" style="background: #E5E7EB;" onclick="setBackgroundColor('#E5E7EB')" title="Light Grey"></div>
+                <div class="color-option" style="background: #9CA3AF;" onclick="setBackgroundColor('#9CA3AF')" title="Medium Grey"></div>
+                <div class="color-option" style="background: #374151;" onclick="setBackgroundColor('#374151')" title="Dark Grey"></div>
+                <div class="color-option" style="background: #000000;" onclick="setBackgroundColor('#000000')" title="Black"></div>
+                <div class="color-option" style="background: #111827;" onclick="setBackgroundColor('#111827')" title="Charcoal"></div>
+                <div class="color-option" style="background: #0A1F44;" onclick="setBackgroundColor('#0A1F44')" title="Navy Blue"></div>
+                <div class="color-option" style="background: #1E4DB7;" onclick="setBackgroundColor('#1E4DB7')" title="Royal Blue"></div>
+                <div class="color-option" style="background: #38BDF8;" onclick="setBackgroundColor('#38BDF8')" title="Sky Blue"></div>
+                <div class="color-option" style="background: #2C5282;" onclick="setBackgroundColor('#2C5282')" title="Steel Blue"></div>
+                <div class="color-option" style="background: #059669;" onclick="setBackgroundColor('#059669')" title="Emerald Green"></div>
+                <div class="color-option" style="background: #0F766E;" onclick="setBackgroundColor('#0F766E')" title="Teal"></div>
+                <div class="color-option" style="background: #A7F3D0;" onclick="setBackgroundColor('#A7F3D0')" title="Mint Green"></div>
+                <div class="color-option" style="background: #F7931E;" onclick="setBackgroundColor('#F7931E')" title="Orange"></div>
+                <div class="color-option" style="background: #EA580C;" onclick="setBackgroundColor('#EA580C')" title="Dark Orange"></div>
+                <div class="color-option" style="background: #F59E0B;" onclick="setBackgroundColor('#F59E0B')" title="Amber"></div>
+                <div class="color-option" style="background: #DC2626;" onclick="setBackgroundColor('#DC2626')" title="Red"></div>
+                <div class="color-option" style="background: #991B1B;" onclick="setBackgroundColor('#991B1B')" title="Dark Red"></div>
+                <div class="color-option" style="background: #4C1D95;" onclick="setBackgroundColor('#4C1D95')" title="Deep Purple"></div>
+                <div class="color-option" style="background: #C9A227;" onclick="setBackgroundColor('#C9A227')" title="Gold"></div>
+                <div class="color-option" style="background: #020617;" onclick="setBackgroundColor('#020617')" title="Dark Blue (Default)"></div>
             </div>
         </div>
 
+        <!-- Card Colors - Expanded -->
+        <div class="settings-section">
+            <h3>Card Colors</h3>
+            <div class="color-grid" style="grid-template-columns: repeat(6, 1fr);">
+                <div class="color-option" style="background: #FFFFFF;" onclick="setCardColor('#FFFFFF')" title="White"></div>
+                <div class="color-option" style="background: #F8FAFC;" onclick="setCardColor('#F8FAFC')" title="Off White"></div>
+                <div class="color-option" style="background: #E5E7EB;" onclick="setCardColor('#E5E7EB')" title="Light Grey"></div>
+                <div class="color-option" style="background: #9CA3AF;" onclick="setCardColor('#9CA3AF')" title="Medium Grey"></div>
+                <div class="color-option" style="background: #374151;" onclick="setCardColor('#374151')" title="Dark Grey"></div>
+                <div class="color-option" style="background: #000000;" onclick="setCardColor('#000000')" title="Black"></div>
+                <div class="color-option" style="background: #111827;" onclick="setCardColor('#111827')" title="Charcoal"></div>
+                <div class="color-option" style="background: #0A1F44;" onclick="setCardColor('#0A1F44')" title="Navy Blue"></div>
+                <div class="color-option" style="background: #1E4DB7;" onclick="setCardColor('#1E4DB7')" title="Royal Blue"></div>
+                <div class="color-option" style="background: #38BDF8;" onclick="setCardColor('#38BDF8')" title="Sky Blue"></div>
+                <div class="color-option" style="background: #2C5282;" onclick="setCardColor('#2C5282')" title="Steel Blue"></div>
+                <div class="color-option" style="background: #059669;" onclick="setCardColor('#059669')" title="Emerald Green"></div>
+                <div class="color-option" style="background: #0F766E;" onclick="setCardColor('#0F766E')" title="Teal"></div>
+                <div class="color-option" style="background: #A7F3D0;" onclick="setCardColor('#A7F3D0')" title="Mint Green"></div>
+                <div class="color-option" style="background: #F7931E;" onclick="setCardColor('#F7931E')" title="Orange"></div>
+                <div class="color-option" style="background: #EA580C;" onclick="setCardColor('#EA580C')" title="Dark Orange"></div>
+                <div class="color-option" style="background: #F59E0B;" onclick="setCardColor('#F59E0B')" title="Amber"></div>
+                <div class="color-option" style="background: #DC2626;" onclick="setCardColor('#DC2626')" title="Red"></div>
+                <div class="color-option" style="background: #991B1B;" onclick="setCardColor('#991B1B')" title="Dark Red"></div>
+                <div class="color-option" style="background: #4C1D95;" onclick="setCardColor('#4C1D95')" title="Deep Purple"></div>
+                <div class="color-option" style="background: #C9A227;" onclick="setCardColor('#C9A227')" title="Gold"></div>
+                <div class="color-option" style="background: #1e293b;" onclick="setCardColor('#1e293b')" title="Dark Slate (Default)"></div>
+            </div>
+        </div>
+
+        <!-- Accent Colors - Expanded -->
         <div class="settings-section">
             <h3>Accent Colors</h3>
-            <div class="color-grid">
-                <div class="color-option active" style="background: #38bdf8;" onclick="setAccentColor('#38bdf8')"></div>
-                <div class="color-option" style="background: #0284c7;" onclick="setAccentColor('#0284c7')"></div>
-                <div class="color-option" style="background: #22c55e;" onclick="setAccentColor('#22c55e')"></div>
-                <div class="color-option" style="background: #eab308;" onclick="setAccentColor('#eab308')"></div>
-                <div class="color-option" style="background: #f97316;" onclick="setAccentColor('#f97316')"></div>
-                <div class="color-option" style="background: #ef4444;" onclick="setAccentColor('#ef4444')"></div>
-                <div class="color-option" style="background: #a855f7;" onclick="setAccentColor('#a855f7')"></div>
-                <div class="color-option" style="background: #ec4899;" onclick="setAccentColor('#ec4899')"></div>
+            <div class="color-grid" style="grid-template-columns: repeat(6, 1fr);">
+                <div class="color-option" style="background: #FFFFFF;" onclick="setAccentColor('#FFFFFF')" title="White"></div>
+                <div class="color-option" style="background: #F8FAFC;" onclick="setAccentColor('#F8FAFC')" title="Off White"></div>
+                <div class="color-option" style="background: #E5E7EB;" onclick="setAccentColor('#E5E7EB')" title="Light Grey"></div>
+                <div class="color-option" style="background: #9CA3AF;" onclick="setAccentColor('#9CA3AF')" title="Medium Grey"></div>
+                <div class="color-option" style="background: #374151;" onclick="setAccentColor('#374151')" title="Dark Grey"></div>
+                <div class="color-option" style="background: #000000;" onclick="setAccentColor('#000000')" title="Black"></div>
+                <div class="color-option" style="background: #111827;" onclick="setAccentColor('#111827')" title="Charcoal"></div>
+                <div class="color-option" style="background: #0A1F44;" onclick="setAccentColor('#0A1F44')" title="Navy Blue"></div>
+                <div class="color-option" style="background: #1E4DB7;" onclick="setAccentColor('#1E4DB7')" title="Royal Blue"></div>
+                <div class="color-option" style="background: #38BDF8;" onclick="setAccentColor('#38BDF8')" title="Sky Blue"></div>
+                <div class="color-option" style="background: #2C5282;" onclick="setAccentColor('#2C5282')" title="Steel Blue"></div>
+                <div class="color-option" style="background: #059669;" onclick="setAccentColor('#059669')" title="Emerald Green"></div>
+                <div class="color-option" style="background: #0F766E;" onclick="setAccentColor('#0F766E')" title="Teal"></div>
+                <div class="color-option" style="background: #A7F3D0;" onclick="setAccentColor('#A7F3D0')" title="Mint Green"></div>
+                <div class="color-option" style="background: #F7931E;" onclick="setAccentColor('#F7931E')" title="Orange"></div>
+                <div class="color-option" style="background: #EA580C;" onclick="setAccentColor('#EA580C')" title="Dark Orange"></div>
+                <div class="color-option" style="background: #F59E0B;" onclick="setAccentColor('#F59E0B')" title="Amber"></div>
+                <div class="color-option" style="background: #DC2626;" onclick="setAccentColor('#DC2626')" title="Red"></div>
+                <div class="color-option" style="background: #991B1B;" onclick="setAccentColor('#991B1B')" title="Dark Red"></div>
+                <div class="color-option" style="background: #4C1D95;" onclick="setAccentColor('#4C1D95')" title="Deep Purple"></div>
+                <div class="color-option" style="background: #C9A227;" onclick="setAccentColor('#C9A227')" title="Gold"></div>
+                <div class="color-option" style="background: #38bdf8;" onclick="setAccentColor('#38bdf8')" title="Sky Blue (Default)"></div>
             </div>
         </div>
 
@@ -348,6 +407,7 @@
         </div>
         
         <form id="updateForm" onsubmit="postUpdate(event)">
+            <input type="hidden" id="updateId">
             <div class="form-group">
                 <label for="updateTitle">Update Title</label>
                 <input type="text" id="updateTitle" placeholder="Enter update title" required>
@@ -419,20 +479,20 @@
 
 <!-- Chatbot Component -->
 <div class="chatbot-container" id="chatbotContainer">
-    <div class="enquiry-indicator" id="enquiryIndicator" style="display: none;">!</div>
+    <div class="enquiry-indicator" id="enquiryIndicator" style="display: none;" title="New suggestions">!</div>
     <button class="chatbot-toggle" onclick="toggleChatbot()">
         <i class="fas fa-robot"></i>
     </button>
     <div class="chatbot-window" id="chatbotWindow">
         <div class="chatbot-header">
-            <h3><i class="fas fa-brain"></i> NEXA AI Assistant</h3>
+            <h3><i class="fas fa-brain"></i> NEXA Suggestion Assistant</h3>
             <button class="chatbot-close" onclick="toggleChatbot()">&times;</button>
         </div>
         <div class="chatbot-messages" id="chatbotMessages">
             <!-- Chat messages will be loaded here -->
         </div>
         <div class="chatbot-input-area" id="chatbotInputArea">
-            <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Ask NEXA about projects, tasks, or updates..." onkeypress="handleChatInput(event)">
+            <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Type your suggestion here..." onkeypress="handleChatInput(event)">
             <button class="chatbot-send" onclick="sendChatMessage()">
                 <i class="fas fa-paper-plane"></i>
             </button>
@@ -440,7 +500,7 @@
     </div>
 </div>
 
-<!-- Task Modal -->
+<!-- Task Modal - Updated with all fields -->
 <div id="taskModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -450,60 +510,80 @@
         <form id="taskForm" onsubmit="saveTask(event)">
             <input type="hidden" id="taskIdField">
             
-            <div class="form-group">
-                <label for="taskTitleField">Task Title *</label>
-                <input type="text" id="taskTitleField" required>
-            </div>
-
-            <div class="form-group">
-                <label for="taskDescriptionField">Description</label>
-                <textarea id="taskDescriptionField" rows="3"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="taskAssignedToField">Assigned To *</label>
-                <select id="taskAssignedToField" required>
-                    <option value="">Select User</option>
-                </select>
-            </div>
-
             <div class="form-row">
                 <div class="form-group">
-                    <label for="taskDateField">Date *</label>
-                    <input type="date" id="taskDateField" required>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="taskStartTimeField">Start Time</label>
-                    <input type="time" id="taskStartTimeField">
+                    <label for="taskTitle">Task Title *</label>
+                    <input type="text" id="taskTitle" placeholder="Enter task title" required>
                 </div>
                 <div class="form-group">
-                    <label for="taskExpectedEndTimeField">Expected End Time</label>
-                    <input type="time" id="taskExpectedEndTimeField">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="taskActualEndTimeField">Actual End Time</label>
-                    <input type="time" id="taskActualEndTimeField">
-                </div>
-                <div class="form-group">
-                    <label for="taskStatusField">Status *</label>
-                    <select id="taskStatusField" required>
-                        <option value="Not Started">Not Started</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Delayed">Delayed</option>
+                    <label for="taskCategory">Category *</label>
+                    <select id="taskCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="Design">Design</option>
+                        <option value="Digital Marketing">Digital Marketing</option>
+                        <option value="Web">Web</option>
+                        <option value="IT">IT</option>
+                        <option value="Mobile Development">Mobile Development</option>
+                        <option value="General">General</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="taskNotesField">Notes</label>
-                <textarea id="taskNotesField" rows="3"></textarea>
+                <label for="taskDescription">Description *</label>
+                <textarea id="taskDescription" rows="3" placeholder="Describe the task in detail" required></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="taskPriority">Priority *</label>
+                    <select id="taskPriority" required>
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="taskStatus">Status *</label>
+                    <select id="taskStatus" required>
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="On Hold">On Hold</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="taskAssignedTo">Assigned To *</label>
+                    <select id="taskAssignedTo" required>
+                        <option value="">Select User</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="taskRelatedProject">Related Project</label>
+                    <select id="taskRelatedProject">
+                        <option value="">None</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="taskStartDate">Start Date *</label>
+                    <input type="date" id="taskStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="taskDueDate">Due Date *</label>
+                    <input type="date" id="taskDueDate" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="taskNotes">Additional Notes</label>
+                <textarea id="taskNotes" rows="3" placeholder="Any additional information, dependencies, or requirements"></textarea>
             </div>
 
             <div class="btn-group">

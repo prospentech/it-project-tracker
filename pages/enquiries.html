@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enquiries - Prospen Hub</title>
+    <title>Suggestions - Prospen Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Add this BEFORE your other scripts -->
@@ -11,15 +11,15 @@
     <script type="import" src="firebase-service.js"></script>
 
     <!-- Make your other scripts type="module" -->
-    <script type="module" src="/auth.js"></script>
-    <script type="module" src="/projects.js"></script>
-    <script type="module" src="/updates.js"></script>
-    <script type="module" src="/clocking.js"></script>
-    <script type="module" src="/chatbot.js"></script>
-    <script type="module" src="/modal.js"></script>
-    <script type="module" src="/theme.js"></script>
-    <script type="module" src="/stats.js"></script>
-    <script type="module" src="/main.js"></script>
+    <script type="module" src="../auth.js"></script>
+    <script type="module" src="../projects.js"></script>
+    <script type="module" src="../updates.js"></script>
+    <script type="module" src="../clocking.js"></script>
+    <script type="module" src="../chatbot.js"></script>
+    <script type="module" src="../modal.js"></script>
+    <script type="module" src="../theme.js"></script>
+    <script type="module" src="../stats.js"></script>
+    <script type="module" src="../main.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="../style.css">
@@ -27,12 +27,12 @@
 <body>
     <div class="container">
         <div class="stats-header">
-            <h1><i class="fas fa-question-circle"></i> Enquiries Management</h1>
+            <h1><i class="fas fa-lightbulb"></i> Suggestions Management</h1>
             <div class="stats-controls">
-                <button class="export-btn" onclick="exportEnquiries()">
-                    <i class="fas fa-download"></i> Export Enquiries
+                <button class="export-btn" onclick="exportSuggestions()">
+                    <i class="fas fa-download"></i> Export Suggestions
                 </button>
-                <button class="control-btn" onclick="markAllEnquiriesRead()">
+                <button class="control-btn" onclick="markAllSuggestionsRead()">
                     <i class="fas fa-check-double"></i> Mark All Read
                 </button>
                 <button class="back-btn" onclick="window.location.href='../index.html'">
@@ -42,9 +42,9 @@
         </div>
 
         <div class="section-box">
-            <h2>All Enquiries</h2>
+            <h2>All Suggestions</h2>
             <div id="enquiriesContainer">
-                <!-- Enquiries will be loaded here -->
+                <!-- Suggestions will be loaded here -->
             </div>
         </div>
     </div>
@@ -56,51 +56,55 @@
             window.location.href = '../login.html';
         }
 
-        function loadEnquiries() {
-            const enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
+        async function loadSuggestions() {
+            const { default: firebaseService } = await import('../firebase-service.js');
+            const suggestions = await firebaseService.getEnquiries();
             const container = document.getElementById('enquiriesContainer');
             
-            if (enquiries.length === 0) {
+            // Filter only suggestions (or all if no type)
+            const filteredSuggestions = suggestions.filter(s => s.type === 'suggestion' || !s.type);
+            
+            if (filteredSuggestions.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 40px;">
-                        <i class="fas fa-inbox fa-3x" style="color: var(--text-p); margin-bottom: 20px;"></i>
-                        <h3 style="color: var(--text-p);">No enquiries yet</h3>
-                        <p style="color: var(--text-p);">All enquiries submitted through the NEXA chatbot will appear here.</p>
+                        <i class="fas fa-lightbulb fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                        <h3 style="color: var(--text-p);">No suggestions yet</h3>
+                        <p style="color: var(--text-p);">All suggestions submitted through the NEXA chatbot will appear here.</p>
                     </div>
                 `;
                 return;
             }
 
             let html = '';
-            enquiries.forEach(enquiry => {
-                const date = new Date(enquiry.timestamp);
-                const language = enquiry.language ? ` (${enquiry.language.charAt(0).toUpperCase() + enquiry.language.slice(1)})` : '';
+            filteredSuggestions.forEach(suggestion => {
+                const date = new Date(suggestion.timestamp);
+                const language = suggestion.language ? ` (${suggestion.language.charAt(0).toUpperCase() + suggestion.language.slice(1)})` : '';
                 
                 html += `
-                    <div class="enquiry-card ${enquiry.read ? 'read' : 'unread'}">
+                    <div class="enquiry-card ${suggestion.read ? 'read' : 'unread'}">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
                             <div>
-                                <h3 style="margin: 0 0 5px 0;">${enquiry.name}${language}</h3>
+                                <h3 style="margin: 0 0 5px 0;">${suggestion.name}${language}</h3>
                                 <small style="color: var(--text-p);">${date.toLocaleString()}</small>
-                                ${!enquiry.read ? '<span style="background: var(--accent); color: var(--bg); padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; margin-left: 10px;">NEW</span>' : ''}
+                                ${!suggestion.read ? '<span style="background: var(--accent); color: var(--bg); padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; margin-left: 10px;">NEW</span>' : ''}
                             </div>
                             <div style="display: flex; gap: 5px;">
-                                <button onclick="markEnquiryRead('${enquiry.id}')" class="small-btn" title="Mark as read">
+                                <button onclick="markSuggestionRead('${suggestion.id}')" class="small-btn" title="Mark as read">
                                     <i class="fas fa-check"></i>
                                 </button>
-                                <button onclick="replyToEnquiry('${enquiry.id}', '${enquiry.email}')" class="small-btn" title="Reply" style="background: var(--success);">
+                                <button onclick="replyToSuggestion('${suggestion.id}', '${suggestion.email}')" class="small-btn" title="Reply" style="background: var(--success);">
                                     <i class="fas fa-reply"></i>
                                 </button>
-                                <button onclick="deleteEnquiry('${enquiry.id}')" class="small-btn" title="Delete" style="background: var(--danger);">
+                                <button onclick="deleteSuggestion('${suggestion.id}')" class="small-btn" title="Delete" style="background: var(--danger);">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
                         <div style="margin-top: 15px;">
-                            <p><strong><i class="fas fa-envelope"></i> Email:</strong> ${enquiry.email}</p>
-                            <p><strong><i class="fas fa-comment"></i> Enquiry:</strong></p>
+                            <p><strong><i class="fas fa-envelope"></i> Email:</strong> ${suggestion.email}</p>
+                            <p><strong><i class="fas fa-lightbulb"></i> Suggestion:</strong></p>
                             <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-top: 5px;">
-                                ${enquiry.enquiry}
+                                ${suggestion.suggestion || suggestion.enquiry}
                             </div>
                         </div>
                     </div>
@@ -110,74 +114,29 @@
             container.innerHTML = html;
         }
 
-        function markEnquiryRead(id) {
-            let enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
-            const index = enquiries.findIndex(e => e.id === id);
-            if (index !== -1) {
-                enquiries[index].read = true;
-                enquiries[index].status = 'read';
-                localStorage.setItem('prospenEnquiries', JSON.stringify(enquiries));
-                loadEnquiries();
-                updateEnquiryIndicator();
+        function markSuggestionRead(id) {
+            markEnquiryRead(id);
+        }
+
+        function markAllSuggestionsRead() {
+            markAllEnquiriesRead();
+        }
+
+        function replyToSuggestion(id, email) {
+            window.location.href = `mailto:${email}?subject=Re: Your suggestion to Prospen Hub`;
+        }
+
+        function deleteSuggestion(id) {
+            if (confirm('Are you sure you want to delete this suggestion?')) {
+                deleteEnquiry(id);
             }
         }
 
-        function markAllEnquiriesRead() {
-            if (confirm('Mark all enquiries as read?')) {
-                let enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
-                enquiries.forEach(enquiry => {
-                    enquiry.read = true;
-                    enquiry.status = 'read';
-                });
-                
-                localStorage.setItem('prospenEnquiries', JSON.stringify(enquiries));
-                loadEnquiries();
-                updateEnquiryIndicator();
-                
-                alert('All enquiries marked as read!');
-            }
+        function exportSuggestions() {
+            exportEnquiries();
         }
 
-        function replyToEnquiry(id, email) {
-            window.location.href = `mailto:${email}?subject=Re: Your enquiry to Prospen Hub`;
-        }
-
-        function deleteEnquiry(id) {
-            if (confirm('Are you sure you want to delete this enquiry?')) {
-                let enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
-                enquiries = enquiries.filter(e => e.id !== id);
-                localStorage.setItem('prospenEnquiries', JSON.stringify(enquiries));
-                loadEnquiries();
-                updateEnquiryIndicator();
-            }
-        }
-
-        function exportEnquiries() {
-            const enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
-            const dataStr = JSON.stringify(enquiries, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-            const link = document.createElement('a');
-            link.setAttribute('href', dataUri);
-            link.setAttribute('download', `enquiries-${new Date().toISOString().split('T')[0]}.json`);
-            link.click();
-        }
-
-        function updateEnquiryIndicator() {
-            const enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
-            const unreadEnquiries = enquiries.filter(e => !e.read).length;
-            const indicator = document.getElementById('enquiryIndicator');
-            
-            if (indicator) {
-                if (unreadEnquiries > 0) {
-                    indicator.style.display = 'flex';
-                    indicator.textContent = unreadEnquiries > 9 ? '9+' : unreadEnquiries;
-                } else {
-                    indicator.style.display = 'none';
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadEnquiries);
+        document.addEventListener('DOMContentLoaded', loadSuggestions);
     </script>
 </body>
 </html>

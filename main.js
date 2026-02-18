@@ -530,6 +530,27 @@ function calculateSpentBudget(project) {
   return project.budget.items.reduce((total, item) => total + (item.spent || 0), 0);
 }
 
+// Scroll position management
+function saveScrollPosition() {
+    sessionStorage.setItem('scrollPosition', window.scrollY);
+}
+
+function restoreScrollPosition() {
+    const savedPosition = sessionStorage.getItem('scrollPosition');
+    if (savedPosition) {
+        setTimeout(() => {
+            window.scrollTo(0, parseInt(savedPosition));
+        }, 100);
+    }
+}
+
+// Save scroll before leaving page
+window.addEventListener('beforeunload', saveScrollPosition);
+window.addEventListener('pagehide', saveScrollPosition);
+
+// Restore scroll when page loads
+document.addEventListener('DOMContentLoaded', restoreScrollPosition);
+
 window.clockingSystem = clockingSystem;
 window.showCustomModal = showCustomModal;
 window.updateUserInfo = updateUserInfo;

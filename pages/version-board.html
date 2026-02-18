@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Version Board - Prospen Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Add this BEFORE your other scripts -->
+    <script type="import" src="firebase-config.js"></script>
+    <script type="import" src="firebase-service.js"></script>
+
+    <!-- Make your other scripts type="module" -->
+    <script type="module" src="../auth.js"></script>
+    <script type="module" src="../projects.js"></script>
+    <script type="module" src="../updates.js"></script>
+    <script type="module" src="../clocking.js"></script>
+    <script type="module" src="../chatbot.js"></script>
+    <script type="module" src="../modal.js"></script>
+    <script type="module" src="../theme.js"></script>
+    <script type="module" src="../stats.js"></script>
+    <script type="module" src="../tasks.js"></script>
+    <script type="module" src="../main.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <!-- Add this line after your other imports to make firebaseService globally available -->
+    <script type="module">
+        import firebaseService from '../firebase-service.js';
+        window.firebaseService = firebaseService;
+    </script>
+
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .version-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        .version-table th {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .version-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: top;
+        }
+        
+        .version-table tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .progress-bar {
+            width: 80px;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-badge.planning {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+        
+        .status-badge.in-progress {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+        }
+        
+        .status-badge.testing {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .status-badge.completed {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+        
+        .edit-btn, .delete-btn {
+            background: none;
+            border: none;
+            color: var(--text-p);
+            cursor: pointer;
+            padding: 5px;
+            margin: 0 2px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .edit-btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        
+        .delete-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="stats-header">
+            <h1><i class="fas fa-code-branch"></i> Upcoming Features & Releases</h1>
+            <div class="stats-controls">
+                <button class="control-btn" onclick="openVersionModal()">
+                    <i class="fas fa-plus"></i> Add Version
+                </button>
+                <button class="back-btn" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-chevron-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <h2>Version Board - Detailed View</h2>
+            <div style="overflow-x: auto;">
+                <table class="version-table" id="versionTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Version</th>
+                            <th>Title</th>
+                            <th>Problem Statement</th>
+                            <th>Goal</th>
+                            <th>Impl Date</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="versionTableBody">
+                        <!-- Versions will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version Modal -->
+    <div id="versionModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 id="versionModalTitle">Add New Version</h2>
+                <button class="close-btn" onclick="closeVersionModal()">&times;</button>
+            </div>
+            <form id="versionForm" onsubmit="saveVersion(event)">
+                <input type="hidden" id="versionId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="versionNumber">Version *</label>
+                        <input type="text" id="versionNumber" placeholder="v2.1.0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="versionTitle">Title *</label>
+                        <input type="text" id="versionTitle" placeholder="Performance Release" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="problemStatement">Problem Statement *</label>
+                    <textarea id="problemStatement" rows="3" placeholder="Describe the problem this version addresses..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="goal">Goal *</label>
+                    <textarea id="goal" rows="2" placeholder="What are the goals of this version?" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="implDate">Implementation Date *</label>
+                        <input type="date" id="implDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dueDate">Due Date *</label>
+                        <input type="date" id="dueDate" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="versionStatus">Status *</label>
+                        <select id="versionStatus" required>
+                            <option value="Planning">Planning</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Testing">Testing</option>
+                            <option value="Completed">Completed</option>
+                            <option value="On Hold">On Hold</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="versionProgress">Progress (%) *</label>
+                        <input type="number" id="versionProgress" min="0" max="100" step="5" value="0" required>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="closeVersionModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Version</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = '../login.html';
+        }
+
+        let versions = [];
+
+        // Load versions from Firebase
+        async function loadVersions() {
+            versions = await firebaseService.getVersions();
+            renderVersions();
+        }
+
+        // Render versions table
+        function renderVersions() {
+            const tbody = document.getElementById('versionTableBody');
+            
+            if (versions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-code-branch fa-3x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                            <p>No versions added yet. Click "Add Version" to create your first version.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            versions.forEach((version, index) => {
+                const id = (index + 1).toString().padStart(3, '0');
+                const statusClass = {
+                    'Planning': 'planning',
+                    'In Progress': 'in-progress',
+                    'Testing': 'testing',
+                    'Completed': 'completed',
+                    'On Hold': 'planning'
+                }[version.status] || 'planning';
+                
+                html += `
+                    <tr>
+                        <td><strong>${id}</strong></td>
+                        <td><strong style="color: var(--accent);">${version.version}</strong></td>
+                        <td>${version.title}</td>
+                        <td>${version.problemStatement.substring(0, 80)}${version.problemStatement.length > 80 ? '...' : ''}</td>
+                        <td>${version.goal.substring(0, 60)}${version.goal.length > 60 ? '...' : ''}</td>
+                        <td>${formatDate(version.implDate)}</td>
+                        <td>${formatDate(version.dueDate)}</td>
+                        <td><span class="status-badge ${statusClass}">${version.status}</span></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span>${version.progress}%</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${version.progress}%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="edit-btn" onclick="editVersion('${version.id}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" onclick="deleteVersion('${version.id}')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // Open version modal
+        function openVersionModal(versionId = null) {
+            const modal = document.getElementById('versionModal');
+            const title = document.getElementById('versionModalTitle');
+            
+            if (versionId) {
+                const version = versions.find(v => v.id === versionId);
+                title.textContent = 'Edit Version';
+                document.getElementById('versionId').value = versionId;
+                document.getElementById('versionNumber').value = version.version || '';
+                document.getElementById('versionTitle').value = version.title || '';
+                document.getElementById('problemStatement').value = version.problemStatement || '';
+                document.getElementById('goal').value = version.goal || '';
+                document.getElementById('implDate').value = version.implDate || '';
+                document.getElementById('dueDate').value = version.dueDate || '';
+                document.getElementById('versionStatus').value = version.status || 'Planning';
+                document.getElementById('versionProgress').value = version.progress || 0;
+            } else {
+                title.textContent = 'Add New Version';
+                document.getElementById('versionForm').reset();
+                document.getElementById('versionId').value = '';
+                document.getElementById('versionProgress').value = 0;
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // Close version modal
+        function closeVersionModal() {
+            document.getElementById('versionModal').style.display = 'none';
+        }
+
+        // Save version - FIXED VERSION
+        async function saveVersion(event) {
+            event.preventDefault();
+            
+            const version = {
+                id: document.getElementById('versionId').value || null,
+                title: document.getElementById('versionNumber').value, // Change this line
+                description: document.getElementById('versionTitle').value, // Add this
+                problemStatement: document.getElementById('problemStatement').value,
+                goal: document.getElementById('goal').value,
+                implDate: document.getElementById('implDate').value,
+                dueDate: document.getElementById('dueDate').value,
+                status: document.getElementById('versionStatus').value,
+                progress: parseInt(document.getElementById('versionProgress').value),
+                createdBy: currentUser.username,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            const result = await firebaseService.saveVersion(version);
+            
+            if (result.success) {
+                closeVersionModal();
+                showCustomModal('Success', 'Version saved successfully!', 'success');
+                await loadVersions();
+            } else {
+                showCustomModal('Error', 'Failed to save version: ' + (result.error || 'Unknown error'), 'danger');
+            }
+        }
+
+        // Edit version
+        function editVersion(id) {
+            openVersionModal(id);
+        }
+
+        // Delete version
+        async function deleteVersion(id) {
+            const version = versions.find(v => v.id === id);
+            
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal danger">
+                    <div class="custom-modal-header">
+                        <h3>Confirm Delete</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>Are you sure you want to delete version "${version.version} - ${version.title}"? This action cannot be undone.</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                        <button class="btn-primary" style="background: var(--danger);" onclick="confirmDeleteVersion('${id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function confirmDeleteVersion(id) {
+            const result = await firebaseService.deleteVersion(id);
+            
+            document.querySelector('.custom-modal-overlay').remove();
+            
+            if (result.success) {
+                showCustomModal('Success', 'Version deleted successfully!', 'success');
+                loadVersions();
+            } else {
+                showCustomModal('Error', 'Failed to delete version: ' + result.error, 'danger');
+            }
+        }
+
+        // Format date helper
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            } catch (e) {
+                return 'Invalid date';
+            }
+        }
+
+        // Show custom modal
+        function showCustomModal(title, message, type = 'info') {
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal ${type}">
+                    <div class="custom-modal-header">
+                        <h3>${title}</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadVersions();
+            
+            // Subscribe to real-time updates
+            firebaseService.subscribeToVersions((updatedVersions) => {
+                versions = updatedVersions;
+                renderVersions();
+            });
+        });
+
+        // Make functions available globally
+        window.openVersionModal = openVersionModal;
+        window.closeVersionModal = closeVersionModal;
+        window.saveVersion = saveVersion;
+        window.editVersion = editVersion;
+        window.deleteVersion = deleteVersion;
+        window.confirmDeleteVersion = confirmDeleteVersion;
+    </script>
+</body>
+</html>

@@ -11,15 +11,15 @@
     <script type="import" src="firebase-service.js"></script>
 
     <!-- Make your other scripts type="module" -->
-    <script type="module" src="/auth.js"></script>
-    <script type="module" src="/projects.js"></script>
-    <script type="module" src="/updates.js"></script>
-    <script type="module" src="/clocking.js"></script>
-    <script type="module" src="/chatbot.js"></script>
-    <script type="module" src="/modal.js"></script>
-    <script type="module" src="/theme.js"></script>
-    <script type="module" src="/stats.js"></script>
-    <script type="module" src="/main.js"></script>
+    <script type="module" src="../auth.js"></script>
+    <script type="module" src="../projects.js"></script>
+    <script type="module" src="../updates.js"></script>
+    <script type="module" src="../clocking.js"></script>
+    <script type="module" src="../chatbot.js"></script>
+    <script type="module" src="../modal.js"></script>
+    <script type="module" src="../theme.js"></script>
+    <script type="module" src="../stats.js"></script>
+    <script type="module" src="../main.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="../style.css">
@@ -199,6 +199,9 @@
             
             if (!p) return;
             
+            // Hide projects section
+            document.getElementById('projectsSection').style.display = 'none';
+            
             const projectView = document.getElementById('project-view');
             const projectContent = document.getElementById('project-content');
             
@@ -211,7 +214,7 @@
                 <div class="grid-layout">
                     <div class="main-col">
                         <div class="section-box">
-                            <h2>1. Project Overview: ${p.name}</h2>
+                            <h2>Project Overview: ${p.name}</h2>
                             <p>${p.desc}</p>
                             <table>
                                 <tr><th>Lead</th><td>${p.lead}</td><th>Type</th><td>${p.type}</td></tr>
@@ -221,7 +224,7 @@
                         </div>
 
                         <div class="section-box">
-                            <h2>2. Task Allocation</h2>
+                            <h2>Task Allocation</h2>
                             <table>
                                 <thead><tr><th>ID</th><th>Task</th><th>Assignee</th><th>Priority</th><th>Due Date</th><th>Status</th></tr></thead>
                                 <tbody>
@@ -241,7 +244,7 @@
 
                         ${p.timeline && p.timeline.length > 0 ? `
                         <div class="section-box">
-                            <h2>3. Weekly Timeline & Progress</h2>
+                            <h2>Weekly Timeline & Progress</h2>
                             <table>
                                 <thead><tr><th>Week</th><th>Range</th><th>Tasks Planned</th><th>Tasks Completed</th><th>Delays/Risks</th><th>Next Focus</th><th>Updated By</th></tr></thead>
                                 <tbody>
@@ -261,9 +264,8 @@
                         </div>
                         ` : ''}
 
-                        <!-- Budget Section -->
                         <div class="section-box">
-                            <h2>4. Budget & Resources</h2>
+                            <h2>Budget & Resources</h2>
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
                                 <div style="background: rgba(56, 189, 248, 0.1); padding: 15px; border-radius: 8px; text-align: center;">
                                     <div style="color: var(--accent); font-size: 0.9rem;">Total Budget</div>
@@ -315,7 +317,7 @@
 
                     <div class="side-col">
                         <div class="section-box">
-                            <h2>5. Team Roles</h2>
+                            <h2>Team Roles</h2>
                             ${p.members && p.members.length > 0 ? p.members.map(m => `
                                 <div class="team-member">
                                     <b>${m.name}</b>
@@ -326,7 +328,7 @@
                             `).join('') : '<p>No team members added yet</p>'}
                         </div>
                         <div class="section-box">
-                            <h2>6. Notes</h2>
+                            <h2>Notes</h2>
                             <p>${p.notes || 'No notes available.'}</p>
                         </div>
                     </div>
@@ -414,7 +416,6 @@
 
         // Initialize projects
         document.addEventListener('DOMContentLoaded', function() {
-            initProjects();
             renderAllProjects();
             
             // Check if we need to open a project view (from localStorage)

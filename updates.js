@@ -1,21 +1,36 @@
-// Updates management
+// updates.js
+import auth from './auth.js';
+import firebaseService from './firebase-service.js';
 
-function initUpdates() {
-    // Only load from localStorage, no default updates
-    let updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
+let updates = [];
+
+// Initialize updates
+async function initUpdates() {
+    await loadUpdates();
     
-    // If empty, just set empty array
-    if (updates.length === 0) {
-        updates = [];
-        localStorage.setItem('prospenUpdates', JSON.stringify(updates));
-    }
+    // Subscribe to real-time updates
+    firebaseService.subscribeToUpdates((updatedUpdates) => {
+        updates = updatedUpdates;
+        if (document.getElementById('updatesContainer')) {
+            loadUpdates();
+        }
+        if (document.getElementById('allUpdatesContainer')) {
+            loadAllUpdates();
+        }
+    });
 }
 
-function loadUpdates() {
+// Load updates from Firebase
+async function loadUpdates() {
+    updates = await firebaseService.getUpdates();
+    renderUpdates();
+    return updates;
+}
+
+// Render updates on main page
+function renderUpdates() {
     const container = document.getElementById('updatesContainer');
     if (!container) return;
-    
-    let updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
     
     if (updates.length === 0) {
         container.innerHTML = `
@@ -30,9 +45,7 @@ function loadUpdates() {
     
     container.innerHTML = '';
     
-    const recentUpdates = updates.sort((a, b) => 
-        new Date(b.timestamp) - new Date(a.timestamp)
-    ).slice(0, 5);
+    const recentUpdates = updates.slice(0, 5);
     
     recentUpdates.forEach(update => {
         const updateElement = createUpdateListItem(update);
@@ -40,11 +53,10 @@ function loadUpdates() {
     });
 }
 
-function loadAllUpdates() {
+// Load all updates for all-updates page
+async function loadAllUpdates() {
     const container = document.getElementById('allUpdatesContainer');
     if (!container) return;
-    
-    let updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
     
     if (updates.length === 0) {
         container.innerHTML = `
@@ -59,16 +71,13 @@ function loadAllUpdates() {
     
     container.innerHTML = '';
     
-    const sortedUpdates = updates.sort((a, b) => 
-        new Date(b.timestamp) - new Date(a.timestamp)
-    );
-    
-    sortedUpdates.forEach(update => {
+    updates.forEach(update => {
         const updateElement = createUpdateListItem(update);
         container.appendChild(updateElement);
     });
 }
 
+// Create update list item
 function createUpdateListItem(update) {
     const profiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {};
     const profile = profiles[update.user] || { fullName: update.user, avatar: null };
@@ -81,6 +90,8 @@ function createUpdateListItem(update) {
         'important': '#f59e0b',
         'normal': '#38bdf8'
     }[update.priority] || '#38bdf8';
+    
+    const currentUser = auth.getCurrentUser();
     
     const updateDiv = document.createElement('div');
     updateDiv.className = 'enquiry-card';
@@ -124,7 +135,7 @@ function createUpdateListItem(update) {
                 <i class="fas fa-comment"></i>
                 ${update.comments ? `<span style="margin-left: 3px;">${update.comments.length}</span>` : ''}
             </button>
-            ${update.user === auth.getCurrentUser()?.username ? `
+            ${currentUser && (update.user === currentUser.username || currentUser.username === 'admin') ? `
                 <button class="small-btn" onclick="event.stopPropagation(); deleteUpdate('${update.id}')" title="Delete" style="background: var(--danger);">
                     <i class="fas fa-trash"></i>
                 </button>
@@ -135,10 +146,9 @@ function createUpdateListItem(update) {
     return updateDiv;
 }
 
+// Show update details
 function showUpdateDetails(updateId) {
-    const updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
     const update = updates.find(u => u.id === updateId);
-    
     if (!update) return;
     
     const profiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {};
@@ -210,6 +220,7 @@ function showUpdateDetails(updateId) {
     document.body.appendChild(modal);
 }
 
+// Get time ago string
 function getTimeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
     
@@ -231,13 +242,17 @@ function getTimeAgo(date) {
     return 'just now';
 }
 
+// Open update modal
 function openUpdateModal() {
     const modal = document.getElementById('updateModal');
     if (modal) {
         modal.style.display = 'flex';
+        document.getElementById('updateId')?.remove();
+        document.getElementById('updateForm').reset();
     }
 }
 
+// Close update modal
 function closeUpdateModal() {
     const modal = document.getElementById('updateModal');
     if (modal) {
@@ -246,7 +261,8 @@ function closeUpdateModal() {
     }
 }
 
-function postUpdate(event) {
+// Post update
+async function postUpdate(event) {
     event.preventDefault();
     
     const currentUser = auth.getCurrentUser();
@@ -256,7 +272,7 @@ function postUpdate(event) {
     }
     
     const update = {
-        id: 'update_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        id: document.getElementById('updateId')?.value || null,
         title: document.getElementById('updateTitle').value,
         message: document.getElementById('updateMessage').value,
         priority: document.getElementById('updatePriority').value,
@@ -266,35 +282,23 @@ function postUpdate(event) {
         comments: []
     };
     
-    // Save to Firebase first
-    firebaseService.saveUpdate(update).then(result => {
-        if (result.success) {
-            // Then update localStorage
-            let updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
-            updates.unshift(update);
-            localStorage.setItem('prospenUpdates', JSON.stringify(updates.slice(0, 500)));
-            
-            auth.recordActivity('post_update', `Posted update: ${update.title}`);
-            
-            closeUpdateModal();
-            
-            if (window.location.pathname.includes('all-updates.html')) {
-                loadAllUpdates();
-            } else {
-                loadUpdates();
-            }
-            
-            playNotificationSound('notification');
-            showCustomModal('Success', 'Update posted successfully!', 'success');
-        } else {
-            showCustomModal('Error', 'Failed to save update: ' + result.error, 'danger');
-        }
-    }).catch(error => {
-        console.error('Error saving update:', error);
-        showCustomModal('Error', 'Failed to save update', 'danger');
-    });
+    // Save to Firebase
+    const result = await firebaseService.saveUpdate(update);
+    
+    if (result.success) {
+        closeUpdateModal();
+        
+        // Refresh updates
+        await loadUpdates();
+        
+        playNotificationSound('notification');
+        showCustomModal('Success', 'Update posted successfully!', 'success');
+    } else {
+        showCustomModal('Error', 'Failed to save update: ' + result.error, 'danger');
+    }
 }
 
+// Delete update
 function deleteUpdate(id) {
     const currentUser = auth.getCurrentUser();
     if (!currentUser) return;
@@ -319,61 +323,55 @@ function deleteUpdate(id) {
     document.body.appendChild(modal);
 }
 
-function confirmDeleteUpdate(id) {
-    let updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
-    updates = updates.filter(u => u.id !== id);
-    localStorage.setItem('prospenUpdates', JSON.stringify(updates));
+// Confirm delete update
+async function confirmDeleteUpdate(id) {
+    const result = await firebaseService.deleteUpdate(id);
     
     document.querySelector('.custom-modal-overlay').remove();
     
-    auth.recordActivity('delete_update', 'Deleted an update');
-    
-    if (window.location.pathname.includes('all-updates.html')) {
-        loadAllUpdates();
+    if (result.success) {
+        await loadUpdates();
+        playNotificationSound('notification');
+        showCustomModal('Success', 'Update deleted successfully!', 'success');
     } else {
-        loadUpdates();
+        showCustomModal('Error', 'Failed to delete update: ' + result.error, 'danger');
     }
-    
-    playNotificationSound('notification');
-    showCustomModal('Success', 'Update deleted successfully!', 'success');
 }
 
-function likeUpdate(id) {
+// Like update
+async function likeUpdate(id) {
     const currentUser = auth.getCurrentUser();
     if (!currentUser) {
         showCustomModal('Error', 'Please login to like updates', 'danger');
         return;
     }
     
-    let updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
-    const index = updates.findIndex(u => u.id === id);
+    const update = updates.find(u => u.id === id);
+    if (!update) return;
     
-    if (index !== -1) {
-        if (!updates[index].likes) updates[index].likes = 0;
-        updates[index].likes++;
-        localStorage.setItem('prospenUpdates', JSON.stringify(updates));
-        
-        if (window.location.pathname.includes('all-updates.html')) {
-            loadAllUpdates();
-        } else {
-            loadUpdates();
-        }
-        
-        //playNotificationSound('notification');
+    update.likes = (update.likes || 0) + 1;
+    
+    const result = await firebaseService.saveUpdate(update);
+    
+    if (result.success) {
+        await loadUpdates();
     }
 }
 
+// Open comment modal
 function openCommentModal(updateId) {
     document.getElementById('commentUpdateId').value = updateId;
     document.getElementById('commentModal').style.display = 'flex';
 }
 
+// Close comment modal
 function closeCommentModal() {
     document.getElementById('commentModal').style.display = 'none';
     document.getElementById('commentMessage').value = '';
 }
 
-function submitComment(event) {
+// Submit comment
+async function submitComment(event) {
     event.preventDefault();
     
     const currentUser = auth.getCurrentUser();
@@ -387,64 +385,62 @@ function submitComment(event) {
     
     if (!commentText) return;
     
-    let updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
-    const index = updates.findIndex(u => u.id === updateId);
+    const update = updates.find(u => u.id === updateId);
+    if (!update) return;
     
-    if (index !== -1) {
-        if (!updates[index].comments) updates[index].comments = [];
-        
-        updates[index].comments.push({
-            user: currentUser.username,
-            text: commentText,
-            timestamp: new Date().toISOString()
-        });
-        
-        localStorage.setItem('prospenUpdates', JSON.stringify(updates));
-        
-        auth.recordActivity('comment', `Commented on update: ${updates[index].title}`);
-        
+    if (!update.comments) update.comments = [];
+    
+    update.comments.push({
+        user: currentUser.username,
+        text: commentText,
+        timestamp: new Date().toISOString()
+    });
+    
+    const result = await firebaseService.saveUpdate(update);
+    
+    if (result.success) {
         closeCommentModal();
-        
-        if (window.location.pathname.includes('all-updates.html')) {
-            loadAllUpdates();
-        } else {
-            loadUpdates();
-        }
-        
+        await loadUpdates();
         playNotificationSound('notification');
         showCustomModal('Success', 'Comment added successfully!', 'success');
+    } else {
+        showCustomModal('Error', 'Failed to add comment: ' + result.error, 'danger');
     }
 }
 
-function showAllComments(updateId) {
-    const updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
-    const update = updates.find(u => u.id === updateId);
-    
-    if (!update || !update.comments) return;
-    
-    const profiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {};
-    
-    let commentsHtml = '<div style="max-height: 400px; overflow-y: auto;">';
-    update.comments.forEach(comment => {
-        const date = new Date(comment.timestamp);
-        commentsHtml += `
-            <div style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <strong style="color: var(--accent);">${profiles[comment.user]?.fullName || comment.user}</strong>
-                    <small style="color: var(--text-p);">${getTimeAgo(date)}</small>
-                </div>
-                <p style="margin: 0;">${comment.text}</p>
+// Play notification sound
+function playNotificationSound(type) {
+    const audio = document.getElementById(type + 'Sound');
+    if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(e => console.log("Audio play failed:", e));
+    }
+}
+
+// Show custom modal
+function showCustomModal(title, message, type = 'info') {
+    const modal = document.createElement('div');
+    modal.className = 'custom-modal-overlay';
+    modal.innerHTML = `
+        <div class="custom-modal ${type}">
+            <div class="custom-modal-header">
+                <h3>${title}</h3>
+                <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
             </div>
-        `;
-    });
-    commentsHtml += '</div>';
-    
-    showCustomModal(`Comments (${update.comments.length})`, commentsHtml, 'info');
+            <div class="custom-modal-body">
+                <p>${message}</p>
+            </div>
+            <div class="custom-modal-footer">
+                <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">OK</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
 }
 
 // Make functions available globally
 window.initUpdates = initUpdates;
-window.loadUpdates = loadUpdates;
+window.loadUpdates = renderUpdates;
 window.loadAllUpdates = loadAllUpdates;
 window.openUpdateModal = openUpdateModal;
 window.closeUpdateModal = closeUpdateModal;
@@ -455,6 +451,24 @@ window.likeUpdate = likeUpdate;
 window.openCommentModal = openCommentModal;
 window.closeCommentModal = closeCommentModal;
 window.submitComment = submitComment;
-window.showAllComments = showAllComments;
 window.showUpdateDetails = showUpdateDetails;
 window.getTimeAgo = getTimeAgo;
+window.playNotificationSound = playNotificationSound;
+window.showCustomModal = showCustomModal;
+
+export {
+    initUpdates,
+    renderUpdates as loadUpdates,
+    loadAllUpdates,
+    openUpdateModal,
+    closeUpdateModal,
+    postUpdate,
+    deleteUpdate,
+    confirmDeleteUpdate,
+    likeUpdate,
+    openCommentModal,
+    closeCommentModal,
+    submitComment,
+    showUpdateDetails,
+    getTimeAgo
+};

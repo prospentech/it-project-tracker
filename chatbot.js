@@ -1,4 +1,6 @@
 // NEXA Chatbot with all South African official languages including Xitsonga
+// Changed from Enquiries to Suggestions
+
 const languages = {
     english: {
         code: 'en',
@@ -6,11 +8,11 @@ const languages = {
         welcome: "👋 Hello! I'm NEXA. What language would you like to use?",
         whatName: "What is your name?",
         whatEmail: "Can I get your email please?",
-        whatEnquiry: "Please type your enquiry here:",
-        thankYou: "Thank you {name}! Your enquiry has been submitted. Our team will contact you at {email} soon.",
-        anotherEnquiry: "Would you like to submit another enquiry? (yes/no)",
+        whatSuggestion: "What do you think we should improve? Please type your suggestion here:",
+        thankYou: "Thank you {name}! Your suggestion has been submitted. Our team will review it and may contact you at {email}.",
+        anotherSuggestion: "Would you like to submit another suggestion? (yes/no)",
         invalidLanguage: "I'm sorry, I didn't understand that. Please type the name of your preferred language:",
-        goodbye: "Goodbye! Feel free to come back if you have more enquiries."
+        goodbye: "Goodbye! Feel free to come back if you have more suggestions."
     },
     afrikaans: {
         code: 'af',
@@ -18,11 +20,11 @@ const languages = {
         welcome: "👋 Hallo! Ek is NEXA. Watter taal wil jy gebruik?",
         whatName: "Wat is jou naam?",
         whatEmail: "Kan ek asseblief jou e-posadres kry?",
-        whatEnquiry: "Tik asseblief jou navraag hier:",
-        thankYou: "Dankie {name}! Jou navraag is ingedien. Ons span sal binnekort by {email} kontak maak.",
-        anotherEnquiry: "Wil jy nog 'n navraag indien? (ja/nee)",
+        whatSuggestion: "Wat dink jy moet ons verbeter? Tik asseblief jou voorstel hier:",
+        thankYou: "Dankie {name}! Jou voorstel is ingedien. Ons span sal dit hersien en kan jou by {email} kontak.",
+        anotherSuggestion: "Wil jy nog 'n voorstel indien? (ja/nee)",
         invalidLanguage: "Ek is jammer, ek het dit nie verstaan nie. Tik asseblief die naam van jou voorkeurtaal:",
-        goodbye: "Totsiens! Kom gerus terug as jy nog navrae het."
+        goodbye: "Totsiens! Kom gerus terug as jy meer voorstelle het."
     },
     isindebele: {
         code: 'nr',
@@ -30,11 +32,11 @@ const languages = {
         welcome: "👋 Lotjhani! NginguNEXA. Ufuna ukusebenzisa luphi ulimi?",
         whatName: "Ungubani igama lakho?",
         whatEmail: "Ngingathola i-imeyili yakho?",
-        whatEnquiry: "Sicela uthayiphe umbuzo wakho lapha:",
-        thankYou: "Ngiyabonga {name}! Umbuzo wakho uthunyelwe. Iqembu lethu lizoxhumana nawe ku-{email} maduzane.",
-        anotherEnquiry: "Ingabe ufuna ukuthumela omunye umbuzo? (yebo/cha)",
+        whatSuggestion: "Ucabanga ukuthi yini okufanele siyithuthukise? Sicela uthayiphe isiphakamiso sakho lapha:",
+        thankYou: "Ngiyabonga {name}! Isiphakamiso sakho sithunyelwe. Ithimba lethu lizosibuyekeza futhi lingakuthinta ku-{email}.",
+        anotherSuggestion: "Ingabe ufisa ukuthumela esinye isiphakamiso? (yebo/cha)",
         invalidLanguage: "Ngiyaxolisa, angikuzwisisi. Sicela uthayiphe igama lolimi olukhethileyo:",
-        goodbye: "Hamba kahle! Uyavuma ukubuya uma uneminye imibuzo."
+        goodbye: "Hamba kahle! Uyavuma ukubuya uma unezinye iziphakamiso."
     },
     isixhosa: {
         code: 'xh',
@@ -42,11 +44,11 @@ const languages = {
         welcome: "👋 Molo! NdinguNEXA. Ufuna ukusebenzisa luphi ulwimi?",
         whatName: "Ngubani igama lakho?",
         whatEmail: "Ndingayifumana i-imeyili yakho?",
-        whatEnquiry: "Nceda ufake umbuzo wakho apha:",
-        thankYou: "Enkosi {name}! Umbuzo wakho uthunyelwe. Iqela lethu liza kudibana nawe kwi-{email} kungekudala.",
-        anotherEnquiry: "Ingaba ufuna ukuthumela omnye umbuzo? (ewe/hayi)",
+        whatSuggestion: "Ucinga ukuba yintoni ekufuneka siyiphucule? Nceda ufake isiphakamiso sakho apha:",
+        thankYou: "Enkosi {name}! Isiphakamiso sakho sithunyelwe. Iqela lethu liza kusihlola kwaye linokuqhagamshelana nawe kwi-{email}.",
+        anotherSuggestion: "Ngaba ufuna ukuthumela esinye isiphakamiso? (ewe/hayi)",
         invalidLanguage: "Ndixolisa, andikuqondi. Nceda ufake igama lolwimi olukhethileyo:",
-        goodbye: "Hamba kakuhle! Uyamkela ukubuya ukuba uneminye imibuzo."
+        goodbye: "Hamba kakuhle! Uyamkela ukubuya ukuba unezinye iziphakamiso."
     },
     isizulu: {
         code: 'zu',
@@ -54,11 +56,11 @@ const languages = {
         welcome: "👋 Sawubona! NginguNEXA. Ufuna ukusebenzisa luphi ulimi?",
         whatName: "Ubani igama lakho?",
         whatEmail: "Ngingathola i-imeyili yakho?",
-        whatEnquiry: "Sicela uthayiphe umbuzo wakho lapha:",
-        thankYou: "Ngiyabonga {name}! Umbuzo wakho uthunyelwe. Iqembu lethu lizoxhumana nawe ku-{email} maduzane.",
-        anotherEnquiry: "Ingabe ufuna ukuthumela omunye umbuzo? (yebo/cha)",
+        whatSuggestion: "Ucabanga ukuthi yini okufanele siyithuthukise? Sicela uthayiphe isiphakamiso sakho lapha:",
+        thankYou: "Ngiyabonga {name}! Isiphakamiso sakho sithunyelwe. Ithimba lethu lizosibuyekeza futhi lingakuthinta ku-{email}.",
+        anotherSuggestion: "Ingabe ufisa ukuthumela esinye isiphakamiso? (yebo/cha)",
         invalidLanguage: "Ngiyaxolisa, angikuzwisisi. Sicela uthayiphe igama lolimi olikhethile:",
-        goodbye: "Hamba kahle! Uyamukela ukubuya uma uneminye imibuzo."
+        goodbye: "Hamba kahle! Uyamukela ukubuya uma unezinye iziphakamiso."
     },
     sepedi: {
         code: 'nso',
@@ -66,11 +68,11 @@ const languages = {
         welcome: "👋 Dumela! Ke NEXA. O batla go šomiša polelo efe?",
         whatName: "Ke mang leina la gago?",
         whatEmail: "Nka hwetša imeile ya gago?",
-        whatEnquiry: "Hle ngwale potšišo ya gago mo:",
-        thankYou: "Ke a leboga {name}! Potšišo ya gago e rometšwe. Sehlopha sa rena se tla ikgokaganya le wena go {email} ka pela.",
-        anotherEnquiry: "Na o batla go romela potšišo ye nngwe? (ee/aowa)",
+        whatSuggestion: "O nagana gore ke eng seo re swanetšego go se kaonafatša? Hle ngwale tšhišinyo ya gago mo:",
+        thankYou: "Ke a leboga {name}! Tšhišinyo ya gago e rometšwe. Sehlopha sa rena se tla e hlahloba gomme se ka ikgokaganya le wena go {email}.",
+        anotherSuggestion: "Na o batla go romela tšhišinyo ye nngwe? (ee/aowa)",
         invalidLanguage: "Ke kopa tšhwarelo, ga ke a kwešiša. Hle o ngwale leina la polelo yeo o e ratago:",
-        goodbye: "Šala gabotse! O amogela go boa ge o na le dipotšišo tše dingwe."
+        goodbye: "Šala gabotse! O amogela go boa ge o na le ditšhišinyo tše dingwe."
     },
     sesotho: {
         code: 'st',
@@ -78,11 +80,11 @@ const languages = {
         welcome: "👋 Dumela! Ke NEXA. O batla ho sebelisa puo efe?",
         whatName: "Ke mang lebitso la hau?",
         whatEmail: "Na nka fumana email ya hau?",
-        whatEnquiry: "Ka kopo ngola potso ya hau mona:",
-        thankYou: "Kea leboha {name}! Potso ya hau e rometsoe. Sehlopha sa rona se tla ikopanya le uena ho {email} haufinyane.",
-        anotherEnquiry: "Na o batla ho romela potso e ngoe? (e/che)",
-        invalidLanguage: "Ke kopa ts'oarelo, ha ke a utlwisisa. Ka kopo ngola lebitso la puo eo o e ratang:",
-        goodbye: "Sala hantle! O amohela ho boela ha o na le lipotso tse ling."
+        whatSuggestion: "U nahana hore ke eng eo re lokelang ho e ntlafatsa? Ka kopo ngola tlhahiso ea hau mona:",
+        thankYou: "Kea leboha {name}! Tlhahiso ea hau e rometsoe. Sehlopha sa rona se tla e hlahloba 'me se ka ikopanya le uena ho {email}.",
+        anotherSuggestion: "Na u batla ho romela tlhahiso e 'ngoe? (e/che)",
+        invalidLanguage: "Ke kopa ts'oarelo, ha ke a utlwisisa. Ka kopo ngola lebitso la puo eo u e ratang:",
+        goodbye: "Sala hantle! U amohela ho boela ha u na le litlhahiso tse ling."
     },
     setswana: {
         code: 'tn',
@@ -90,11 +92,11 @@ const languages = {
         welcome: "👋 Dumela! Ke NEXA. O batla go dirisa puo efe?",
         whatName: "Ke mang leina la gago?",
         whatEmail: "A nka bona imeile ya gago?",
-        whatEnquiry: "Tshitsinya potso ya gago fa:",
-        thankYou: "Ke a leboga {name}! Potso ya gago e romilwe. Setlhopha sa rona se tla ikgolaganya le wena go {email} ka bonako.",
-        anotherEnquiry: "A o batla go romela potso e nngwe? (ee/nnyaa)",
+        whatSuggestion: "O akanya gore ke eng se re tshwanetseng go se tokafatsa? Tshitsinya tshitshinyo ya gago fa:",
+        thankYou: "Ke a leboga {name}! Tshitshinyo ya gago e romilwe. Setlhopha sa rona se tla e tlhatlhoba mme se ka ikgolaganya le wena go {email}.",
+        anotherSuggestion: "A o batla go romela tshitshinyo e nngwe? (ee/nnyaa)",
         invalidLanguage: "Ke kopa tsweetswee, ga ke a go tlhaloganya. Tshitsinya leina la puo e o e ratang:",
-        goodbye: "Sala sentle! O amogela go boa fa o na le dipotso tse dingwe."
+        goodbye: "Sala sentle! O amogela go boa fa o na le ditshitshinyo tse dingwe."
     },
     siswati: {
         code: 'ss',
@@ -102,11 +104,11 @@ const languages = {
         welcome: "👋 Sawubona! NginguNEXA. Ufuna kusetjentisa luphi lolwimi?",
         whatName: "Ngubani libito lakho?",
         whatEmail: "Ngingayitfola i-imeyili yakho?",
-        whatEnquiry: "Sicela utayiphe umbuto wakho lapha:",
-        thankYou: "Ngiyabonga {name}! Umbuto wakho wentyelwe. Lihlombe letfu litakukhulumisisa kwi-{email} ngesikhatsi lesidze.",
-        anotherEnquiry: "Ingabe ufuna kwentela lomunye umbuto? (yebo/cha)",
+        whatSuggestion: "Ucabanga kutsi yini lokufanele siyitfutfukise? Sicela utayiphe siphakamiso sakho lapha:",
+        thankYou: "Ngiyabonga {name}! Siphakamiso sakho sentyelwe. Licembu letfu litakuhlola futsi lingakuthinta ku-{email}.",
+        anotherSuggestion: "Ingabe ufuna kwentela lesinye siphakamiso? (yebo/cha)",
         invalidLanguage: "Ngiyacolisa, angikuveti. Sicela utayiphe libito lelwimi lolukhetsilekile:",
-        goodbye: "Hamba kahle! Uyamukela kubuyela uma uneminye imibuto."
+        goodbye: "Hamba kahle! Uyamukela kubuyela uma unetinye tiphakamiso."
     },
     tshivenda: {
         code: 've',
@@ -114,23 +116,23 @@ const languages = {
         welcome: "👋 Ndaa! Ndi NEXA. U funa u shumisa luambo luni?",
         whatName: "Ndi wani dzina lavho?",
         whatEmail: "Ndi nga wana email yavho?",
-        whatEnquiry: "Rangwa u nga nda mbudziso yavho afha:",
-        thankYou: "Ndi a livhuwa {name}! Mbudziso yavho yo rumedzwa. Tshigwada tshashu tshi do vha tshi khou khou ita nga {email} nga maswathini.",
-        anotherEnquiry: "Naa vha funa u rumela mbudziso yoṱhe? (ee/a-a)",
+        whatSuggestion: "Ni humbula uri ndi mini zwine ra tea u zwi khwinisa? Rangwa u nga nda themendelo yavho afha:",
+        thankYou: "Ndi a livhuwa {name}! Themendelo yavho yo rumedzwa. Tshigwada tshashu tshi do i linga nahone tshi nga ni kwama nga {email}.",
+        anotherSuggestion: "Naa vha funa u rumela themendelo iṅwe? (ee/a-a)",
         invalidLanguage: "Ndi kombela khathulo, a thi pfesese. Rangwa u nga nda dzina la luambo lwa vhutungu ho vha vha:",
-        goodbye: "Swikelelani! Vha tanganedza u vhuya arali vha na mbudziso dzoṱhe."
+        goodbye: "Swikelelani! Vha tanganedza u vhuya arali vha na themendelo dzoṱhe."
     },
     xitsonga: {
         code: 'ts',
         name: 'Xitsonga',
-        welcome: "👋 Avuxeni! Ndzi NEXA. Hi ririmi rihi leri u lavaka ku tirhisa?\n\nHi kombela u thayipa vito ra ririmi leri u ri tsakelaka:",
+        welcome: "👋 Avuxeni! Ndzi NEXA. Hi ririmi rihi leri u lavaka ku tirhisa?",
         whatName: "Vito ra wena i mani?",
         whatEmail: "Xana ndzi nga kuma email ya wena?",
-        whatEnquiry: "Hi kombela u thayipa xivutiso xa wena laha:",
-        thankYou: "Ndza khensa {name}! Xivutiso xa wena xi rhumeriwile. Xipano xa hina xi ta ku tihlanganisa hi {email} hi ku hatlisa.",
-        anotherEnquiry: "Xana u lava ku rhumela xin'wana xivutiso? (ina/doo)",
+        whatSuggestion: "U ehleketa leswaku hi fanele hi antswisa yini? Hi kombela u thayipa xitsundzuxo xa wena laha:",
+        thankYou: "Ndza khensa {name}! Xitsundzuxo xa wena xi rhumeriwile. Xipano xa hina xi ta xi hlola naswona xi nga ku tihlanganisa hi {email}.",
+        anotherSuggestion: "Xana u lava ku rhumela xin'wana xitsundzuxo? (ina/doo)",
         invalidLanguage: "A ndzi twisisanga. Hi kombela u thayipa vito ra ririmi leri u ri tsakelaka:",
-        goodbye: "Sala kahle! U nga tlhela u vuya loko u ri na swivutiso swin'wana."
+        goodbye: "Sala kahle! U nga tlhela u vuya loko u ri na switsundzuxo swin'wana."
     }
 };
 
@@ -140,7 +142,7 @@ class NexaChatbot {
         this.userData = {
             name: '',
             email: '',
-            enquiry: '',
+            suggestion: '',
             language: 'english'
         };
         this.languageMap = {
@@ -198,7 +200,7 @@ class NexaChatbot {
         
         const typingDiv = document.createElement('div');
         typingDiv.className = 'chatbot-message bot typing';
-        typingDiv.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+        typingDiv.innerHTML = 'NEXA is typing<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
         messagesContainer.appendChild(typingDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         
@@ -229,11 +231,11 @@ class NexaChatbot {
             case 'getEmail':
                 this.handleEmail(inputText);
                 break;
-            case 'getEnquiry':
-                this.handleEnquiry(inputText);
+            case 'getSuggestion':
+                this.handleSuggestion(inputText);
                 break;
-            case 'askNewEnquiry':
-                this.handleNewEnquiry(inputText);
+            case 'askNewSuggestion':
+                this.handleNewSuggestion(inputText);
                 break;
         }
     }
@@ -279,23 +281,25 @@ class NexaChatbot {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (emailRegex.test(input)) {
                 this.userData.email = input;
-                this.conversationState = 'getEnquiry';
-                this.addBotMessage(languages[this.userData.language].whatEnquiry);
+                this.conversationState = 'getSuggestion';
+                // Greet with name and ask for suggestion
+                const greeting = languages[this.userData.language].whatSuggestion;
+                this.addBotMessage(`Hi ${this.userData.name}. ${greeting}`);
             } else {
                 this.addBotMessage("Please enter a valid email address:");
             }
         }, thinkingTime);
     }
 
-    handleEnquiry(input) {
+    handleSuggestion(input) {
         const typingIndicator = this.showTypingIndicator();
         const thinkingTime = this.getRandomThinkingTime();
         
         setTimeout(() => {
             this.removeTypingIndicator(typingIndicator);
             
-            this.userData.enquiry = input;
-            this.saveEnquiry();
+            this.userData.suggestion = input;
+            this.saveSuggestion();
             
             const thankYouMsg = languages[this.userData.language].thankYou
                 .replace('{name}', this.userData.name)
@@ -303,13 +307,13 @@ class NexaChatbot {
             this.addBotMessage(thankYouMsg);
             
             setTimeout(() => {
-                this.addBotMessage(languages[this.userData.language].anotherEnquiry);
-                this.conversationState = 'askNewEnquiry';
+                this.addBotMessage(languages[this.userData.language].anotherSuggestion);
+                this.conversationState = 'askNewSuggestion';
             }, 1000);
         }, thinkingTime);
     }
 
-    handleNewEnquiry(input) {
+    handleNewSuggestion(input) {
         const typingIndicator = this.showTypingIndicator();
         const thinkingTime = this.getRandomThinkingTime();
         
@@ -318,11 +322,14 @@ class NexaChatbot {
             
             input = input.toLowerCase().trim();
             
-            if (input === 'yes' || input === 'yebo' || input === 'ee' || input === 'ja' || input === 'ewe' || input === 'y' || input === 'ina') {
-                this.userData = { name: '', email: '', enquiry: '', language: this.userData.language };
+            // Yes in different languages
+            if (input === 'yes' || input === 'yebo' || input === 'ee' || input === 'ja' || input === 'ewe' || input === 'y' || input === 'ina' || input === 'e') {
+                this.userData = { name: '', email: '', suggestion: '', language: this.userData.language };
                 this.conversationState = 'getName';
                 this.addBotMessage(languages[this.userData.language].whatName);
-            } else if (input === 'no' || input === 'cha' || input === 'aowa' || input === 'che' || input === 'nnyaa' || input === 'nee' || input === 'hayi' || input === 'n' || input === 'doo') {
+            } 
+            // No in different languages
+            else if (input === 'no' || input === 'cha' || input === 'aowa' || input === 'che' || input === 'nnyaa' || input === 'nee' || input === 'hayi' || input === 'n' || input === 'doo' || input === 'a-a') {
                 this.addBotMessage(languages[this.userData.language].goodbye);
                 setTimeout(() => {
                     this.closeChatbot();
@@ -340,32 +347,41 @@ class NexaChatbot {
         }
         this.clearChat();
         this.conversationState = 'selectLanguage';
-        this.userData = { name: '', email: '', enquiry: '', language: 'english' };
+        this.userData = { name: '', email: '', suggestion: '', language: 'english' };
     }
 
-    async saveEnquiry() {
-        const enquiry = {
-            id: 'enquiry_' + Date.now(),
+    async saveSuggestion() {
+        const suggestion = {
+            id: 'suggestion_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
             name: this.userData.name,
             email: this.userData.email,
-            enquiry: this.userData.enquiry,
+            suggestion: this.userData.suggestion,
             timestamp: new Date().toISOString(),
             read: false,
             status: 'new',
-            language: this.userData.language
+            language: this.userData.language,
+            type: 'suggestion'
         };
         
         // Save to Firebase
-        import('./firebase-service.js').then(module => {
-            module.default.saveEnquiry(enquiry);
-        });
-        
-        if (window.updateEnquiryIndicator) {
-            updateEnquiryIndicator();
-        }
-        
-        if (typeof showCustomModal === 'function') {
-            showCustomModal('New Enquiry', `New enquiry received from ${this.userData.name}`, 'info');
+        try {
+            const { default: firebaseService } = await import('./firebase-service.js');
+            await firebaseService.saveEnquiry(suggestion);
+            
+            // Update indicator
+            if (window.updateSuggestionIndicator) {
+                window.updateSuggestionIndicator();
+            }
+            
+            // Show notification after 15-30 seconds
+            const delay = Math.floor(Math.random() * 15000) + 15000; // 15-30 seconds
+            setTimeout(() => {
+                if (typeof showCustomModal === 'function') {
+                    showCustomModal('New Suggestion', `New suggestion received from ${this.userData.name}`, 'info');
+                }
+            }, delay);
+        } catch (error) {
+            console.error('Error saving suggestion:', error);
         }
     }
 }
@@ -426,27 +442,33 @@ function sendChatMessage() {
     }
 }
 
-function updateEnquiryIndicator() {
-    // This will be handled by Firebase subscription in stats.js
-    // For now, just check localStorage as fallback
-    const enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
-    const unreadEnquiries = enquiries.filter(e => !e.read).length;
-    const indicator = document.getElementById('enquiryIndicator');
-    
-    if (indicator) {
-        if (unreadEnquiries > 0) {
-            indicator.style.display = 'flex';
-            indicator.textContent = unreadEnquiries > 9 ? '9+' : unreadEnquiries;
-        } else {
-            indicator.style.display = 'none';
+// Update suggestion indicator (replaces enquiry indicator)
+async function updateSuggestionIndicator() {
+    try {
+        const { default: firebaseService } = await import('./firebase-service.js');
+        const suggestions = await firebaseService.getEnquiries();
+        const unreadSuggestions = suggestions.filter(s => !s.read && s.type === 'suggestion').length;
+        const indicator = document.getElementById('enquiryIndicator');
+        
+        if (indicator) {
+            if (unreadSuggestions > 0) {
+                indicator.style.display = 'flex';
+                indicator.textContent = unreadSuggestions > 9 ? '9+' : unreadSuggestions;
+                indicator.title = `${unreadSuggestions} new suggestion${unreadSuggestions > 1 ? 's' : ''}`;
+            } else {
+                indicator.style.display = 'none';
+            }
         }
+    } catch (error) {
+        console.error('Error updating suggestion indicator:', error);
     }
 }
 
+// Make functions available globally
 window.initChatbot = initChatbot;
 window.handleChatInput = handleChatInput;
 window.sendChatMessage = sendChatMessage;
-window.updateEnquiryIndicator = updateEnquiryIndicator;
+window.updateSuggestionIndicator = updateSuggestionIndicator;
 window.nexaChatbot = nexaChatbot;
 window.closeChatbot = function() {
     nexaChatbot.closeChatbot();

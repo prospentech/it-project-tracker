@@ -300,8 +300,9 @@ class StatsSystem {
         return 'on-time';
     }
     
-    getEnquiryStats() {
-        const enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
+    // Renamed from getEnquiryStats to getSuggestionStats
+    getSuggestionStats() {
+        const suggestions = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
         const now = new Date();
         const today = now.toDateString();
         
@@ -309,15 +310,15 @@ class StatsSystem {
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         
         return {
-            totalEnquiries: enquiries.length,
-            newEnquiries: enquiries.filter(e => !e.read).length,
-            todayEnquiries: enquiries.filter(e => {
-                const enquiryDate = new Date(e.timestamp).toDateString();
-                return enquiryDate === today;
+            totalSuggestions: suggestions.length,
+            newSuggestions: suggestions.filter(e => !e.read).length,
+            todaySuggestions: suggestions.filter(e => {
+                const suggestionDate = new Date(e.timestamp).toDateString();
+                return suggestionDate === today;
             }).length,
-            recentEnquiries: enquiries.filter(e => {
-                const enquiryDate = new Date(e.timestamp);
-                return enquiryDate >= sevenDaysAgo;
+            recentSuggestions: suggestions.filter(e => {
+                const suggestionDate = new Date(e.timestamp);
+                return suggestionDate >= sevenDaysAgo;
             }).length
         };
     }
@@ -338,7 +339,7 @@ window.updateStatsDisplay = function() {
     const topContributors = statsSystem.getTopContributors();
     const clockingStats = statsSystem.getClockingStats();
     const todayClockingStatus = statsSystem.getTodayClockingStatus();
-    const enquiryStats = statsSystem.getEnquiryStats();
+    const suggestionStats = statsSystem.getSuggestionStats(); // Renamed
 
     let html = `
         <div class="section-box">
@@ -363,24 +364,25 @@ window.updateStatsDisplay = function() {
             </div>
         </div>
 
+        <!-- Renamed from Enquiry to Suggestion Statistics -->
         <div class="section-box">
-            <h2><i class="fas fa-envelope"></i> Enquiry Statistics (Last 7 Days)</h2>
+            <h2><i class="fas fa-lightbulb"></i> Suggestion Statistics (Last 7 Days)</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
                 <div style="background: rgba(56, 189, 248, 0.1); padding: 20px; border-radius: 10px; text-align: center; border-left: 4px solid var(--accent);">
-                    <h3 style="margin: 0 0 10px 0; color: var(--accent);">Total Enquiries</h3>
-                    <div style="font-size: 2rem; font-weight: bold;">${enquiryStats.totalEnquiries}</div>
+                    <h3 style="margin: 0 0 10px 0; color: var(--accent);">Total Suggestions</h3>
+                    <div style="font-size: 2rem; font-weight: bold;">${suggestionStats.totalSuggestions}</div>
                 </div>
                 <div style="background: rgba(239, 68, 68, 0.1); padding: 20px; border-radius: 10px; text-align: center; border-left: 4px solid var(--danger);">
-                    <h3 style="margin: 0 0 10px 0; color: var(--danger);">New Enquiries</h3>
-                    <div style="font-size: 2rem; font-weight: bold;">${enquiryStats.newEnquiries}</div>
+                    <h3 style="margin: 0 0 10px 0; color: var(--danger);">New Suggestions</h3>
+                    <div style="font-size: 2rem; font-weight: bold;">${suggestionStats.newSuggestions}</div>
                 </div>
                 <div style="background: rgba(34, 197, 94, 0.1); padding: 20px; border-radius: 10px; text-align: center; border-left: 4px solid var(--success);">
-                    <h3 style="margin: 0 0 10px 0; color: var(--success);">Today's Enquiries</h3>
-                    <div style="font-size: 2rem; font-weight: bold;">${enquiryStats.todayEnquiries}</div>
+                    <h3 style="margin: 0 0 10px 0; color: var(--success);">Today's Suggestions</h3>
+                    <div style="font-size: 2rem; font-weight: bold;">${suggestionStats.todaySuggestions}</div>
                 </div>
                 <div style="background: rgba(168, 85, 247, 0.1); padding: 20px; border-radius: 10px; text-align: center; border-left: 4px solid #a855f7;">
                     <h3 style="margin: 0 0 10px 0; color: #a855f7;">Recent (7 days)</h3>
-                    <div style="font-size: 2rem; font-weight: bold;">${enquiryStats.recentEnquiries}</div>
+                    <div style="font-size: 2rem; font-weight: bold;">${suggestionStats.recentSuggestions}</div>
                 </div>
             </div>
         </div>
@@ -640,7 +642,7 @@ function getActionColor(action) {
         'clock_in': '#22c55e',
         'clock_out': '#ef4444',
         'clock': '#3b82f6',
-        'enquiry': '#a855f7',
+        'suggestion': '#a855f7', // Changed from enquiry
         'task_create': '#38bdf8',
         'task_update': '#f59e0b',
         'task_delete': '#ef4444'

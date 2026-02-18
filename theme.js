@@ -1,106 +1,136 @@
-// Theme management
+// theme.js
 let themeSettings = {};
+let previewSettings = {};
 
-function applyTheme() {
+function applyTheme(settings = null) {
     const currentUser = auth.getCurrentUser();
     const username = currentUser ? currentUser.username : 'default';
     
-    // Load theme settings from localStorage or use defaults
-    themeSettings = JSON.parse(localStorage.getItem('prospenTheme_' + username)) || {
-        darkMode: true,
-        cardColor: '#1e293b',
-        accentColor: '#38bdf8',
-        fontFamily: "'Inter', sans-serif"
-    };
-    
-    // Apply dark/light mode
-    if (themeSettings.darkMode) {
-        document.body.classList.remove('light-mode');
-        document.documentElement.style.setProperty('--bg', '#020617');
-        document.documentElement.style.setProperty('--text-p', '#94a3b8');
-        document.documentElement.style.setProperty('--text-h', '#f1f5f9');
+    // Use preview settings if available, otherwise load saved
+    if (settings) {
+        previewSettings = settings;
     } else {
-        document.body.classList.add('light-mode');
-        document.documentElement.style.setProperty('--bg', '#f1f5f9');
-        document.documentElement.style.setProperty('--text-p', '#475569');
-        document.documentElement.style.setProperty('--text-h', '#0f172a');
+        themeSettings = JSON.parse(localStorage.getItem('prospenTheme_' + username)) || {
+            darkMode: true,
+            cardColor: '#1e293b',
+            accentColor: '#38bdf8',
+            fontFamily: "'Inter', sans-serif",
+            bgColor: '#020617'
+        };
+        previewSettings = { ...themeSettings };
+    }
+    
+    // Apply background color if set, otherwise use darkMode
+    if (previewSettings.bgColor) {
+        setBackgroundColor(previewSettings.bgColor);
+    } else {
+        // Fallback to darkMode toggle
+        if (previewSettings.darkMode) {
+            document.body.classList.remove('light-mode');
+            document.documentElement.style.setProperty('--bg', '#020617');
+            document.documentElement.style.setProperty('--text-p', '#94a3b8');
+            document.documentElement.style.setProperty('--text-h', '#f1f5f9');
+        } else {
+            document.body.classList.add('light-mode');
+            document.documentElement.style.setProperty('--bg', '#f1f5f9');
+            document.documentElement.style.setProperty('--text-p', '#475569');
+            document.documentElement.style.setProperty('--text-h', '#0f172a');
+        }
     }
     
     // Apply colors
-    document.documentElement.style.setProperty('--card', themeSettings.cardColor);
-    document.documentElement.style.setProperty('--accent', themeSettings.accentColor);
+    document.documentElement.style.setProperty('--card', previewSettings.cardColor);
+    document.documentElement.style.setProperty('--accent', previewSettings.accentColor);
     
-    // Calculate glow color (add 40 for opacity)
-    const accentColor = themeSettings.accentColor;
+    // Calculate glow color
+    const accentColor = previewSettings.accentColor;
     let glowColor = accentColor + '40';
     document.documentElement.style.setProperty('--accent-glow', glowColor);
     
     // Apply font family
-    document.body.style.fontFamily = themeSettings.fontFamily;
+    document.body.style.fontFamily = previewSettings.fontFamily;
     
-    // Update toggle states if elements exist
+    // Update toggle states
     const darkModeToggle = document.getElementById('darkModeToggle');
     const fontFamilySelect = document.getElementById('fontFamily');
     
-    if (darkModeToggle) darkModeToggle.checked = themeSettings.darkMode;
-    if (fontFamilySelect) fontFamilySelect.value = themeSettings.fontFamily;
+    if (darkModeToggle) darkModeToggle.checked = previewSettings.darkMode;
+    if (fontFamilySelect) fontFamilySelect.value = previewSettings.fontFamily;
     
     updateColorOptions();
 }
 
 function toggleDarkMode() {
-    const currentUser = auth.getCurrentUser();
-    const username = currentUser ? currentUser.username : 'default';
-    
-    themeSettings.darkMode = !themeSettings.darkMode;
-    localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
-    applyTheme();
-    
-    // Show confirmation
-    if (typeof showCustomModal === 'function') {
-        showCustomModal('Theme Updated', 'Dark mode ' + (themeSettings.darkMode ? 'enabled' : 'disabled'), 'success');
-    }
+    previewSettings.darkMode = !previewSettings.darkMode;
+    // Clear bgColor when toggling dark/light mode
+    delete previewSettings.bgColor;
+    applyTheme(previewSettings);
 }
 
 function setCardColor(color) {
-    const currentUser = auth.getCurrentUser();
-    const username = currentUser ? currentUser.username : 'default';
-    
-    themeSettings.cardColor = color;
-    localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
-    applyTheme();
-    
-    // Show confirmation
-    if (typeof showCustomModal === 'function') {
-        showCustomModal('Theme Updated', 'Card color changed', 'success');
-    }
+    previewSettings.cardColor = color;
+    applyTheme(previewSettings);
 }
 
 function setAccentColor(color) {
-    const currentUser = auth.getCurrentUser();
-    const username = currentUser ? currentUser.username : 'default';
+    previewSettings.accentColor = color;
+    applyTheme(previewSettings);
+}
+
+function setBackgroundColor(color) {
+    previewSettings.bgColor = color;
+    document.documentElement.style.setProperty('--bg', color);
     
-    themeSettings.accentColor = color;
-    localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
-    applyTheme();
+    // Adjust text colors based on background brightness
+    const isDark = isColorDark(color);
+    if (isDark) {
+        document.documentElement.style.setProperty('--text-p', '#94a3b8');
+        document.documentElement.style.setProperty('--text-h', '#f1f5f9');
+        previewSettings.darkMode = true;
+    } else {
+        document.documentElement.style.setProperty('--text-p', '#475569');
+        document.documentElement.style.setProperty('--text-h', '#0f172a');
+        previewSettings.darkMode = false;
+    }
     
-    // Show confirmation
-    if (typeof showCustomModal === 'function') {
-        showCustomModal('Theme Updated', 'Accent color changed', 'success');
+    // Update dark mode toggle
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        darkModeToggle.checked = isDark;
     }
 }
 
+// Helper function to determine if a color is dark
+function isColorDark(hexcolor) {
+    // Remove # if present
+    const color = hexcolor.replace('#', '');
+    
+    // Convert to RGB
+    const r = parseInt(color.substr(0, 2), 16);
+    const g = parseInt(color.substr(2, 2), 16);
+    const b = parseInt(color.substr(4, 2), 16);
+    
+    // Calculate brightness (YIQ formula)
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    
+    return brightness < 128;
+}
+
 function setFontFamily(font) {
+    previewSettings.fontFamily = font;
+    applyTheme(previewSettings);
+}
+
+function saveThemeSettings() {
     const currentUser = auth.getCurrentUser();
     const username = currentUser ? currentUser.username : 'default';
     
-    themeSettings.fontFamily = font;
-    localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
-    applyTheme();
+    localStorage.setItem('prospenTheme_' + username, JSON.stringify(previewSettings));
+    themeSettings = { ...previewSettings };
     
     // Show confirmation
     if (typeof showCustomModal === 'function') {
-        showCustomModal('Theme Updated', 'Font family updated', 'success');
+        showCustomModal('Theme Updated', 'Accent colour changed', 'success');
     }
 }
 
@@ -108,16 +138,15 @@ function resetSettings() {
     const currentUser = auth.getCurrentUser();
     const username = currentUser ? currentUser.username : 'default';
     
-    themeSettings = {
+    previewSettings = {
         darkMode: true,
         cardColor: '#1e293b',
         accentColor: '#38bdf8',
-        fontFamily: "'Inter', sans-serif"
+        fontFamily: "'Inter', sans-serif",
+        bgColor: '#020617'
     };
-    localStorage.setItem('prospenTheme_' + username, JSON.stringify(themeSettings));
-    applyTheme();
+    applyTheme(previewSettings);
     
-    // Show confirmation
     if (typeof showCustomModal === 'function') {
         showCustomModal('Theme Reset', 'All settings restored to default', 'success');
     }
@@ -127,8 +156,17 @@ function updateColorOptions() {
     document.querySelectorAll('.color-option').forEach(option => {
         option.classList.remove('active');
         const bgColor = option.style.background || option.style.backgroundColor;
-        if (bgColor && (bgColor === themeSettings.cardColor || bgColor === themeSettings.accentColor)) {
-            option.classList.add('active');
+        if (bgColor) {
+            // Extract hex color from style string
+            const hexMatch = bgColor.match(/#[A-Fa-f0-9]{6}/);
+            if (hexMatch) {
+                const hexColor = hexMatch[0];
+                if (hexColor === previewSettings.cardColor || 
+                    hexColor === previewSettings.accentColor ||
+                    hexColor === previewSettings.bgColor) {
+                    option.classList.add('active');
+                }
+            }
         }
     });
 }
@@ -138,5 +176,7 @@ window.applyTheme = applyTheme;
 window.toggleDarkMode = toggleDarkMode;
 window.setCardColor = setCardColor;
 window.setAccentColor = setAccentColor;
+window.setBackgroundColor = setBackgroundColor;
 window.setFontFamily = setFontFamily;
 window.resetSettings = resetSettings;
+window.saveThemeSettings = saveThemeSettings;

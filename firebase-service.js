@@ -170,6 +170,7 @@ class FirebaseService {
     }
   }
 
+  // In firebase-service.js, replace the saveUpdate method:
   async saveUpdate(update) {
     try {
       const updateData = {
@@ -178,12 +179,18 @@ class FirebaseService {
         user: this.currentUser?.username || 'system'
       };
       
-      const newUpdateRef = push(ref(db, 'updates'));
-      await set(newUpdateRef, updateData);
-      
-      await this.recordActivity('post_update', `Posted update: ${update.title}`);
-      
-      return { success: true, id: newUpdateRef.key };
+      // If update has an id, use it, otherwise create new
+      if (update.id) {
+        await set(ref(db, `updates/${update.id}`), updateData);
+        return { success: true, id: update.id };
+      } else {
+        const newUpdateRef = push(ref(db, 'updates'));
+        await set(newUpdateRef, updateData);
+        
+        await this.recordActivity('post_update', `Posted update: ${update.title}`);
+        
+        return { success: true, id: newUpdateRef.key };
+      }
     } catch (error) {
       console.error('Error saving update:', error);
       return { success: false, error: error.message };
@@ -280,92 +287,148 @@ class FirebaseService {
   }
 
   // Get all users with their profiles and online status
+  // In firebase-service.js, update getAllUsers method
   async getAllUsers() {
-    try {
-      const usersSnapshot = await get(ref(db, 'users'));
-      const profilesSnapshot = await get(ref(db, 'profiles'));
-      const sessionsSnapshot = await get(ref(db, 'sessions'));
-      
-      const users = [];
-      const userMap = new Map();
-      
-      // Get user data from auth (via users node)
-      if (usersSnapshot.exists()) {
-        usersSnapshot.forEach((child) => {
-          const userData = child.val();
-          userMap.set(child.key, {
-            uid: child.key,
-            username: userData.username || userData.email?.split('@')[0],
-            email: userData.email,
-            ...userData
-          });
-        });
-      }
-      
-      // Add profile data
-      if (profilesSnapshot.exists()) {
-        profilesSnapshot.forEach((child) => {
-          const profileData = child.val();
-          const existingUser = userMap.get(child.key) || {};
-          userMap.set(child.key, {
-            ...existingUser,
-            uid: child.key,
-            username: existingUser.username || profileData.username,
-            fullName: profileData.fullName || profileData.username,
-            email: profileData.email || existingUser.email,
-            role: profileData.role || 'Team Member',
-            ...profileData
-          });
-        });
-      }
-      
-      // Add online status
-      const onlineUsers = new Set();
-      if (sessionsSnapshot.exists()) {
-        sessionsSnapshot.forEach((child) => {
-          if (child.val().online) {
-            onlineUsers.add(child.val().username);
+      try {
+          const usersSnapshot = await get(ref(db, 'users'));
+          const profilesSnapshot = await get(ref(db, 'profiles'));
+          const sessionsSnapshot = await get(ref(db, 'sessions'));
+          
+          const users = [];
+          const userMap = new Map();
+          
+          // Get user data from auth (via users node)
+          if (usersSnapshot.exists()) {
+              usersSnapshot.forEach((child) => {
+                  const userData = child.val();
+                  userMap.set(child.key, {
+                      uid: child.key,
+                      username: userData.username || userData.email?.split('@')[0],
+                      email: userData.email,
+                      ...userData
+                  });
+              });
           }
-        });
-      }
-      
-      userMap.forEach((user) => {
-        if (user.username) {
-          user.online = onlineUsers.has(user.username);
-          users.push(user);
-        }
-      });
-      
-      // Default users if none exist
-      if (users.length === 0) {
-        const defaultUsers = [
-          { username: 'admin', fullName: 'Administrator', email: 'admin@prospen.co.za', role: 'Administrator' },
-          { username: 'Junior', fullName: 'Junior', email: 'techsupport@prospen.co.za', role: 'Team Member' },
-          { username: 'Buhle', fullName: 'Buhle', email: 'buhle@prospen.co.za', role: 'Team Member' },
-          { username: 'AJay', fullName: 'AJay', email: 'techsupport@prospen.co.za', role: 'Team Member' }
-        ];
-        
-        defaultUsers.forEach((user, index) => {
-          users.push({
-            uid: `default_${index}`,
-            ...user,
-            online: false
+          
+          // Add profile data
+          if (profilesSnapshot.exists()) {
+              profilesSnapshot.forEach((child) => {
+                  const profileData = child.val();
+                  const existingUser = userMap.get(child.key) || {};
+                  userMap.set(child.key, {
+                      ...existingUser,
+                      uid: child.key,
+                      username: existingUser.username || profileData.username,
+                      fullName: profileData.fullName || profileData.username,
+                      email: profileData.email || existingUser.email,
+                      role: profileData.role || 'Team Member',
+                      ...profileData
+                  });
+              });
+          }
+          
+          // Add online status - Check last active within 5 minutes
+          const onlineUsers = new Set();
+          if (sessionsSnapshot.exists()) {
+              const fiveMinutesAgo = new Date();
+              fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+              
+              sessionsSnapshot.forEach((child) => {
+                  const session = child.val();
+                  if (session.online && session.lastActive) {
+                      const lastActive = new Date(session.lastActive);
+                      if (lastActive > fiveMinutesAgo) {
+                          onlineUsers.add(session.username);
+                      }
+                  }
+              });
+          }
+          
+          userMap.forEach((user) => {
+              if (user.username) {
+                  user.online = onlineUsers.has(user.username);
+                  users.push(user);
+              }
           });
-        });
+          
+          // Default users if none exist - UPDATED with correct user information
+          if (users.length === 0) {
+              const defaultUsers = [
+                  { 
+                      username: 'admin', 
+                      fullName: 'admin', 
+                      email: 'admin@prospen.co.za', 
+                      role: 'Administrator' 
+                  },
+                  { 
+                      username: 'Junior', 
+                      fullName: 'techsupport', 
+                      email: 'techsupport@prospen.co.za', 
+                      role: 'Team Member' 
+                  },
+                  { 
+                      username: 'Buhle', 
+                      fullName: 'buhle', 
+                      email: 'buhle@prospen.co.za', 
+                      role: 'Team Member' 
+                  },
+                  { 
+                      username: 'AJay', 
+                      fullName: 'infotech', 
+                      email: 'infotech@prospen.co.za', 
+                      role: 'Team Member' 
+                  }
+              ];
+              
+              defaultUsers.forEach((user, index) => {
+                  users.push({
+                      uid: `default_${index}`,
+                      ...user,
+                      online: false
+                  });
+              });
+          }
+          
+          return users;
+      } catch (error) {
+          console.error('Error getting users:', error);
+          
+          // Return default users as fallback - UPDATED with correct user information
+          return [
+              { 
+                  uid: '1', 
+                  username: 'admin', 
+                  fullName: 'admin', 
+                  email: 'admin@prospen.co.za', 
+                  role: 'Administrator', 
+                  online: false 
+              },
+              { 
+                  uid: '2', 
+                  username: 'Junior', 
+                  fullName: 'techsupport', 
+                  email: 'techsupport@prospen.co.za', 
+                  role: 'Team Member', 
+                  online: false 
+              },
+              { 
+                  uid: '3', 
+                  username: 'Buhle', 
+                  fullName: 'buhle', 
+                  email: 'buhle@prospen.co.za', 
+                  role: 'Team Member', 
+                  online: false 
+              },
+              { 
+                  uid: '4', 
+                  username: 'AJay', 
+                  fullName: 'infotech', 
+                  email: 'infotech@prospen.co.za', 
+                  role: 'Team Member', 
+                  online: false 
+              }
+          ];
       }
-      
-      return users;
-    } catch (error) {
-      console.error('Error getting users:', error);
-      
-      // Return default users as fallback
-      return [
-        { uid: '1', username: 'admin', fullName: 'Administrator', email: 'admin@prospen.co.za', role: 'Administrator', online: false },
-        { uid: '2', username: 'Junior', fullName: 'Junior', email: 'techsupport@prospen.co.za', role: 'Team Member', online: false },
-        { uid: '3', username: 'Buhle', fullName: 'Buhle', email: 'buhle@prospen.co.za', role: 'Team Member', online: false },
-        { uid: '4', username: 'AJay', fullName: 'AJay', email: 'techsupport@prospen.co.za', role: 'Team Member', online: false }
-      ];
-    }
   }
 
   // Reset user password (admin only) - Note: This requires Firebase Admin SDK
@@ -384,6 +447,80 @@ class FirebaseService {
       console.error('Error resetting password:', error);
       return { success: false, error: error.message };
     }
+  }
+
+  // Version Board methods
+  async getVersions() {
+    try {
+      const snapshot = await get(ref(db, 'versions'));
+      if (!snapshot.exists()) return [];
+      
+      const versions = [];
+      snapshot.forEach((child) => {
+        versions.push({ id: child.key, ...child.val() });
+      });
+      
+      return versions.sort((a, b) => new Date(b.implDate) - new Date(a.implDate));
+    } catch (error) {
+      console.error('Error getting versions:', error);
+      return [];
+    }
+  }
+
+  async saveVersion(version) {
+    try {
+      const versionId = version.id || push(ref(db, 'versions')).key;
+      const versionRef = ref(db, `versions/${versionId}`);
+      
+      const versionData = {
+        ...version,
+        id: versionId,
+        lastUpdated: new Date().toISOString(),
+        lastUpdatedBy: this.currentUser?.username || 'system'
+      };
+      
+      await set(versionRef, versionData);
+      
+      await this.recordActivity(
+        version.id ? 'update' : 'create',
+        `Version "${version.title}" ${version.id ? 'updated' : 'created'}`
+      );
+      
+      return { success: true, id: versionId };
+    } catch (error) {
+      console.error('Error saving version:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async deleteVersion(versionId) {
+    try {
+      await remove(ref(db, `versions/${versionId}`));
+      await this.recordActivity('delete', 'Version deleted');
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting version:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  subscribeToVersions(callback) {
+    const versionsRef = ref(db, 'versions');
+    return onValue(versionsRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        callback([]);
+        return;
+      }
+      
+      const versions = [];
+      snapshot.forEach((child) => {
+        versions.push({ id: child.key, ...child.val() });
+      });
+      
+      callback(versions.sort((a, b) => new Date(b.implDate) - new Date(a.implDate)));
+    }, (error) => {
+      console.error('Versions subscription error:', error);
+    });
   }
 
   // Enquiries

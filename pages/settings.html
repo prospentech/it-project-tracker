@@ -12,15 +12,15 @@
     <script type="import" src="firebase-service.js"></script>
 
     <!-- Make your other scripts type="module" -->
-    <script type="module" src="/auth.js"></script>
-    <script type="module" src="/projects.js"></script>
-    <script type="module" src="/updates.js"></script>
-    <script type="module" src="/clocking.js"></script>
-    <script type="module" src="/chatbot.js"></script>
-    <script type="module" src="/modal.js"></script>
-    <script type="module" src="/theme.js"></script>
-    <script type="module" src="/stats.js"></script>
-    <script type="module" src="/main.js"></script>
+    <script type="module" src="../auth.js"></script>
+    <script type="module" src="../projects.js"></script>
+    <script type="module" src="../updates.js"></script>
+    <script type="module" src="../clocking.js"></script>
+    <script type="module" src="../chatbot.js"></script>
+    <script type="module" src="../modal.js"></script>
+    <script type="module" src="../theme.js"></script>
+    <script type="module" src="../stats.js"></script>
+    <script type="module" src="../main.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="../style.css">
@@ -131,30 +131,86 @@
             </div>
 
             <div class="settings-section">
+                <h3>Background Colors</h3>
+                <div class="color-grid" style="grid-template-columns: repeat(6, 1fr);">
+                    <div class="color-option" style="background: #FFFFFF;" onclick="setBackgroundColor('#FFFFFF')" title="White"></div>
+                    <div class="color-option" style="background: #F8FAFC;" onclick="setBackgroundColor('#F8FAFC')" title="Off White"></div>
+                    <div class="color-option" style="background: #E5E7EB;" onclick="setBackgroundColor('#E5E7EB')" title="Light Grey"></div>
+                    <div class="color-option" style="background: #9CA3AF;" onclick="setBackgroundColor('#9CA3AF')" title="Medium Grey"></div>
+                    <div class="color-option" style="background: #374151;" onclick="setBackgroundColor('#374151')" title="Dark Grey"></div>
+                    <div class="color-option" style="background: #000000;" onclick="setBackgroundColor('#000000')" title="Black"></div>
+                    <div class="color-option" style="background: #111827;" onclick="setBackgroundColor('#111827')" title="Charcoal"></div>
+                    <div class="color-option" style="background: #0A1F44;" onclick="setBackgroundColor('#0A1F44')" title="Navy Blue"></div>
+                    <div class="color-option" style="background: #1E4DB7;" onclick="setBackgroundColor('#1E4DB7')" title="Royal Blue"></div>
+                    <div class="color-option" style="background: #38BDF8;" onclick="setBackgroundColor('#38BDF8')" title="Sky Blue"></div>
+                    <div class="color-option" style="background: #2C5282;" onclick="setBackgroundColor('#2C5282')" title="Steel Blue"></div>
+                    <div class="color-option" style="background: #059669;" onclick="setBackgroundColor('#059669')" title="Emerald Green"></div>
+                    <div class="color-option" style="background: #0F766E;" onclick="setBackgroundColor('#0F766E')" title="Teal"></div>
+                    <div class="color-option" style="background: #A7F3D0;" onclick="setBackgroundColor('#A7F3D0')" title="Mint Green"></div>
+                    <div class="color-option" style="background: #F7931E;" onclick="setBackgroundColor('#F7931E')" title="Orange"></div>
+                    <div class="color-option" style="background: #EA580C;" onclick="setBackgroundColor('#EA580C')" title="Dark Orange"></div>
+                    <div class="color-option" style="background: #F59E0B;" onclick="setBackgroundColor('#F59E0B')" title="Amber"></div>
+                    <div class="color-option" style="background: #DC2626;" onclick="setBackgroundColor('#DC2626')" title="Red"></div>
+                    <div class="color-option" style="background: #991B1B;" onclick="setBackgroundColor('#991B1B')" title="Dark Red"></div>
+                    <div class="color-option" style="background: #4C1D95;" onclick="setBackgroundColor('#4C1D95')" title="Deep Purple"></div>
+                    <div class="color-option" style="background: #C9A227;" onclick="setBackgroundColor('#C9A227')" title="Gold"></div>
+                    <div class="color-option" style="background: #020617;" onclick="setBackgroundColor('#020617')" title="Dark Blue (Default)"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
                 <h3>Card Colors</h3>
-                <div class="color-grid">
-                    <div class="color-option" style="background: #1e293b;" onclick="setCardColor('#1e293b')"></div>
-                    <div class="color-option" style="background: #334155;" onclick="setCardColor('#334155')"></div>
-                    <div class="color-option" style="background: #0f172a;" onclick="setCardColor('#0f172a')"></div>
-                    <div class="color-option" style="background: #1e1b4b;" onclick="setCardColor('#1e1b4b')"></div>
-                    <div class="color-option" style="background: #1c1917;" onclick="setCardColor('#1c1917')"></div>
-                    <div class="color-option" style="background: #064e3b;" onclick="setCardColor('#064e3b')"></div>
-                    <div class="color-option" style="background: #451a03;" onclick="setCardColor('#451a03')"></div>
-                    <div class="color-option" style="background: #500724;" onclick="setCardColor('#500724')"></div>
+                <div class="color-grid" style="grid-template-columns: repeat(6, 1fr);">
+                    <div class="color-option" style="background: #FFFFFF;" onclick="setCardColor('#FFFFFF')" title="White"></div>
+                    <div class="color-option" style="background: #F8FAFC;" onclick="setCardColor('#F8FAFC')" title="Off White"></div>
+                    <div class="color-option" style="background: #E5E7EB;" onclick="setCardColor('#E5E7EB')" title="Light Grey"></div>
+                    <div class="color-option" style="background: #9CA3AF;" onclick="setCardColor('#9CA3AF')" title="Medium Grey"></div>
+                    <div class="color-option" style="background: #374151;" onclick="setCardColor('#374151')" title="Dark Grey"></div>
+                    <div class="color-option" style="background: #000000;" onclick="setCardColor('#000000')" title="Black"></div>
+                    <div class="color-option" style="background: #111827;" onclick="setCardColor('#111827')" title="Charcoal"></div>
+                    <div class="color-option" style="background: #0A1F44;" onclick="setCardColor('#0A1F44')" title="Navy Blue"></div>
+                    <div class="color-option" style="background: #1E4DB7;" onclick="setCardColor('#1E4DB7')" title="Royal Blue"></div>
+                    <div class="color-option" style="background: #38BDF8;" onclick="setCardColor('#38BDF8')" title="Sky Blue"></div>
+                    <div class="color-option" style="background: #2C5282;" onclick="setCardColor('#2C5282')" title="Steel Blue"></div>
+                    <div class="color-option" style="background: #059669;" onclick="setCardColor('#059669')" title="Emerald Green"></div>
+                    <div class="color-option" style="background: #0F766E;" onclick="setCardColor('#0F766E')" title="Teal"></div>
+                    <div class="color-option" style="background: #A7F3D0;" onclick="setCardColor('#A7F3D0')" title="Mint Green"></div>
+                    <div class="color-option" style="background: #F7931E;" onclick="setCardColor('#F7931E')" title="Orange"></div>
+                    <div class="color-option" style="background: #EA580C;" onclick="setCardColor('#EA580C')" title="Dark Orange"></div>
+                    <div class="color-option" style="background: #F59E0B;" onclick="setCardColor('#F59E0B')" title="Amber"></div>
+                    <div class="color-option" style="background: #DC2626;" onclick="setCardColor('#DC2626')" title="Red"></div>
+                    <div class="color-option" style="background: #991B1B;" onclick="setCardColor('#991B1B')" title="Dark Red"></div>
+                    <div class="color-option" style="background: #4C1D95;" onclick="setCardColor('#4C1D95')" title="Deep Purple"></div>
+                    <div class="color-option" style="background: #C9A227;" onclick="setCardColor('#C9A227')" title="Gold"></div>
+                    <div class="color-option" style="background: #1e293b;" onclick="setCardColor('#1e293b')" title="Dark Slate (Default)"></div>
                 </div>
             </div>
 
             <div class="settings-section">
                 <h3>Accent Colors</h3>
-                <div class="color-grid">
-                    <div class="color-option" style="background: #38bdf8;" onclick="setAccentColor('#38bdf8')"></div>
-                    <div class="color-option" style="background: #0284c7;" onclick="setAccentColor('#0284c7')"></div>
-                    <div class="color-option" style="background: #22c55e;" onclick="setAccentColor('#22c55e')"></div>
-                    <div class="color-option" style="background: #eab308;" onclick="setAccentColor('#eab308')"></div>
-                    <div class="color-option" style="background: #f97316;" onclick="setAccentColor('#f97316')"></div>
-                    <div class="color-option" style="background: #ef4444;" onclick="setAccentColor('#ef4444')"></div>
-                    <div class="color-option" style="background: #a855f7;" onclick="setAccentColor('#a855f7')"></div>
-                    <div class="color-option" style="background: #ec4899;" onclick="setAccentColor('#ec4899')"></div>
+                <div class="color-grid" style="grid-template-columns: repeat(6, 1fr);">
+                    <div class="color-option" style="background: #FFFFFF;" onclick="setAccentColor('#FFFFFF')" title="White"></div>
+                    <div class="color-option" style="background: #F8FAFC;" onclick="setAccentColor('#F8FAFC')" title="Off White"></div>
+                    <div class="color-option" style="background: #E5E7EB;" onclick="setAccentColor('#E5E7EB')" title="Light Grey"></div>
+                    <div class="color-option" style="background: #9CA3AF;" onclick="setAccentColor('#9CA3AF')" title="Medium Grey"></div>
+                    <div class="color-option" style="background: #374151;" onclick="setAccentColor('#374151')" title="Dark Grey"></div>
+                    <div class="color-option" style="background: #000000;" onclick="setAccentColor('#000000')" title="Black"></div>
+                    <div class="color-option" style="background: #111827;" onclick="setAccentColor('#111827')" title="Charcoal"></div>
+                    <div class="color-option" style="background: #0A1F44;" onclick="setAccentColor('#0A1F44')" title="Navy Blue"></div>
+                    <div class="color-option" style="background: #1E4DB7;" onclick="setAccentColor('#1E4DB7')" title="Royal Blue"></div>
+                    <div class="color-option" style="background: #38BDF8;" onclick="setAccentColor('#38BDF8')" title="Sky Blue"></div>
+                    <div class="color-option" style="background: #2C5282;" onclick="setAccentColor('#2C5282')" title="Steel Blue"></div>
+                    <div class="color-option" style="background: #059669;" onclick="setAccentColor('#059669')" title="Emerald Green"></div>
+                    <div class="color-option" style="background: #0F766E;" onclick="setAccentColor('#0F766E')" title="Teal"></div>
+                    <div class="color-option" style="background: #A7F3D0;" onclick="setAccentColor('#A7F3D0')" title="Mint Green"></div>
+                    <div class="color-option" style="background: #F7931E;" onclick="setAccentColor('#F7931E')" title="Orange"></div>
+                    <div class="color-option" style="background: #EA580C;" onclick="setAccentColor('#EA580C')" title="Dark Orange"></div>
+                    <div class="color-option" style="background: #F59E0B;" onclick="setAccentColor('#F59E0B')" title="Amber"></div>
+                    <div class="color-option" style="background: #DC2626;" onclick="setAccentColor('#DC2626')" title="Red"></div>
+                    <div class="color-option" style="background: #991B1B;" onclick="setAccentColor('#991B1B')" title="Dark Red"></div>
+                    <div class="color-option" style="background: #4C1D95;" onclick="setAccentColor('#4C1D95')" title="Deep Purple"></div>
+                    <div class="color-option" style="background: #C9A227;" onclick="setAccentColor('#C9A227')" title="Gold"></div>
+                    <div class="color-option" style="background: #38bdf8;" onclick="setAccentColor('#38bdf8')" title="Sky Blue (Default)"></div>
                 </div>
             </div>
 
@@ -174,7 +230,7 @@
 
             <div class="btn-group">
                 <button class="btn-secondary" onclick="resetSettings()">Reset All</button>
-                <button class="btn-primary" onclick="window.location.href='../index.html'">Save & Return</button>
+                <button type="button" class="btn-primary" onclick="saveThemeSettings(); window.location.href='../index.html'">Save & Return</button>
             </div>
         </div>
     </div>

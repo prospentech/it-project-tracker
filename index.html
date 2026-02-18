@@ -11,16 +11,17 @@
     <script type="import" src="firebase-service.js"></script>
 
     <!-- Make your other scripts type="module" -->
-    <script type="module" src="/auth.js"></script>
-    <script type="module" src="/projects.js"></script>
-    <script type="module" src="/updates.js"></script>
-    <script type="module" src="/clocking.js"></script>
-    <script type="module" src="/chatbot.js"></script>
-    <script type="module" src="/modal.js"></script>
-    <script type="module" src="/theme.js"></script>
-    <script type="module" src="/stats.js"></script>
-    <script type="module" src="/tasks.js"></script>
-    <script type="module" src="/main.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="projects.js"></script>
+    <script type="module" src="updates.js"></script>
+    <script type="module" src="clocking.js"></script>
+    <script type="module" src="chatbot.js"></script>
+    <script type="module" src="modal.js"></script>
+    <script type="module" src="theme.js"></script>
+    <script type="module" src="stats.js"></script>
+    <script type="module" src="tasks.js"></script>
+    <script type="module" src="main.js"></script>
+    <script type="module" src="i18n.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -36,18 +37,6 @@
                 <h2>Welcome!</h2>
                 <p id="welcomeMessage">Loading your dashboard...</p>
             </div>
-            <div class="slide team-slide">
-                <h2>Meet Our Team</h2>
-                <p>Admin • Junior • Buhle • AJay - Working together to deliver excellence</p>
-            </div>
-            <div class="slide stats-slide">
-                <h2>Top Performing Project</h2>
-                <p id="topProjectText">Loading top project...</p>
-            </div>
-            <div class="slide" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
-                <h2>Real-time Updates</h2>
-                <p>Track all changes with detailed history and statistics</p>
-            </div>
             <div class="slide" style="background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);">
                 <h2>Chat Support</h2>
                 <p>Get instant help with our AI-powered chatbot assistant</p>
@@ -55,26 +44,45 @@
             <div class="slide-controls">
                 <div class="slide-dot active" onclick="goToSlide(0)"></div>
                 <div class="slide-dot" onclick="goToSlide(1)"></div>
-                <div class="slide-dot" onclick="goToSlide(2)"></div>
-                <div class="slide-dot" onclick="goToSlide(3)"></div>
-                <div class="slide-dot" onclick="goToSlide(4)"></div>
             </div>
         </div>
 
-        <!-- Projects Grid (Limited to 3) - Moved to top -->
-        <div class="updates-section">
-            <div class="updates-header">
-                <h2><i class="fas fa-project-diagram"></i> Recent Projects</h2>
-                <button class="control-btn" onclick="window.location.href='pages/all-projects.html'">
-                    <i class="fas fa-list"></i> View All
-                </button>
-            </div>
-            <div class="project-grid" id="project-grid">
-                <!-- Projects will be loaded here (limited to 3) -->
+        <!-- Quick Actions Section -->
+        <div class="quick-actions-section" style="margin-bottom: 40px;">
+            <h2 style="color: var(--accent); margin-bottom: 20px;"><i class="fas fa-bolt"></i> Quick Actions</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                <a href="pages/version-board.html" class="card" style="text-decoration: none; display: block; text-align: center; padding: 20px;">
+                    <i class="fas fa-code-branch fa-3x" style="color: var(--accent); margin-bottom: 10px;"></i>
+                    <h3 style="margin: 0;">Version Board</h3>
+                </a>
+                <a href="pages/tasks.html" class="card" style="text-decoration: none; display: block; text-align: center; padding: 20px;">
+                    <i class="fas fa-tasks fa-3x" style="color: var(--accent); margin-bottom: 10px;"></i>
+                    <h3 style="margin: 0;">View Tasks</h3>
+                </a>
+                <a href="pages/all-projects.html" class="card" style="text-decoration: none; display: block; text-align: center; padding: 20px;">
+                    <i class="fas fa-project-diagram fa-3x" style="color: var(--accent); margin-bottom: 10px;"></i>
+                    <h3 style="margin: 0;">View Projects</h3>
+                </a>
+                <a href="pages/all-updates.html" class="card" style="text-decoration: none; display: block; text-align: center; padding: 20px;">
+                    <i class="fas fa-bullhorn fa-3x" style="color: var(--accent); margin-bottom: 10px;"></i>
+                    <h3 style="margin: 0;">View Updates</h3>
+                </a>
+                <a href="pages/statistics.html" class="card" style="text-decoration: none; display: block; text-align: center; padding: 20px;">
+                    <i class="fas fa-chart-bar fa-3x" style="color: var(--accent); margin-bottom: 10px;"></i>
+                    <h3 style="margin: 0;">Statistics</h3>
+                </a>
+                <a href="pages/settings.html" class="card" style="text-decoration: none; display: block; text-align: center; padding: 20px;">
+                    <i class="fas fa-cog fa-3x" style="color: var(--accent); margin-bottom: 10px;"></i>
+                    <h3 style="margin: 0;">Settings</h3>
+                </a>
+                <a href="pages/enquiries.html" class="card" style="text-decoration: none; display: block; text-align: center; padding: 20px;">
+                    <i class="fas fa-lightbulb fa-3x" style="color: var(--accent); margin-bottom: 10px;"></i>
+                    <h3 style="margin: 0;">Suggestions</h3>
+                </a>
             </div>
         </div>
 
-        <!-- Updates Section - Moved below projects -->
+        <!-- Updates Section -->
         <div class="updates-section">
             <div class="updates-header">
                 <h2><i class="fas fa-bullhorn"></i> Updates</h2>
@@ -114,19 +122,19 @@
                 }
                 
                 // Load header
-                const headerResponse = await fetch('components/header.html');
+                const headerResponse = await fetch('./components/header.html');
                 document.getElementById('header-container').innerHTML = await headerResponse.text();
                 
                 // Load footer
-                const footerResponse = await fetch('components/footer.html');
+                const footerResponse = await fetch('./components/footer.html');
                 document.getElementById('footer-container').innerHTML = await footerResponse.text();
                 
                 // Load modals
-                const modalsResponse = await fetch('components/modals.html');
+                const modalsResponse = await fetch('./components/modals.html');
                 document.getElementById('modals-container').innerHTML = await modalsResponse.text();
                 
                 // Load chatbot
-                const chatbotResponse = await fetch('components/chatbot.html');
+                const chatbotResponse = await fetch('./components/chatbot.html');
                 const chatbotHTML = await chatbotResponse.text();
                 document.getElementById('chatbot-container').innerHTML = chatbotHTML;
                 

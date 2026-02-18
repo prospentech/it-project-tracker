@@ -8,26 +8,54 @@ function confirmClockAction() {
     
     const status = clockingSystem.getClockingStatus(currentUser.username);
     const action = status.clockedIn ? 'out' : 'in';
-    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     
-    const modal = document.createElement('div');
-    modal.className = 'custom-modal-overlay confirmation-modal';
-    modal.innerHTML = `
-        <div class="custom-modal ${status.clockedIn ? 'warning' : 'info'}">
-            <div class="custom-modal-header">
-                <h3>Confirm Clock ${action.toUpperCase()}</h3>
-                <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
-            </div>
-            <div class="custom-modal-body">
-                <p>Are you sure you want to clock ${action} at ${time}?</p>
-                <div class="btn-group">
-                    <button class="btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
-                    <button class="btn-confirm" onclick="performClock${action === 'in' ? 'In' : 'Out'}()">Confirm Clock ${action.toUpperCase()}</button>
+    // Check if already clocked in today
+    const today = new Date().toDateString();
+    if (status.clockedIn && status.lastClockDate === today) {
+        // Already clocked in today, proceed to clock out
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        const modal = document.createElement('div');
+        modal.className = 'custom-modal-overlay confirmation-modal';
+        modal.innerHTML = `
+            <div class="custom-modal warning">
+                <div class="custom-modal-header">
+                    <h3>Confirm Clock OUT</h3>
+                    <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                </div>
+                <div class="custom-modal-body">
+                    <p>Are you sure you want to clock out at ${time}?</p>
+                    <div class="btn-group">
+                        <button class="btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                        <button class="btn-confirm" onclick="performClockOut()">Confirm Clock OUT</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
+        `;
+        document.body.appendChild(modal);
+    } else if (!status.clockedIn) {
+        // Clock in
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        const modal = document.createElement('div');
+        modal.className = 'custom-modal-overlay confirmation-modal';
+        modal.innerHTML = `
+            <div class="custom-modal info">
+                <div class="custom-modal-header">
+                    <h3>Confirm Clock IN</h3>
+                    <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                </div>
+                <div class="custom-modal-body">
+                    <p>Are you sure you want to clock in at ${time}?</p>
+                    <div class="btn-group">
+                        <button class="btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                        <button class="btn-confirm" onclick="performClockIn()">Confirm Clock IN</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
 }
 
 function performClockIn() {
