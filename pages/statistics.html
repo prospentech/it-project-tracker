@@ -46,14 +46,21 @@
         </div>
     </div>
 
-    <script>
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"></div>
+
+    <script type="module">
+        import auth from '../auth.js';
+        import firebaseService from '../firebase-service.js';
+
         // Check authentication
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const currentUser = auth.getCurrentUser();
         if (!currentUser) {
             window.location.href = '../login.html';
         }
         
-        function exportStats() {
+        // Make exportStats available globally
+        window.exportStats = function() {
             const activities = statsSystem.getActivities();
             const sessions = statsSystem.getSessions();
             const projects = JSON.parse(localStorage.getItem('prospenProjects')) || {};
@@ -82,10 +89,28 @@
             linkElement.setAttribute('href', dataUri);
             linkElement.setAttribute('download', exportFileDefaultName);
             linkElement.click();
+        };
+
+        // Load chatbot component
+        async function loadChatbot() {
+            try {
+                const chatbotResponse = await fetch('../components/chatbot.html');
+                const chatbotHTML = await chatbotResponse.text();
+                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
+                
+                // Initialize chatbot
+                if (window.initChatbot) {
+                    setTimeout(window.initChatbot, 500);
+                }
+            } catch (error) {
+                console.error('Error loading chatbot:', error);
+            }
         }
         
-        // Load stats
+        // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            loadChatbot(); // Load chatbot
+            
             if (window.updateStatsDisplay) {
                 window.updateStatsDisplay();
             }

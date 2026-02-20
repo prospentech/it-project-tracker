@@ -57,10 +57,15 @@
         </div>
     </div>
 
-    <script src="../auth.js"></script>
-    <script>
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"></div>
+
+    <script type="module">
+        import auth from '../auth.js';
+        import firebaseService from '../firebase-service.js';
+
         // Check authentication
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const currentUser = auth.getCurrentUser();
         if (!currentUser) {
             window.location.href = '../login.html';
         }
@@ -159,7 +164,27 @@
             container.innerHTML = html;
         }
 
-        document.addEventListener('DOMContentLoaded', loadTechNews);
+        // Load chatbot component
+        async function loadChatbot() {
+            try {
+                const chatbotResponse = await fetch('../components/chatbot.html');
+                const chatbotHTML = await chatbotResponse.text();
+                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
+                
+                // Initialize chatbot
+                if (window.initChatbot) {
+                    setTimeout(window.initChatbot, 500);
+                }
+            } catch (error) {
+                console.error('Error loading chatbot:', error);
+            }
+        }
+
+        // Initialize everything when page loads - SINGLE EVENT LISTENER
+        document.addEventListener('DOMContentLoaded', () => {
+            loadChatbot(); // Load chatbot
+            loadTechNews(); // Load tech news
+        });
     </script>
 </body>
 </html>

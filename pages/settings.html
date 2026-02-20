@@ -235,30 +235,60 @@
         </div>
     </div>
 
-    <script>
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"></div>
+
+    <script type="module">
+        import auth from '../auth.js';
+        import firebaseService from '../firebase-service.js';
+
         // Check authentication
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const currentUser = auth.getCurrentUser();
         if (!currentUser) {
             window.location.href = '../login.html';
         }
 
+        // Make theme functions available globally (they're already in theme.js)
         // Update font preview
-        function updateFontPreview(fontName) {
+        window.updateFontPreview = function(fontName) {
             const preview = document.getElementById('fontPreview');
             if (preview) {
                 preview.style.fontFamily = document.getElementById('fontFamily').value;
             }
+        };
+
+        // Load chatbot component
+        async function loadChatbot() {
+            try {
+                const chatbotResponse = await fetch('../components/chatbot.html');
+                const chatbotHTML = await chatbotResponse.text();
+                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
+                
+                // Initialize chatbot
+                if (window.initChatbot) {
+                    setTimeout(window.initChatbot, 500);
+                }
+            } catch (error) {
+                console.error('Error loading chatbot:', error);
+            }
         }
 
-        // Initialize theme and preview
+        // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            applyTheme();
+            loadChatbot(); // Load chatbot
+            
+            // Apply theme (function from theme.js)
+            if (window.applyTheme) {
+                window.applyTheme();
+            }
             
             // Set initial font preview
             const fontSelect = document.getElementById('fontFamily');
             if (fontSelect) {
                 setTimeout(() => {
-                    updateFontPreview(fontSelect.options[fontSelect.selectedIndex].text);
+                    if (window.updateFontPreview) {
+                        window.updateFontPreview(fontSelect.options[fontSelect.selectedIndex].text);
+                    }
                 }, 100);
             }
             

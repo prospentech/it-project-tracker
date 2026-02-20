@@ -92,48 +92,38 @@
             </div>
         </div>
 
+        <!-- Add this after the Recent Activity section in profile.html -->
+        <div class="section-box">
+            <h3><i class="fas fa-tasks"></i> My Duties</h3>
+            <div id="profileDutiesContainer">
+                <!-- Duties will be loaded here -->
+            </div>
+        </div>
+
         <div class="section-box">
             <h3><i class="fas fa-history"></i> Recent Activity</h3>
             <div id="userActivityContainer">
                 <!-- User activity will be loaded here -->
             </div>
         </div>
+
     </div>
 
-    <script>
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"></div>
+
+    <script type="module">
+        import auth from '../auth.js';
+        import firebaseService from '../firebase-service.js';
+
         // Check authentication
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const currentUser = auth.getCurrentUser();
         if (!currentUser) {
             window.location.href = '../login.html';
         }
 
-        function loadProfile() {
-            const profiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {};
-            const profile = profiles[currentUser.username] || {
-                fullName: currentUser.username.charAt(0).toUpperCase() + currentUser.username.slice(1),
-                email: `${currentUser.username}@prospentech.co.za`,
-                bio: `${currentUser.username} user`,
-                avatar: null,
-                role: currentUser.username === 'admin' ? 'System Administrator' : 'Team Member'
-            };
-
-            const avatarElement = document.getElementById('profileAvatar');
-            if (profile.avatar) {
-                avatarElement.innerHTML = `<img src="${profile.avatar}" alt="${profile.fullName}">
-                                          <div class="avatar-upload">Click to change</div>`;
-            } else {
-                avatarElement.innerHTML = `<span id="avatarInitials">${profile.fullName.charAt(0)}</span>
-                                          <div class="avatar-upload">Click to change</div>`;
-            }
-
-            document.getElementById('profileUsername').textContent = profile.fullName;
-            document.getElementById('profileRole').textContent = profile.role;
-            document.getElementById('profileFullName').value = profile.fullName;
-            document.getElementById('profileEmail').value = profile.email;
-            document.getElementById('profileBio').value = profile.bio;
-        }
-
-        function handleAvatarUpload(event) {
+        // Make functions available globally for onclick handlers
+        window.handleAvatarUpload = function(event) {
             const file = event.target.files[0];
             if (!file) return;
             
@@ -160,15 +150,15 @@
                 
                 const avatarElement = document.getElementById('profileAvatar');
                 avatarElement.innerHTML = `<img src="${avatarData}" alt="${profiles[currentUser.username].fullName}">
-                                         <div class="avatar-upload">Click to change</div>`;
+                                        <div class="avatar-upload">Click to change</div>`;
                 
                 alert('Avatar updated successfully!');
             };
             
             reader.readAsDataURL(file);
-        }
+        };
 
-        function updateProfile(event) {
+        window.updateProfile = function(event) {
             event.preventDefault();
             
             const fullName = document.getElementById('profileFullName').value;
@@ -203,6 +193,32 @@
             localStorage.setItem('prospenProfiles', JSON.stringify(profiles));
             
             alert('Profile updated successfully!');
+        };
+
+        function loadProfile() {
+            const profiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {};
+            const profile = profiles[currentUser.username] || {
+                fullName: currentUser.username.charAt(0).toUpperCase() + currentUser.username.slice(1),
+                email: `${currentUser.username}@prospentech.co.za`,
+                bio: `${currentUser.username} user`,
+                avatar: null,
+                role: currentUser.username === 'admin' ? 'System Administrator' : 'Team Member'
+            };
+
+            const avatarElement = document.getElementById('profileAvatar');
+            if (profile.avatar) {
+                avatarElement.innerHTML = `<img src="${profile.avatar}" alt="${profile.fullName}">
+                                        <div class="avatar-upload">Click to change</div>`;
+            } else {
+                avatarElement.innerHTML = `<span id="avatarInitials">${profile.fullName.charAt(0)}</span>
+                                        <div class="avatar-upload">Click to change</div>`;
+            }
+
+            document.getElementById('profileUsername').textContent = profile.fullName;
+            document.getElementById('profileRole').textContent = profile.role;
+            document.getElementById('profileFullName').value = profile.fullName;
+            document.getElementById('profileEmail').value = profile.email;
+            document.getElementById('profileBio').value = profile.bio;
         }
 
         function loadUserStats() {
@@ -259,10 +275,63 @@
             activityContainer.innerHTML = html;
         }
 
+        // NEW FUNCTION: Load user duties from Firebase
+        async function loadUserDuties() {
+            const dutiesContainer = document.getElementById('profileDutiesContainer');
+            if (!dutiesContainer) return;
+            
+            try {
+                const duties = await firebaseService.getDuties();
+                const userDuties = duties.filter(d => d.userId === currentUser.username);
+                
+                if (userDuties.length === 0) {
+                    dutiesContainer.innerHTML = '<p style="color: var(--text-p);">No duties assigned yet. You can add duties in the <a href="team-duties.html" style="color: var(--accent);">Team Duties</a> page.</p>';
+                    return;
+                }
+                
+                let html = '<div style="margin-top: 15px;">';
+                userDuties.forEach(duty => {
+                    html += `
+                        <div style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--accent);">
+                            <h4 style="color: var(--accent); margin: 0 0 10px 0;">${duty.role || 'Duty'}</h4>
+                            <ul style="color: var(--text-p); margin: 0; padding-left: 20px;">
+                                ${(duty.tasks || []).map(task => `<li style="margin-bottom: 5px;">${task}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+                dutiesContainer.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading duties:', error);
+                dutiesContainer.innerHTML = '<p style="color: var(--danger);">Error loading duties. Please try again.</p>';
+            }
+        }
+
+        // Load chatbot component
+        async function loadChatbot() {
+            try {
+                const chatbotResponse = await fetch('../components/chatbot.html');
+                const chatbotHTML = await chatbotResponse.text();
+                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
+                
+                // Initialize chatbot
+                if (window.initChatbot) {
+                    setTimeout(window.initChatbot, 500);
+                }
+            } catch (error) {
+                console.error('Error loading chatbot:', error);
+            }
+        }
+
+        // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            loadChatbot(); // Load chatbot
             loadProfile();
             loadUserStats();
             loadUserActivity();
+            loadUserDuties(); // NEW: Load user duties
         });
     </script>
 </body>

@@ -753,6 +753,161 @@ class FirebaseService {
     }
   }
 
+  // Add these methods to firebase-service.js inside the FirebaseService class
+
+  // Duties methods
+  async getDuties() {
+      try {
+          const snapshot = await get(ref(db, 'duties'));
+          if (!snapshot.exists()) return [];
+          
+          const duties = [];
+          snapshot.forEach((child) => {
+              duties.push({ id: child.key, ...child.val() });
+          });
+          
+          return duties.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      } catch (error) {
+          console.error('Error getting duties:', error);
+          return [];
+      }
+  }
+
+  async saveDuty(duty) {
+      try {
+          const dutyId = duty.id || push(ref(db, 'duties')).key;
+          const dutyRef = ref(db, `duties/${dutyId}`);
+          
+          const dutyData = {
+              ...duty,
+              id: dutyId,
+              lastUpdated: new Date().toISOString(),
+              lastUpdatedBy: this.currentUser?.username || 'system'
+          };
+          
+          await set(dutyRef, dutyData);
+          
+          await this.recordActivity(
+              duty.id ? 'update' : 'create',
+              `Duty "${duty.role}" ${duty.id ? 'updated' : 'created'}`
+          );
+          
+          return { success: true, id: dutyId };
+      } catch (error) {
+          console.error('Error saving duty:', error);
+          return { success: false, error: error.message };
+      }
+  }
+
+  async deleteDuty(dutyId) {
+      try {
+          await remove(ref(db, `duties/${dutyId}`));
+          await this.recordActivity('delete', 'Duty deleted');
+          return { success: true };
+      } catch (error) {
+          console.error('Error deleting duty:', error);
+          return { success: false, error: error.message };
+      }
+  }
+
+  subscribeToDuties(callback) {
+      const dutiesRef = ref(db, 'duties');
+      return onValue(dutiesRef, (snapshot) => {
+          if (!snapshot.exists()) {
+              callback([]);
+              return;
+          }
+          
+          const duties = [];
+          snapshot.forEach((child) => {
+              duties.push({ id: child.key, ...child.val() });
+          });
+          
+          callback(duties.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      }, (error) => {
+          console.error('Duties subscription error:', error);
+      });
+  }
+
+  // firebase-service.js - Add these methods inside the FirebaseService class
+
+  // Meeting Minutes methods
+  async getMeetings() {
+      try {
+          const snapshot = await get(ref(db, 'meetings'));
+          if (!snapshot.exists()) return [];
+          
+          const meetings = [];
+          snapshot.forEach((child) => {
+              meetings.push({ id: child.key, ...child.val() });
+          });
+          
+          // Sort by date (newest first)
+          return meetings.sort((a, b) => new Date(b.meetingDate) - new Date(a.meetingDate));
+      } catch (error) {
+          console.error('Error getting meetings:', error);
+          return [];
+      }
+  }
+
+  async saveMeeting(meeting) {
+      try {
+          const meetingId = meeting.id || push(ref(db, 'meetings')).key;
+          const meetingRef = ref(db, `meetings/${meetingId}`);
+          
+          const meetingData = {
+              ...meeting,
+              id: meetingId,
+              lastUpdated: new Date().toISOString(),
+              lastUpdatedBy: this.currentUser?.username || 'system',
+              createdAt: meeting.createdAt || new Date().toISOString(),
+              createdBy: this.currentUser?.username || 'system'
+          };
+          
+          await set(meetingRef, meetingData);
+          
+          await this.recordActivity(
+              meeting.id ? 'update' : 'create',
+              `Meeting "${meeting.title}" ${meeting.id ? 'updated' : 'created'}`
+          );
+          
+          return { success: true, id: meetingId };
+      } catch (error) {
+          console.error('Error saving meeting:', error);
+          return { success: false, error: error.message };
+      }
+  }
+
+  async deleteMeeting(meetingId) {
+      try {
+          await remove(ref(db, `meetings/${meetingId}`));
+          await this.recordActivity('delete', 'Meeting deleted');
+          return { success: true };
+      } catch (error) {
+          console.error('Error deleting meeting:', error);
+          return { success: false, error: error.message };
+      }
+  }
+
+  subscribeToMeetings(callback) {
+      const meetingsRef = ref(db, 'meetings');
+      return onValue(meetingsRef, (snapshot) => {
+          if (!snapshot.exists()) {
+              callback([]);
+              return;
+          }
+          
+          const meetings = [];
+          snapshot.forEach((child) => {
+              meetings.push({ id: child.key, ...child.val() });
+          });
+          
+          callback(meetings.sort((a, b) => new Date(b.meetingDate) - new Date(a.meetingDate)));
+      }, (error) => {
+          console.error('Meetings subscription error:', error);
+      });
+  }
+
   // Real-time subscriptions
   subscribeToProjects(callback) {
     const projectsRef = ref(db, 'projects');
@@ -831,6 +986,18 @@ class FirebaseService {
       console.error('Error uploading avatar:', error);
       return { success: false, error: error.message };
     }
+  }
+
+  // Add to firebase-service.js
+  async deleteEnquiry(enquiryId) {
+      try {
+          await remove(ref(db, `enquiries/${enquiryId}`));
+          await this.recordActivity('delete', 'Suggestion deleted');
+          return { success: true };
+      } catch (error) {
+          console.error('Error deleting enquiry:', error);
+          return { success: false, error: error.message };
+      }
   }
 }
 

@@ -12,6 +12,9 @@
         <a href="pages/enquiries.html" class="footer-link" data-i18n="suggestions">
             <i class="fas fa-lightbulb"></i> Suggestions
         </a>
+        <a href="#" class="footer-link" onclick="event.preventDefault(); openRecycleBin();">
+            <i class="fas fa-trash-alt"></i> Recycle Bin
+        </a>
         <!-- Language Selector with All Languages -->
         <div class="language-selector" style="position: relative; display: inline-block;">
             <select id="languageSelect" onchange="setLanguage(this.value)" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">
@@ -35,16 +38,6 @@
     <p>© 2026 Prospen Hub. All rights reserved.</p>
 </footer>
 
-<!-- Navigation Buttons -->
-<div class="nav-buttons" id="navButtons" style="position: fixed; bottom: 100px; left: 20px; z-index: 999; display: flex; gap: 10px; cursor: move;">
-    <button class="nav-btn" onclick="window.history.back()" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; backdrop-filter: blur(5px);">
-        <i class="fas fa-chevron-left"></i>
-    </button>
-    <button class="nav-btn" onclick="window.history.forward()" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; backdrop-filter: blur(5px);">
-        <i class="fas fa-chevron-right"></i>
-    </button>
-</div>
-
 <script>
 // Make setLanguage available globally
 window.setLanguage = function(lang) {
@@ -67,51 +60,4 @@ document.addEventListener('DOMContentLoaded', function() {
         applyTranslations();
     }
 });
-
-// Make navigation buttons draggable
-const navButtons = document.getElementById('navButtons');
-let isDragging = false;
-let offsetX, offsetY;
-
-navButtons.addEventListener('mousedown', (e) => {
-    if (e.target.classList.contains('nav-btn')) return;
-    isDragging = true;
-    offsetX = e.clientX - navButtons.offsetLeft;
-    offsetY = e.clientY - navButtons.offsetTop;
-    navButtons.style.cursor = 'grabbing';
-});
-
-document.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-        e.preventDefault();
-        navButtons.style.left = (e.clientX - offsetX) + 'px';
-        navButtons.style.top = (e.clientY - offsetY) + 'px';
-    }
-});
-
-document.addEventListener('mouseup', () => {
-    if (isDragging) {
-        isDragging = false;
-        navButtons.style.cursor = 'move';
-        
-        // Save position
-        const pos = {
-            left: navButtons.style.left,
-            top: navButtons.style.top
-        };
-        localStorage.setItem('navButtonsPos', JSON.stringify(pos));
-    }
-});
-
-// Restore saved position
-const savedPos = localStorage.getItem('navButtonsPos');
-if (savedPos) {
-    try {
-        const pos = JSON.parse(savedPos);
-        navButtons.style.left = pos.left;
-        navButtons.style.top = pos.top;
-    } catch (e) {
-        console.log('Could not restore nav buttons position');
-    }
-}
 </script>

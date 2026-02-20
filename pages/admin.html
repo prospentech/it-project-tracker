@@ -44,69 +44,21 @@
         </div>
     </div>
 
-    <script>
-        // Check authentication
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"></div>
+
+    <script type="module">
+        import auth from '../auth.js';
+        import firebaseService from '../firebase-service.js';
+
+        // Check authentication - only admin can access
+        const currentUser = auth.getCurrentUser();
         if (!currentUser || currentUser.username !== 'admin') {
             window.location.href = '../index.html';
         }
 
-        async function loadUsers() {
-            const users = await firebaseService.getAllUsers();
-            const container = document.getElementById('usersContainer');
-            
-            if (users.length === 0) {
-                container.innerHTML = '<p>No users found</p>';
-                return;
-            }
-
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Full Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            users.forEach(user => {
-                const isOnline = user.online ? 'Online' : 'Offline';
-                const statusColor = user.online ? 'success' : 'text-p';
-                
-                html += `
-                    <tr>
-                        <td><strong>${user.username}</strong></td>
-                        <td>${user.fullName}</td>
-                        <td>${user.email}</td>
-                        <td>${user.role}</td>
-                        <td><span style="color: var(--${statusColor});"><i class="fas fa-circle" style="font-size: 0.6rem;"></i> ${isOnline}</span></td>
-                        <td>
-                            <button class="small-btn" onclick="resetUserPassword('${user.uid}')" title="Reset Password">
-                                <i class="fas fa-key"></i>
-                            </button>
-                            <button class="small-btn" onclick="viewUserTasks('${user.username}')" title="View Tasks">
-                                <i class="fas fa-tasks"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            html += `
-                    </tbody>
-                </table>
-            `;
-
-            container.innerHTML = html;
-        }
-
-        async function resetUserPassword(uid) {
+        // Make functions available globally for onclick handlers
+        window.resetUserPassword = async function(uid) {
             const newPassword = prompt('Enter new password for user:');
             if (!newPassword) return;
 
@@ -117,13 +69,93 @@
             } else {
                 alert('Failed to reset password: ' + result.error);
             }
-        }
+        };
 
-        function viewUserTasks(username) {
+        window.viewUserTasks = function(username) {
             window.location.href = `tasks.html?user=${username}`;
+        };
+
+        async function loadUsers() {
+            try {
+                const users = await firebaseService.getAllUsers();
+                const container = document.getElementById('usersContainer');
+                
+                if (users.length === 0) {
+                    container.innerHTML = '<p>No users found</p>';
+                    return;
+                }
+
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                users.forEach(user => {
+                    const isOnline = user.online ? 'Online' : 'Offline';
+                    const statusColor = user.online ? 'success' : 'text-p';
+                    
+                    html += `
+                        <tr>
+                            <td><strong>${user.username}</strong></td>
+                            <td>${user.fullName || user.username}</td>
+                            <td>${user.email || 'N/A'}</td>
+                            <td>${user.role || 'Team Member'}</td>
+                            <td><span style="color: var(--${statusColor});"><i class="fas fa-circle" style="font-size: 0.6rem;"></i> ${isOnline}</span></td>
+                            <td>
+                                <button class="small-btn" onclick="resetUserPassword('${user.uid}')" title="Reset Password">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                                <button class="small-btn" onclick="viewUserTasks('${user.username}')" title="View Tasks">
+                                    <i class="fas fa-tasks"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                        </tbody>
+                    </table>
+                `;
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('usersContainer').innerHTML = '<p>Error loading users. Please try again.</p>';
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', loadUsers);
+        // Load chatbot component
+        async function loadChatbot() {
+            try {
+                const chatbotResponse = await fetch('../components/chatbot.html');
+                const chatbotHTML = await chatbotResponse.text();
+                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
+                
+                // Initialize chatbot
+                if (window.initChatbot) {
+                    setTimeout(window.initChatbot, 500);
+                }
+            } catch (error) {
+                console.error('Error loading chatbot:', error);
+            }
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChatbot(); // Load chatbot
+            loadUsers(); // Load users
+        });
     </script>
 </body>
 </html>

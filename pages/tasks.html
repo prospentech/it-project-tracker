@@ -265,8 +265,12 @@
         </div>
     </div>
 
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"></div>
+
     <script type="module">
         import auth from '../auth.js';
+        import firebaseService from '../firebase-service.js';
         import { initTasks, renderTasks, openTaskModal, closeTaskModal, saveTask } from '../tasks.js';
 
         // Make functions available globally
@@ -280,10 +284,27 @@
             window.location.href = '../login.html';
         }
 
-        // Initialize tasks
+        // Load chatbot component
+        async function loadChatbot() {
+            try {
+                const chatbotResponse = await fetch('../components/chatbot.html');
+                const chatbotHTML = await chatbotResponse.text();
+                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
+                
+                // Initialize chatbot
+                if (window.initChatbot) {
+                    setTimeout(window.initChatbot, 500);
+                }
+            } catch (error) {
+                console.error('Error loading chatbot:', error);
+            }
+        }
+
+        // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', async function() {
-            await initTasks();
-            renderTasks();
+            loadChatbot(); // Load chatbot
+            await initTasks(); // Initialize tasks
+            renderTasks(); // Render tasks
         });
     </script>
 </body>

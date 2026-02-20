@@ -228,6 +228,9 @@
         </div>
     </div>
 
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"></div>
+
     <script>
         // Check authentication
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -442,9 +445,26 @@
             document.body.appendChild(modal);
         }
 
-        // Initialize
+        // Load chatbot component
+        async function loadChatbot() {
+            try {
+                const chatbotResponse = await fetch('../components/chatbot.html');
+                const chatbotHTML = await chatbotResponse.text();
+                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
+                
+                // Initialize chatbot
+                if (window.initChatbot) {
+                    setTimeout(window.initChatbot, 500);
+                }
+            } catch (error) {
+                console.error('Error loading chatbot:', error);
+            }
+        }
+
+        // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            loadVersions();
+            loadChatbot(); // Load chatbot
+            loadVersions(); // Load versions
             
             // Subscribe to real-time updates
             firebaseService.subscribeToVersions((updatedVersions) => {

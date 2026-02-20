@@ -49,94 +49,166 @@
         </div>
     </div>
 
-    <script>
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"></div>
+
+    <script type="module">
+        import auth from '../auth.js';
+        import firebaseService from '../firebase-service.js';
+
         // Check authentication
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const currentUser = auth.getCurrentUser();
         if (!currentUser) {
             window.location.href = '../login.html';
         }
 
-        async function loadSuggestions() {
-            const { default: firebaseService } = await import('../firebase-service.js');
+        // Make functions available globally for onclick handlers
+        window.markSuggestionRead = async function(id) {
+            await firebaseService.updateEnquiry(id, { read: true });
+            loadSuggestions(); // Reload the list
+            if (window.updateSuggestionIndicator) {
+                window.updateSuggestionIndicator();
+            }
+        };
+
+        window.markAllSuggestionsRead = async function() {
             const suggestions = await firebaseService.getEnquiries();
-            const container = document.getElementById('enquiriesContainer');
-            
-            // Filter only suggestions (or all if no type)
             const filteredSuggestions = suggestions.filter(s => s.type === 'suggestion' || !s.type);
             
-            if (filteredSuggestions.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px;">
-                        <i class="fas fa-lightbulb fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
-                        <h3 style="color: var(--text-p);">No suggestions yet</h3>
-                        <p style="color: var(--text-p);">All suggestions submitted through the NEXA chatbot will appear here.</p>
-                    </div>
-                `;
-                return;
+            for (const suggestion of filteredSuggestions) {
+                if (!suggestion.read) {
+                    await firebaseService.updateEnquiry(suggestion.id, { read: true });
+                }
             }
+            loadSuggestions();
+            if (window.updateSuggestionIndicator) {
+                window.updateSuggestionIndicator();
+            }
+            alert('All suggestions marked as read!');
+        };
 
-            let html = '';
-            filteredSuggestions.forEach(suggestion => {
-                const date = new Date(suggestion.timestamp);
-                const language = suggestion.language ? ` (${suggestion.language.charAt(0).toUpperCase() + suggestion.language.slice(1)})` : '';
-                
-                html += `
-                    <div class="enquiry-card ${suggestion.read ? 'read' : 'unread'}">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                            <div>
-                                <h3 style="margin: 0 0 5px 0;">${suggestion.name}${language}</h3>
-                                <small style="color: var(--text-p);">${date.toLocaleString()}</small>
-                                ${!suggestion.read ? '<span style="background: var(--accent); color: var(--bg); padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; margin-left: 10px;">NEW</span>' : ''}
-                            </div>
-                            <div style="display: flex; gap: 5px;">
-                                <button onclick="markSuggestionRead('${suggestion.id}')" class="small-btn" title="Mark as read">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button onclick="replyToSuggestion('${suggestion.id}', '${suggestion.email}')" class="small-btn" title="Reply" style="background: var(--success);">
-                                    <i class="fas fa-reply"></i>
-                                </button>
-                                <button onclick="deleteSuggestion('${suggestion.id}')" class="small-btn" title="Delete" style="background: var(--danger);">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div style="margin-top: 15px;">
-                            <p><strong><i class="fas fa-envelope"></i> Email:</strong> ${suggestion.email}</p>
-                            <p><strong><i class="fas fa-lightbulb"></i> Suggestion:</strong></p>
-                            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-top: 5px;">
-                                ${suggestion.suggestion || suggestion.enquiry}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-
-        function markSuggestionRead(id) {
-            markEnquiryRead(id);
-        }
-
-        function markAllSuggestionsRead() {
-            markAllEnquiriesRead();
-        }
-
-        function replyToSuggestion(id, email) {
+        window.replyToSuggestion = function(id, email) {
             window.location.href = `mailto:${email}?subject=Re: Your suggestion to Prospen Hub`;
-        }
+        };
 
-        function deleteSuggestion(id) {
+        window.deleteSuggestion = async function(id) {
             if (confirm('Are you sure you want to delete this suggestion?')) {
-                deleteEnquiry(id);
+                // Note: You'll need to add a deleteEnquiry method to firebase-service.js
+                // For now, we'll use update with a deleted flag or implement delete
+                try {
+                    // If you have a delete method:
+                    // await firebaseService.deleteEnquiry(id);
+                    
+                    // Or mark as deleted:
+                    await firebaseService.updateEnquiry(id, { deleted: true, status: 'deleted' });
+                    loadSuggestions();
+                    if (window.updateSuggestionIndicator) {
+                        window.updateSuggestionIndicator();
+                    }
+                } catch (error) {
+                    console.error('Error deleting suggestion:', error);
+                    alert('Failed to delete suggestion');
+                }
+            }
+        };
+
+        window.exportSuggestions = async function() {
+            const suggestions = await firebaseService.getEnquiries();
+            const filteredSuggestions = suggestions.filter(s => s.type === 'suggestion' || !s.type);
+            
+            const dataStr = JSON.stringify(filteredSuggestions, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `suggestions-${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        };
+
+        async function loadSuggestions() {
+            try {
+                const suggestions = await firebaseService.getEnquiries();
+                const container = document.getElementById('enquiriesContainer');
+                
+                // Filter only suggestions (or all if no type)
+                const filteredSuggestions = suggestions.filter(s => s.type === 'suggestion' || !s.type);
+                
+                if (filteredSuggestions.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <i class="fas fa-lightbulb fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                            <h3 style="color: var(--text-p);">No suggestions yet</h3>
+                            <p style="color: var(--text-p);">All suggestions submitted through the NEXA chatbot will appear here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                filteredSuggestions.forEach(suggestion => {
+                    const date = new Date(suggestion.timestamp);
+                    const language = suggestion.language ? ` (${suggestion.language.charAt(0).toUpperCase() + suggestion.language.slice(1)})` : '';
+                    
+                    html += `
+                        <div class="enquiry-card ${suggestion.read ? 'read' : 'unread'}">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                                <div>
+                                    <h3 style="margin: 0 0 5px 0;">${suggestion.name}${language}</h3>
+                                    <small style="color: var(--text-p);">${date.toLocaleString()}</small>
+                                    ${!suggestion.read ? '<span style="background: var(--accent); color: var(--bg); padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; margin-left: 10px;">NEW</span>' : ''}
+                                </div>
+                                <div style="display: flex; gap: 5px;">
+                                    <button onclick="markSuggestionRead('${suggestion.id}')" class="small-btn" title="Mark as read">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button onclick="replyToSuggestion('${suggestion.id}', '${suggestion.email}')" class="small-btn" title="Reply" style="background: var(--success);">
+                                        <i class="fas fa-reply"></i>
+                                    </button>
+                                    <button onclick="deleteSuggestion('${suggestion.id}')" class="small-btn" title="Delete" style="background: var(--danger);">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <p><strong><i class="fas fa-envelope"></i> Email:</strong> ${suggestion.email}</p>
+                                <p><strong><i class="fas fa-lightbulb"></i> Suggestion:</strong></p>
+                                <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-top: 5px;">
+                                    ${suggestion.suggestion || suggestion.enquiry}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading suggestions:', error);
             }
         }
 
-        function exportSuggestions() {
-            exportEnquiries();
+        // Load chatbot component
+        async function loadChatbot() {
+            try {
+                const chatbotResponse = await fetch('../components/chatbot.html');
+                const chatbotHTML = await chatbotResponse.text();
+                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
+                
+                // Initialize chatbot
+                if (window.initChatbot) {
+                    setTimeout(window.initChatbot, 500);
+                }
+            } catch (error) {
+                console.error('Error loading chatbot:', error);
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', loadSuggestions);
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChatbot(); // Load chatbot
+            loadSuggestions();
+        });
     </script>
 </body>
 </html>
