@@ -227,6 +227,7 @@ class FirebaseService {
     }
   }
 
+  // firebase-service.js - Update the saveTask method
   async saveTask(task) {
     try {
       const taskId = task.id || push(ref(db, 'tasks')).key;
@@ -235,6 +236,7 @@ class FirebaseService {
       const taskData = {
         ...task,
         id: taskId,
+        taskId: task.taskId || `TASK-${taskId.substring(0, 5).toUpperCase()}`,
         createdAt: task.createdAt || new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
         lastUpdatedBy: this.currentUser?.username || 'system'
@@ -242,10 +244,15 @@ class FirebaseService {
       
       await set(taskRef, taskData);
       
+      // If task is linked to a project, update the project's tasks array
+      if (task.projectId) {
+        await this.updateProjectTasks(task.projectId, taskData);
+      }
+      
       await this.recordActivity(
         task.id ? 'update' : 'create',
         `Task "${task.title}" ${task.id ? 'updated' : 'created'}`,
-        null,
+        task.projectId,
         taskId
       );
       
@@ -253,6 +260,48 @@ class FirebaseService {
     } catch (error) {
       console.error('Error saving task:', error);
       return { success: false, error: error.message };
+    }
+  }
+
+  // Add this new method to update project tasks
+  async updateProjectTasks(projectId, taskData) {
+    try {
+      const projectRef = ref(db, `projects/${projectId}`);
+      const projectSnapshot = await get(projectRef);
+      
+      if (projectSnapshot.exists()) {
+        const project = projectSnapshot.val();
+        
+        // Initialize tasks array if it doesn't exist
+        if (!project.tasks) {
+          project.tasks = [];
+        }
+        
+        // Check if task already exists in project
+        const existingTaskIndex = project.tasks.findIndex(t => t.id === taskData.id);
+        
+        const simplifiedTask = {
+          id: taskData.id,
+          name: taskData.title,
+          who: taskData.assignedTo,
+          prio: taskData.priority,
+          due: taskData.dueDate,
+          status: taskData.status
+        };
+        
+        if (existingTaskIndex >= 0) {
+          // Update existing task
+          project.tasks[existingTaskIndex] = simplifiedTask;
+        } else {
+          // Add new task
+          project.tasks.push(simplifiedTask);
+        }
+        
+        // Save updated project
+        await set(projectRef, project);
+      }
+    } catch (error) {
+      console.error('Error updating project tasks:', error);
     }
   }
 

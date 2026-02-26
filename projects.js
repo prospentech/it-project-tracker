@@ -2,6 +2,10 @@
 import auth from './auth.js';
 import firebaseService from './firebase-service.js';
 
+// Store temporary data for the project being edited
+let tempTeamMembers = [];
+let tempTasks = [];
+
 async function initProjects() {
   const projects = await firebaseService.getProjects();
   localStorage.setItem('prospenProjects', JSON.stringify(projects));
@@ -222,7 +226,7 @@ function showProjectView(id) {
             <tbody>
               ${p.tasks && p.tasks.length > 0 ? p.tasks.map(t => `
                 <tr>
-                  <td>${t.id}</td>
+                  <td>${t.id ? t.id.substring(0, 8) : 'N/A'}</td>
                   <td>${t.name}</td>
                   <td>${t.who}</td>
                   <td class="priority-high">${t.prio}</td>
@@ -351,7 +355,10 @@ function openProjectModal(projectId = null) {
   
   const projects = JSON.parse(localStorage.getItem('prospenProjects')) || {};
   const title = document.getElementById('modalTitle');
-  const form = document.getElementById('projectForm');
+  
+  // Reset temp arrays
+  tempTeamMembers = [];
+  tempTasks = [];
   
   if (projectId) {
     const project = projects[projectId];
@@ -367,64 +374,348 @@ function openProjectModal(projectId = null) {
     document.getElementById('projectType').value = project.type || 'Design';
     document.getElementById('projectNotes').value = project.notes || '';
     
-    const teamContainer = document.getElementById('teamMembersContainer');
-    teamContainer.innerHTML = '';
-    if (project.members && project.members.length > 0) {
-      project.members.forEach((member, index) => {
-        teamContainer.innerHTML += `
-          <div class="task-item">
-            <div>
-              <strong>${member.name}</strong><br>
-              <small>${member.role}</small>
-            </div>
-            <div class="task-actions">
-              <button type="button" class="small-btn" onclick="editTeamMember('${projectId}', ${index})">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button type="button" class="small-btn" onclick="removeTeamMember('${projectId}', ${index})">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      });
-    }
-    
-    const tasksContainer = document.getElementById('tasksContainer');
-    tasksContainer.innerHTML = '';
-    if (project.tasks && project.tasks.length > 0) {
-      project.tasks.forEach((task, index) => {
-        tasksContainer.innerHTML += `
-          <div class="task-item">
-            <div>
-              <strong>${task.name}</strong><br>
-              <small>Assigned to: ${task.who} | Due: ${formatDate(task.due)}</small>
-            </div>
-            <div class="task-actions">
-              <button type="button" class="small-btn" onclick="editTask('${projectId}', ${index})">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button type="button" class="small-btn" onclick="removeTask('${projectId}', ${index})">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      });
-    }
+    // Load existing members and tasks into temp arrays
+    tempTeamMembers = project.members || [];
+    tempTasks = project.tasks || [];
   } else {
     title.textContent = 'Add New Project';
-    form.reset();
+    document.getElementById('projectForm').reset();
     document.getElementById('projectId').value = '';
-    document.getElementById('teamMembersContainer').innerHTML = '';
-    document.getElementById('tasksContainer').innerHTML = '';
   }
+  
+  // Render team members and tasks
+  renderTeamMembers();
+  renderTasks();
   
   modal.style.display = 'flex';
 }
 
 function closeProjectModal() {
   document.getElementById('projectModal').style.display = 'none';
+}
+
+// Render Team Members in the modal
+function renderTeamMembers() {
+  const container = document.getElementById('teamMembersContainer');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  
+  tempTeamMembers.forEach((member, index) => {
+    container.innerHTML += `
+      <div class="task-item">
+        <div>
+          <strong>${member.name}</strong><br>
+          <small>${member.role}</small>
+        </div>
+        <div class="task-actions">
+          <button type="button" class="small-btn" onclick="editTeamMember('${document.getElementById('projectId').value}', ${index})">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button type="button" class="small-btn" onclick="removeTeamMember('${document.getElementById('projectId').value}', ${index})">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// Render Tasks in the modal
+function renderTasks() {
+  const container = document.getElementById('tasksContainer');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  
+  tempTasks.forEach((task, index) => {
+    container.innerHTML += `
+      <div class="task-item">
+        <div>
+          <strong>${task.name}</strong><br>
+          <small>Assigned to: ${task.who} | Due: ${formatDate(task.due)}</small>
+        </div>
+        <div class="task-actions">
+          <button type="button" class="small-btn" onclick="editTask('${document.getElementById('projectId').value}', ${index})">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button type="button" class="small-btn" onclick="removeTask('${document.getElementById('projectId').value}', ${index})">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// Add Team Member
+function addTeamMember() {
+  const projectId = document.getElementById('projectId').value;
+  
+  const modal = document.createElement('div');
+  modal.className = 'custom-modal-overlay';
+  modal.innerHTML = `
+    <div class="custom-modal" style="max-width: 500px;">
+      <div class="custom-modal-header">
+        <h3>Add Team Member</h3>
+        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+      </div>
+      <div class="custom-modal-body">
+        <form id="teamMemberForm" onsubmit="saveTeamMember(event, '${projectId}')">
+          <div class="form-group">
+            <label for="memberName">Name *</label>
+            <input type="text" id="memberName" required>
+          </div>
+          <div class="form-group">
+            <label for="memberRole">Role *</label>
+            <input type="text" id="memberRole" placeholder="e.g., Developer, Designer" required>
+          </div>
+          <div class="form-group">
+            <label for="memberResponsibilities">Responsibilities</label>
+            <textarea id="memberResponsibilities" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="memberContact">Contact</label>
+            <input type="text" id="memberContact" placeholder="Email or phone">
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove()">Cancel</button>
+            <button type="submit" class="btn-primary">Add Member</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+// Save Team Member
+function saveTeamMember(event, projectId) {
+  event.preventDefault();
+  
+  const member = {
+    name: document.getElementById('memberName').value,
+    role: document.getElementById('memberRole').value,
+    resp: document.getElementById('memberResponsibilities').value,
+    contact: document.getElementById('memberContact').value
+  };
+  
+  tempTeamMembers.push(member);
+  renderTeamMembers();
+  document.querySelector('.custom-modal-overlay').remove();
+}
+
+// Edit Team Member
+function editTeamMember(projectId, index) {
+  const member = tempTeamMembers[index];
+  
+  const modal = document.createElement('div');
+  modal.className = 'custom-modal-overlay';
+  modal.innerHTML = `
+    <div class="custom-modal" style="max-width: 500px;">
+      <div class="custom-modal-header">
+        <h3>Edit Team Member</h3>
+        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+      </div>
+      <div class="custom-modal-body">
+        <form id="teamMemberForm" onsubmit="updateTeamMember(event, '${projectId}', ${index})">
+          <div class="form-group">
+            <label for="memberName">Name *</label>
+            <input type="text" id="memberName" value="${member.name}" required>
+          </div>
+          <div class="form-group">
+            <label for="memberRole">Role *</label>
+            <input type="text" id="memberRole" value="${member.role}" required>
+          </div>
+          <div class="form-group">
+            <label for="memberResponsibilities">Responsibilities</label>
+            <textarea id="memberResponsibilities" rows="2">${member.resp || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label for="memberContact">Contact</label>
+            <input type="text" id="memberContact" value="${member.contact || ''}">
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove()">Cancel</button>
+            <button type="submit" class="btn-primary">Update Member</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+// Update Team Member
+function updateTeamMember(event, projectId, index) {
+  event.preventDefault();
+  
+  tempTeamMembers[index] = {
+    name: document.getElementById('memberName').value,
+    role: document.getElementById('memberRole').value,
+    resp: document.getElementById('memberResponsibilities').value,
+    contact: document.getElementById('memberContact').value
+  };
+  
+  renderTeamMembers();
+  document.querySelector('.custom-modal-overlay').remove();
+}
+
+// Remove Team Member
+function removeTeamMember(projectId, index) {
+  tempTeamMembers.splice(index, 1);
+  renderTeamMembers();
+}
+
+// Add Task
+function addTask() {
+  const projectId = document.getElementById('projectId').value;
+  
+  const modal = document.createElement('div');
+  modal.className = 'custom-modal-overlay';
+  modal.innerHTML = `
+    <div class="custom-modal" style="max-width: 500px;">
+      <div class="custom-modal-header">
+        <h3>Add Task</h3>
+        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+      </div>
+      <div class="custom-modal-body">
+        <form id="taskForm" onsubmit="saveTaskToProject(event, '${projectId}')">
+          <div class="form-group">
+            <label for="taskName">Task Name *</label>
+            <input type="text" id="taskName" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="taskAssignee">Assignee *</label>
+              <input type="text" id="taskAssignee" required>
+            </div>
+            <div class="form-group">
+              <label for="taskPriority">Priority *</label>
+              <select id="taskPriority" required>
+                <option value="High">High</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="taskDue">Due Date *</label>
+            <input type="date" id="taskDue" required>
+          </div>
+          <div class="form-group">
+            <label for="taskStatus">Status</label>
+            <select id="taskStatus">
+              <option value="Not Started">Not Started</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove()">Cancel</button>
+            <button type="submit" class="btn-primary">Add Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+// Save Task to Project
+function saveTaskToProject(event, projectId) {
+  event.preventDefault();
+  
+  const task = {
+    id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+    name: document.getElementById('taskName').value,
+    who: document.getElementById('taskAssignee').value,
+    prio: document.getElementById('taskPriority').value,
+    due: document.getElementById('taskDue').value,
+    status: document.getElementById('taskStatus').value
+  };
+  
+  tempTasks.push(task);
+  renderTasks();
+  document.querySelector('.custom-modal-overlay').remove();
+}
+
+// Edit Task
+function editTask(projectId, index) {
+  const task = tempTasks[index];
+  
+  const modal = document.createElement('div');
+  modal.className = 'custom-modal-overlay';
+  modal.innerHTML = `
+    <div class="custom-modal" style="max-width: 500px;">
+      <div class="custom-modal-header">
+        <h3>Edit Task</h3>
+        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+      </div>
+      <div class="custom-modal-body">
+        <form id="taskForm" onsubmit="updateTaskInProject(event, '${projectId}', ${index})">
+          <div class="form-group">
+            <label for="taskName">Task Name *</label>
+            <input type="text" id="taskName" value="${task.name}" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="taskAssignee">Assignee *</label>
+              <input type="text" id="taskAssignee" value="${task.who}" required>
+            </div>
+            <div class="form-group">
+              <label for="taskPriority">Priority *</label>
+              <select id="taskPriority" required>
+                <option value="High" ${task.prio === 'High' ? 'selected' : ''}>High</option>
+                <option value="Medium" ${task.prio === 'Medium' ? 'selected' : ''}>Medium</option>
+                <option value="Low" ${task.prio === 'Low' ? 'selected' : ''}>Low</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="taskDue">Due Date *</label>
+            <input type="date" id="taskDue" value="${task.due}" required>
+          </div>
+          <div class="form-group">
+            <label for="taskStatus">Status</label>
+            <select id="taskStatus">
+              <option value="Not Started" ${task.status === 'Not Started' ? 'selected' : ''}>Not Started</option>
+              <option value="In Progress" ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            </select>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove()">Cancel</button>
+            <button type="submit" class="btn-primary">Update Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+// Update Task in Project
+function updateTaskInProject(event, projectId, index) {
+  event.preventDefault();
+  
+  tempTasks[index] = {
+    id: tempTasks[index].id,
+    name: document.getElementById('taskName').value,
+    who: document.getElementById('taskAssignee').value,
+    prio: document.getElementById('taskPriority').value,
+    due: document.getElementById('taskDue').value,
+    status: document.getElementById('taskStatus').value
+  };
+  
+  renderTasks();
+  document.querySelector('.custom-modal-overlay').remove();
+}
+
+// Remove Task
+function removeTask(projectId, index) {
+  tempTasks.splice(index, 1);
+  renderTasks();
 }
 
 async function saveProject(event) {
@@ -447,17 +738,55 @@ async function saveProject(event) {
     due: document.getElementById('projectDue').value,
     type: document.getElementById('projectType').value,
     notes: document.getElementById('projectNotes').value,
+    members: tempTeamMembers,
+    tasks: tempTasks,
     lastUpdatedBy: currentUser.username
   };
   
-  const result = await firebaseService.saveProject(project);
+  // Show loading indicator
+  const submitBtn = event.target.querySelector('button[type="submit"]');
+  const originalText = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  submitBtn.disabled = true;
   
-  if (result.success) {
-    closeProjectModal();
-    //playNotificationSound('notification');
-    showCustomModal('Success', 'Project saved successfully!', 'success');
-  } else {
-    showCustomModal('Error', 'Failed to save project: ' + result.error, 'danger');
+  try {
+    const result = await firebaseService.saveProject(project);
+    
+    if (result.success) {
+      // Also save each task as a separate task in Firebase
+      if (tempTasks.length > 0) {
+        for (const task of tempTasks) {
+          const taskData = {
+            id: task.id,
+            title: task.name,
+            assignedTo: task.who,
+            priority: task.prio,
+            dueDate: task.due,
+            status: task.status,
+            projectId: result.id,
+            projectName: project.name,
+            description: '',
+            type: project.type,
+            startDate: project.start,
+            notes: '',
+            createdBy: currentUser.username,
+            createdAt: new Date().toISOString()
+          };
+          await firebaseService.saveTask(taskData);
+        }
+      }
+      
+      closeProjectModal();
+      showCustomModal('Success', 'Project saved successfully!', 'success');
+    } else {
+      showCustomModal('Error', 'Failed to save project: ' + result.error, 'danger');
+    }
+  } catch (error) {
+    console.error('Error saving project:', error);
+    showCustomModal('Error', 'Failed to save project: ' + error.message, 'danger');
+  } finally {
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
   }
 }
 
@@ -501,35 +830,10 @@ async function confirmDeleteProject(id) {
   document.querySelector('.custom-modal-overlay').remove();
   
   if (result.success) {
-    //playNotificationSound('notification');
     showCustomModal('Success', 'Project deleted successfully!', 'success');
   } else {
     showCustomModal('Error', 'Failed to delete project: ' + result.error, 'danger');
   }
-}
-
-function addTeamMember() {
-  showCustomModal('Info', 'Team member will be added after saving the project.', 'info');
-}
-
-function editTeamMember(projectId, index) {
-  showCustomModal('Info', 'Team member will be updated after saving the project.', 'info');
-}
-
-function removeTeamMember(projectId, index) {
-  showCustomModal('Info', 'Team member will be removed after saving the project.', 'info');
-}
-
-function addTask() {
-  showCustomModal('Info', 'Task will be added after saving the project.', 'info');
-}
-
-function editTask(projectId, index) {
-  showCustomModal('Info', 'Task will be updated after saving the project.', 'info');
-}
-
-function removeTask(projectId, index) {
-  showCustomModal('Info', 'Task will be removed after saving the project.', 'info');
 }
 
 function openBudgetModal(projectId) {

@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Banners - Prospen Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Add this BEFORE your other scripts -->
+    <script type="import" src="../firebase-config.js"></script>
+    <script type="import" src="../firebase-service.js"></script>
+
+    <!-- Make your other scripts type="module" -->
+    <script type="module" src="../auth.js"></script>
+    <script type="module" src="../projects.js"></script>
+    <script type="module" src="../updates.js"></script>
+    <script type="module" src="../clocking.js"></script>
+    <script type="module" src="../chatbot.js"></script>
+    <script type="module" src="../modal.js"></script>
+    <script type="module" src="../theme.js"></script>
+    <script type="module" src="../stats.js"></script>
+    <script type="module" src="../tasks.js"></script>
+    <script type="module" src="../main.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px var(--accent-glow);
+        }
+        
+        .stat-card .stat-icon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-h);
+        }
+        
+        .stat-card .stat-label {
+            color: var(--text-p);
+            font-size: 0.9rem;
+        }
+        
+        .banners-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .banners-table th {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .banners-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .banners-table tr:hover {
+            background: rgba(255,255,255,0.02);
+            cursor: pointer;
+        }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-badge.active {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+        
+        .status-badge.inactive {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+        
+        .status-badge.paused {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: var(--text-h);
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        
+        .action-btn.delete:hover {
+            background: var(--danger);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .pagination-btn {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-h);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pagination-btn:hover,
+        .pagination-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-btn:disabled:hover {
+            background: var(--card);
+            color: var(--text-h);
+            border-color: rgba(255,255,255,0.1);
+        }
+        
+        .banner-detail-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+        
+        .banner-detail-view.show {
+            display: block;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+        
+        .detail-section {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-section h2 {
+            color: var(--accent);
+            margin-top: 0;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .detail-section h2 i {
+            font-size: 1.2rem;
+        }
+        
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .detail-label {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .detail-value {
+            color: var(--text-h);
+        }
+        
+        .courses-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .course-tag {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+        
+        .filter-section {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-select {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-h);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .duration-highlight {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .days-remaining {
+            font-weight: bold;
+        }
+        
+        .days-remaining.urgent {
+            color: var(--danger);
+        }
+        
+        .days-remaining.warning {
+            color: var(--warning);
+        }
+        
+        .days-remaining.good {
+            color: var(--success);
+        }
+        
+        /* Style for the textarea */
+        #coursesLinked {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-h);
+            font-family: inherit;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="stats-header">
+            <h1><i class="fas fa-images"></i> Email Banners</h1>
+            <div class="stats-controls">
+                <button class="control-btn" onclick="openBannerModal()">
+                    <i class="fas fa-plus"></i> Add Banner
+                </button>
+                <button class="back-btn" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-chevron-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-cards" id="statsCards">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-flag"></i></div>
+                <div class="stat-number" id="totalBanners">0</div>
+                <div class="stat-label">Total Banners</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-play-circle" style="color: var(--success);"></i></div>
+                <div class="stat-number" id="activeBanners">0</div>
+                <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-pause-circle" style="color: var(--warning);"></i></div>
+                <div class="stat-number" id="pausedBanners">0</div>
+                <div class="stat-label">Paused</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-stop-circle" style="color: #94a3b8;"></i></div>
+                <div class="stat-number" id="inactiveBanners">0</div>
+                <div class="stat-label">Inactive</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-number" id="totalClicks">0</div>
+                <div class="stat-label">Total Clicks</div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <i class="fas fa-filter" style="color: var(--accent);"></i>
+            <span style="color: var(--text-p);">Filter by:</span>
+            
+            <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+                <option value="all">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Paused">Paused</option>
+            </select>
+            
+            <select class="filter-select" id="assignedToFilter" onchange="applyFilters()">
+                <option value="all">All Assignees</option>
+            </select>
+            
+            <select class="filter-select" id="courseFilter" onchange="applyFilters()">
+                <option value="all">All Courses</option>
+            </select>
+            
+            <select class="filter-select" id="sortFilter" onchange="applyFilters()">
+                <option value="default">Sort by</option>
+                <option value="duration">Longest Running</option>
+                <option value="clicks">Highest Clicks</option>
+                <option value="expiring">Expiring Soon</option>
+            </select>
+            
+            <button class="small-btn" onclick="resetFilters()" title="Reset Filters">
+                <i class="fas fa-undo"></i> Reset
+            </button>
+        </div>
+
+        <!-- Banners Table -->
+        <div class="section-box">
+            <h2>Email Banners</h2>
+            <div style="overflow-x: auto;">
+                <table class="banners-table" id="bannersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Banner Name</th>
+                            <th>Assigned To</th>
+                            <th>Duration</th>
+                            <th>Days Remaining</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bannersTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-images fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                                <p>Loading banners...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+        </div>
+
+        <!-- Longest Running / Highest Clicks Visual Cards -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+            <div class="section-box">
+                <h3><i class="fas fa-clock"></i> Longest Running Banners</h3>
+                <div id="longestRunningContainer">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+            
+            <div class="section-box">
+                <h3><i class="fas fa-fire"></i> Highest Clicks</h3>
+                <div id="highestClicksContainer">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="section-box" style="margin-top: 20px;">
+            <h3><i class="fas fa-exclamation-triangle"></i> Expiring Soon</h3>
+            <div id="expiringSoonContainer">
+                <!-- Will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner Detail View -->
+    <div id="bannerDetailView" class="banner-detail-view">
+        <button class="back-btn" onclick="closeBannerDetail()">
+            <i class="fas fa-chevron-left"></i> BACK TO BANNERS
+        </button>
+        <div id="bannerDetailContent"></div>
+    </div>
+
+    <!-- Banner Modal (Add/Edit) - UPDATED with text input and textarea -->
+    <div id="bannerModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="bannerModalTitle">Add New Banner</h2>
+                <button class="close-btn" onclick="closeBannerModal()">&times;</button>
+            </div>
+            <form id="bannerForm" onsubmit="saveBanner(event)">
+                <input type="hidden" id="bannerId">
+                
+                <div class="form-group">
+                    <label for="bannerName">Banner Name *</label>
+                    <input type="text" id="bannerName" placeholder="e.g., Summer Sale Banner, New Course Promo" required>
+                </div>
+
+                <!-- UPDATED: Changed to text input -->
+                <div class="form-group">
+                    <label for="assignedTo">Assigned To *</label>
+                    <input type="text" id="assignedTo" required placeholder="Enter person name">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assignedDate">Assigned Date *</label>
+                        <input type="date" id="assignedDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="unassignDate">Unassign Date *</label>
+                        <input type="date" id="unassignDate" required>
+                    </div>
+                </div>
+
+                <!-- UPDATED: Changed to textarea -->
+                <div class="form-group">
+                    <label for="coursesLinked">Courses Linked (select multiple)</label>
+                    <textarea id="coursesLinked" rows="4" style="height: auto; min-height: 100px; width: 100%;" placeholder="Enter courses, one per line or separated by commas"></textarea>
+                    <small style="color: var(--text-p);">Enter multiple courses (one per line)</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="clicks">Clicks</label>
+                        <input type="number" id="clicks" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="bannerStatus">Status *</label>
+                        <select id="bannerStatus" required>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Paused">Paused</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes / Comments</label>
+                    <textarea id="notes" rows="3" placeholder="Any extra info or instructions..."></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="closeBannerModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Banner</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"></div>
+
+    <script type="module">
+        import auth from '../auth.js';
+        import { db, ref, push, set, remove, onValue, get } from '../firebase-config.js';
+
+        // Check authentication
+        const currentUser = auth.getCurrentUser();
+        if (!currentUser) {
+            window.location.href = '../login.html';
+        }
+
+        let banners = [];
+        let filteredBanners = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let currentFilters = {
+            status: 'all',
+            assignedTo: 'all',
+            course: 'all',
+            sort: 'default'
+        };
+
+        // Make functions available globally
+        window.openBannerModal = openBannerModal;
+        window.closeBannerModal = closeBannerModal;
+        window.saveBanner = saveBanner;
+        window.viewBannerDetails = viewBannerDetails;
+        window.closeBannerDetail = closeBannerDetail;
+        window.editBanner = editBanner;
+        window.deleteBanner = deleteBanner;
+        window.confirmDeleteBanner = confirmDeleteBanner;
+        window.applyFilters = applyFilters;
+        window.resetFilters = resetFilters;
+
+        // Calculate days between dates
+        function calculateDaysBetween(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        // Calculate days remaining
+        function calculateDaysRemaining(unassignDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const unassign = new Date(unassignDate);
+            unassign.setHours(0, 0, 0, 0);
+            const diffTime = unassign - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        // Format duration string
+        function formatDuration(startDate) {
+            const start = new Date(startDate);
+            const today = new Date();
+            const diffTime = Math.abs(today - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 30) {
+                return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+            } else {
+                const months = Math.floor(diffDays / 30);
+                const days = diffDays % 30;
+                return `${months} month${months !== 1 ? 's' : ''}${days > 0 ? ` ${days}d` : ''}`;
+            }
+        }
+
+        // Get days remaining class
+        function getDaysRemainingClass(days) {
+            if (days < 0) return 'urgent';
+            if (days <= 7) return 'urgent';
+            if (days <= 14) return 'warning';
+            return 'good';
+        }
+
+        // Parse courses from textarea
+        function parseCourses(coursesText) {
+            if (!coursesText) return [];
+            
+            // Split by newlines first, then by commas, and filter out empty strings
+            return coursesText.split('\n')
+                .flatMap(line => line.split(','))
+                .map(course => course.trim())
+                .filter(course => course.length > 0);
+        }
+
+        // Format courses for display (join with commas)
+        function formatCoursesForDisplay(coursesArray) {
+            if (!coursesArray || coursesArray.length === 0) return '';
+            return coursesArray.join(', ');
+        }
+
+        // Load banners from Firebase
+        async function loadBanners() {
+            try {
+                const bannersRef = ref(db, 'emailBanners');
+                const snapshot = await get(bannersRef);
+                
+                if (snapshot.exists()) {
+                    banners = [];
+                    snapshot.forEach((child) => {
+                        banners.push({ id: child.key, ...child.val() });
+                    });
+                    // Sort by ID (newest first)
+                    banners.sort((a, b) => {
+                        const aId = parseInt(a.bannerId?.replace('#', '') || '0');
+                        const bId = parseInt(b.bannerId?.replace('#', '') || '0');
+                        return bId - aId;
+                    });
+                } else {
+                    banners = [];
+                }
+                
+                filteredBanners = [...banners];
+                updateFilters();
+                updateStats();
+                renderTable();
+                updateVisualCards();
+            } catch (error) {
+                console.error('Error loading banners:', error);
+                banners = [];
+                filteredBanners = [];
+                updateStats();
+                renderTable();
+            }
+        }
+
+        // Update filter dropdowns
+        function updateFilters() {
+            const assignedToFilter = document.getElementById('assignedToFilter');
+            const courseFilter = document.getElementById('courseFilter');
+            
+            // Get unique assignees
+            const assignees = [...new Set(banners.map(b => b.assignedTo).filter(a => a))];
+            assignedToFilter.innerHTML = '<option value="all">All Assignees</option>';
+            assignees.forEach(assignee => {
+                const option = document.createElement('option');
+                option.value = assignee;
+                option.textContent = assignee;
+                assignedToFilter.appendChild(option);
+            });
+            
+            // Get unique courses
+            const allCourses = new Set();
+            banners.forEach(b => {
+                if (b.coursesLinked && Array.isArray(b.coursesLinked)) {
+                    b.coursesLinked.forEach(c => allCourses.add(c));
+                }
+            });
+            courseFilter.innerHTML = '<option value="all">All Courses</option>';
+            [...allCourses].sort().forEach(course => {
+                const option = document.createElement('option');
+                option.value = course;
+                option.textContent = course;
+                courseFilter.appendChild(option);
+            });
+        }
+
+        // Apply filters
+        function applyFilters() {
+            currentFilters.status = document.getElementById('statusFilter').value;
+            currentFilters.assignedTo = document.getElementById('assignedToFilter').value;
+            currentFilters.course = document.getElementById('courseFilter').value;
+            currentFilters.sort = document.getElementById('sortFilter').value;
+            
+            filteredBanners = banners.filter(banner => {
+                // Status filter
+                if (currentFilters.status !== 'all' && banner.status !== currentFilters.status) {
+                    return false;
+                }
+                
+                // Assigned to filter
+                if (currentFilters.assignedTo !== 'all' && banner.assignedTo !== currentFilters.assignedTo) {
+                    return false;
+                }
+                
+                // Course filter
+                if (currentFilters.course !== 'all') {
+                    if (!banner.coursesLinked || !Array.isArray(banner.coursesLinked) || 
+                        !banner.coursesLinked.includes(currentFilters.course)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            // Apply sorting
+            if (currentFilters.sort !== 'default') {
+                filteredBanners.sort((a, b) => {
+                    if (currentFilters.sort === 'duration') {
+                        const aDuration = calculateDaysBetween(a.assignedDate, new Date().toISOString().split('T')[0]);
+                        const bDuration = calculateDaysBetween(b.assignedDate, new Date().toISOString().split('T')[0]);
+                        return bDuration - aDuration;
+                    } else if (currentFilters.sort === 'clicks') {
+                        return (b.clicks || 0) - (a.clicks || 0);
+                    } else if (currentFilters.sort === 'expiring') {
+                        const aDays = calculateDaysRemaining(a.unassignDate);
+                        const bDays = calculateDaysRemaining(b.unassignDate);
+                        return aDays - bDays;
+                    }
+                    return 0;
+                });
+            }
+            
+            currentPage = 1;
+            renderTable();
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('assignedToFilter').value = 'all';
+            document.getElementById('courseFilter').value = 'all';
+            document.getElementById('sortFilter').value = 'default';
+            
+            currentFilters = {
+                status: 'all',
+                assignedTo: 'all',
+                course: 'all',
+                sort: 'default'
+            };
+            
+            filteredBanners = [...banners];
+            currentPage = 1;
+            renderTable();
+        }
+
+        // Update statistics cards
+        function updateStats() {
+            const totalBanners = banners.length;
+            const activeBanners = banners.filter(b => b.status === 'Active').length;
+            const pausedBanners = banners.filter(b => b.status === 'Paused').length;
+            const inactiveBanners = banners.filter(b => b.status === 'Inactive').length;
+            const totalClicks = banners.reduce((sum, b) => sum + (b.clicks || 0), 0);
+            
+            document.getElementById('totalBanners').textContent = totalBanners;
+            document.getElementById('activeBanners').textContent = activeBanners;
+            document.getElementById('pausedBanners').textContent = pausedBanners;
+            document.getElementById('inactiveBanners').textContent = inactiveBanners;
+            document.getElementById('totalClicks').textContent = totalClicks;
+        }
+
+        // Render table with pagination
+        function renderTable() {
+            const tbody = document.getElementById('bannersTableBody');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedBanners = filteredBanners.slice(startIndex, endIndex);
+            
+            if (filteredBanners.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-images fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                            <p>No banners found. Click "Add Banner" to create your first banner.</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                let html = '';
+                paginatedBanners.forEach(banner => {
+                    const statusClass = {
+                        'Active': 'active',
+                        'Inactive': 'inactive',
+                        'Paused': 'paused'
+                    }[banner.status] || 'inactive';
+                    
+                    const duration = formatDuration(banner.assignedDate);
+                    const daysRemaining = calculateDaysRemaining(banner.unassignDate);
+                    const daysClass = getDaysRemainingClass(daysRemaining);
+                    
+                    html += `
+                        <tr onclick="viewBannerDetails('${banner.id}')">
+                            <td><strong>${banner.bannerId || '#' + banner.id.substring(0, 4)}</strong></td>
+                            <td>${banner.name}</td>
+                            <td>${banner.assignedTo || 'Unassigned'}</td>
+                            <td><span class="duration-highlight">${duration}</span></td>
+                            <td><span class="days-remaining ${daysClass}">${daysRemaining > 0 ? daysRemaining : 'Expired'}</span></td>
+                            <td><span class="status-badge ${statusClass}">${banner.status || 'Inactive'}</span></td>
+                            <td>
+                                <div class="action-buttons" onclick="event.stopPropagation()">
+                                    <button class="action-btn" onclick="viewBannerDetails('${banner.id}')" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="action-btn" onclick="editBanner('${banner.id}')" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete" onclick="deleteBanner('${banner.id}')" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            }
+            
+            renderPagination();
+        }
+
+        // Render pagination controls
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredBanners.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let html = `
+                <button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `;
+            
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `
+                        <button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += `<span class="pagination-btn" style="cursor: default;">...</span>`;
+                }
+            }
+            
+            html += `
+                <button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+            
+            pagination.innerHTML = html;
+        }
+
+        // Change page
+        window.changePage = function(page) {
+            const totalPages = Math.ceil(filteredBanners.length / itemsPerPage);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderTable();
+        };
+
+        // Update visual cards (longest running, highest clicks, expiring soon)
+        function updateVisualCards() {
+            const bannersCopy = [...banners];
+            
+            // Longest running (by duration)
+            const longestRunning = [...bannersCopy].sort((a, b) => {
+                const aDuration = calculateDaysBetween(a.assignedDate, new Date().toISOString().split('T')[0]);
+                const bDuration = calculateDaysBetween(b.assignedDate, new Date().toISOString().split('T')[0]);
+                return bDuration - aDuration;
+            }).slice(0, 5);
+            
+            // Highest clicks
+            const highestClicks = [...bannersCopy].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5);
+            
+            // Expiring soon (positive days remaining, sorted by soonest)
+            const expiringSoon = bannersCopy
+                .filter(b => {
+                    const days = calculateDaysRemaining(b.unassignDate);
+                    return days > 0 && days <= 14 && b.status === 'Active';
+                })
+                .sort((a, b) => calculateDaysRemaining(a.unassignDate) - calculateDaysRemaining(b.unassignDate))
+                .slice(0, 5);
+            
+            // Render longest running
+            const longestContainer = document.getElementById('longestRunningContainer');
+            if (longestRunning.length === 0) {
+                longestContainer.innerHTML = '<p style="color: var(--text-p); text-align: center;">No banners available</p>';
+            } else {
+                let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+                longestRunning.forEach(banner => {
+                    const duration = formatDuration(banner.assignedDate);
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                            <div>
+                                <strong style="color: var(--accent);">${banner.name}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-p);">Assigned to: ${banner.assignedTo || 'Unassigned'}</div>
+                            </div>
+                            <span style="background: var(--accent); color: var(--bg); padding: 4px 10px; border-radius: 16px; font-weight: bold;">${duration}</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                longestContainer.innerHTML = html;
+            }
+            
+            // Render highest clicks
+            const clicksContainer = document.getElementById('highestClicksContainer');
+            if (highestClicks.length === 0) {
+                clicksContainer.innerHTML = '<p style="color: var(--text-p); text-align: center;">No banners available</p>';
+            } else {
+                let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+                highestClicks.forEach(banner => {
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                            <div>
+                                <strong style="color: var(--accent);">${banner.name}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-p);">${banner.assignedTo || 'Unassigned'}</div>
+                            </div>
+                            <span style="background: var(--warning); color: var(--bg); padding: 4px 10px; border-radius: 16px; font-weight: bold;">${banner.clicks || 0} clicks</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                clicksContainer.innerHTML = html;
+            }
+            
+            // Render expiring soon
+            const expiringContainer = document.getElementById('expiringSoonContainer');
+            if (expiringSoon.length === 0) {
+                expiringContainer.innerHTML = '<p style="color: var(--text-p); text-align: center;">No banners expiring soon</p>';
+            } else {
+                let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+                expiringSoon.forEach(banner => {
+                    const daysRemaining = calculateDaysRemaining(banner.unassignDate);
+                    const daysClass = getDaysRemainingClass(daysRemaining);
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                            <div>
+                                <strong style="color: var(--accent);">${banner.name}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-p);">${banner.assignedTo || 'Unassigned'}</div>
+                            </div>
+                            <span class="days-remaining ${daysClass}" style="font-weight: bold;">${daysRemaining} days left</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                expiringContainer.innerHTML = html;
+            }
+        }
+
+        // Open banner modal for add/edit
+        function openBannerModal(bannerId = null) {
+            const modal = document.getElementById('bannerModal');
+            const title = document.getElementById('bannerModalTitle');
+            const form = document.getElementById('bannerForm');
+            
+            // Set today's date as default for assigned date
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (bannerId) {
+                const banner = banners.find(b => b.id === bannerId);
+                if (!banner) return;
+                
+                title.textContent = 'Edit Banner';
+                
+                document.getElementById('bannerId').value = bannerId;
+                document.getElementById('bannerName').value = banner.name || '';
+                document.getElementById('assignedTo').value = banner.assignedTo || '';
+                document.getElementById('assignedDate').value = banner.assignedDate || today;
+                document.getElementById('unassignDate').value = banner.unassignDate || '';
+                
+                // Handle courses textarea
+                const coursesTextarea = document.getElementById('coursesLinked');
+                if (banner.coursesLinked && Array.isArray(banner.coursesLinked)) {
+                    coursesTextarea.value = banner.coursesLinked.join('\n');
+                } else {
+                    coursesTextarea.value = '';
+                }
+                
+                document.getElementById('clicks').value = banner.clicks || 0;
+                document.getElementById('bannerStatus').value = banner.status || 'Active';
+                document.getElementById('notes').value = banner.notes || '';
+                
+            } else {
+                title.textContent = 'Add New Banner';
+                form.reset();
+                document.getElementById('bannerId').value = '';
+                document.getElementById('assignedDate').value = today;
+                document.getElementById('clicks').value = 0;
+                
+                // Calculate default unassign date (30 days from today)
+                const defaultUnassign = new Date();
+                defaultUnassign.setDate(defaultUnassign.getDate() + 30);
+                document.getElementById('unassignDate').value = defaultUnassign.toISOString().split('T')[0];
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // Close banner modal
+        function closeBannerModal() {
+            document.getElementById('bannerModal').style.display = 'none';
+        }
+
+        // Generate banner ID
+        function generateBannerId() {
+            const maxId = banners.reduce((max, banner) => {
+                if (banner.bannerId && banner.bannerId.startsWith('#')) {
+                    const num = parseInt(banner.bannerId.substring(1));
+                    return num > max ? num : max;
+                }
+                return max;
+            }, 0);
+            
+            const nextNum = maxId + 1;
+            return `#${nextNum.toString().padStart(2, '0')}`;
+        }
+
+        // Save banner to Firebase
+        async function saveBanner(event) {
+            event.preventDefault();
+            
+            const bannerId = document.getElementById('bannerId').value;
+            const now = new Date().toISOString();
+            
+            // Parse courses from textarea
+            const coursesText = document.getElementById('coursesLinked').value;
+            const coursesArray = parseCourses(coursesText);
+            
+            const banner = {
+                bannerId: bannerId ? (banners.find(b => b.id === bannerId)?.bannerId || generateBannerId()) : generateBannerId(),
+                name: document.getElementById('bannerName').value,
+                assignedTo: document.getElementById('assignedTo').value,
+                assignedDate: document.getElementById('assignedDate').value,
+                unassignDate: document.getElementById('unassignDate').value,
+                coursesLinked: coursesArray,
+                clicks: parseInt(document.getElementById('clicks').value) || 0,
+                status: document.getElementById('bannerStatus').value,
+                notes: document.getElementById('notes').value,
+                timestamp: now,
+                lastUpdated: now,
+                lastUpdatedBy: currentUser.username,
+                createdBy: currentUser.username,
+                createdAt: now
+            };
+            
+            // Show loading indicator
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+            
+            try {
+                if (bannerId) {
+                    // Update existing banner
+                    const bannerRef = ref(db, `emailBanners/${bannerId}`);
+                    await set(bannerRef, banner);
+                } else {
+                    // Create new banner
+                    const bannersRef = ref(db, 'emailBanners');
+                    const newBannerRef = push(bannersRef);
+                    banner.id = newBannerRef.key;
+                    await set(newBannerRef, banner);
+                }
+                
+                closeBannerModal();
+                await loadBanners(); // Reload banners from Firebase
+                
+                showCustomModal('Success', 'Banner saved successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error saving banner:', error);
+                showCustomModal('Error', 'Failed to save banner: ' + error.message, 'danger');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // View banner details
+        function viewBannerDetails(bannerId) {
+            const banner = banners.find(b => b.id === bannerId);
+            if (!banner) return;
+            
+            const detailView = document.getElementById('bannerDetailView');
+            const content = document.getElementById('bannerDetailContent');
+            
+            const duration = formatDuration(banner.assignedDate);
+            const daysRemaining = calculateDaysRemaining(banner.unassignDate);
+            const daysClass = getDaysRemainingClass(daysRemaining);
+            
+            // Format courses
+            const coursesHtml = banner.coursesLinked && banner.coursesLinked.length > 0 ?
+                banner.coursesLinked.map(c => `<span class="course-tag">${c}</span>`).join('') :
+                '<span style="color: var(--text-p);">No courses linked</span>';
+            
+            let html = `
+                <div class="grid-layout">
+                    <div class="main-col">
+                        <div class="detail-section">
+                            <h2><i class="fas fa-info-circle"></i> Banner Information</h2>
+                            <div class="detail-row"><span class="detail-label">Banner ID:</span><span class="detail-value">${banner.bannerId || 'N/A'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Banner Name:</span><span class="detail-value">${banner.name || 'N/A'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Assigned To:</span><span class="detail-value">${banner.assignedTo || 'Unassigned'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Assigned Date:</span><span class="detail-value">${new Date(banner.assignedDate).toLocaleDateString()}</span></div>
+                            <div class="detail-row"><span class="detail-label">Unassign Date:</span><span class="detail-value">${new Date(banner.unassignDate).toLocaleDateString()}</span></div>
+                            <div class="detail-row"><span class="detail-label">Duration Running:</span><span class="detail-value"><span class="duration-highlight">${duration}</span></span></div>
+                            <div class="detail-row"><span class="detail-label">Days Remaining:</span><span class="detail-value"><span class="days-remaining ${daysClass}">${daysRemaining > 0 ? daysRemaining + ' days' : 'Expired'}</span></span></div>
+                            <div class="detail-row"><span class="detail-label">Status:</span><span class="detail-value"><span class="status-badge ${banner.status === 'Active' ? 'active' : banner.status === 'Paused' ? 'paused' : 'inactive'}">${banner.status || 'Inactive'}</span></span></div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h2><i class="fas fa-graduation-cap"></i> Courses Linked</h2>
+                            <div class="courses-list">
+                                ${coursesHtml}
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h2><i class="fas fa-chart-line"></i> Performance</h2>
+                            <div class="detail-row"><span class="detail-label">Clicks:</span><span class="detail-value"><strong style="color: var(--accent); font-size: 1.2rem;">${banner.clicks || 0}</strong></span></div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h2><i class="fas fa-sticky-note"></i> Notes / Comments</h2>
+                            <p class="detail-value">${banner.notes || 'No notes available.'}</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h2><i class="fas fa-history"></i> Metadata</h2>
+                            <div class="detail-row"><span class="detail-label">Created:</span><span class="detail-value">${banner.createdAt ? new Date(banner.createdAt).toLocaleString() : 'N/A'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Created By:</span><span class="detail-value">${banner.createdBy || 'N/A'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Last Updated:</span><span class="detail-value">${banner.lastUpdated ? new Date(banner.lastUpdated).toLocaleString() : 'N/A'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Last Updated By:</span><span class="detail-value">${banner.lastUpdatedBy || 'N/A'}</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="side-col">
+                        <div class="detail-section">
+                            <h2><i class="fas fa-tasks"></i> Quick Actions</h2>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <button class="control-btn" onclick="editBanner('${banner.id}')" style="width: 100%;">
+                                    <i class="fas fa-edit"></i> Edit Banner
+                                </button>
+                                ${banner.status !== 'Active' ? `
+                                    <button class="control-btn" onclick="updateBannerStatus('${banner.id}', 'Active')" style="width: 100%; background: var(--success);">
+                                        <i class="fas fa-play"></i> Activate
+                                    </button>
+                                ` : ''}
+                                ${banner.status === 'Active' ? `
+                                    <button class="control-btn" onclick="updateBannerStatus('${banner.id}', 'Paused')" style="width: 100%; background: var(--warning);">
+                                        <i class="fas fa-pause"></i> Pause
+                                    </button>
+                                ` : ''}
+                                <button class="control-btn" onclick="updateBannerClicks('${banner.id}')" style="width: 100%; background: var(--accent);">
+                                    <i class="fas fa-plus"></i> Add Click
+                                </button>
+                                <button class="control-btn" style="background: var(--danger); width: 100%;" onclick="deleteBanner('${banner.id}')">
+                                    <i class="fas fa-trash"></i> Delete Banner
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            detailView.classList.add('show');
+        }
+
+        // Update banner status
+        window.updateBannerStatus = async function(bannerId, newStatus) {
+            const banner = banners.find(b => b.id === bannerId);
+            if (!banner) return;
+            
+            banner.status = newStatus;
+            banner.lastUpdated = new Date().toISOString();
+            banner.lastUpdatedBy = currentUser.username;
+            
+            try {
+                const bannerRef = ref(db, `emailBanners/${bannerId}`);
+                await set(bannerRef, banner);
+                
+                closeBannerDetail();
+                await loadBanners();
+                showCustomModal('Success', `Banner ${newStatus.toLowerCase()} successfully!`, 'success');
+            } catch (error) {
+                console.error('Error updating banner status:', error);
+                showCustomModal('Error', 'Failed to update banner status: ' + error.message, 'danger');
+            }
+        };
+
+        // Update banner clicks
+        window.updateBannerClicks = async function(bannerId) {
+            const banner = banners.find(b => b.id === bannerId);
+            if (!banner) return;
+            
+            banner.clicks = (banner.clicks || 0) + 1;
+            banner.lastUpdated = new Date().toISOString();
+            banner.lastUpdatedBy = currentUser.username;
+            
+            try {
+                const bannerRef = ref(db, `emailBanners/${bannerId}`);
+                await set(bannerRef, banner);
+                
+                closeBannerDetail();
+                await loadBanners();
+                showCustomModal('Success', 'Click added successfully!', 'success');
+            } catch (error) {
+                console.error('Error updating banner clicks:', error);
+                showCustomModal('Error', 'Failed to update clicks: ' + error.message, 'danger');
+            }
+        };
+
+        // Close banner detail view
+        function closeBannerDetail() {
+            document.getElementById('bannerDetailView').classList.remove('show');
+        }
+
+        // Edit banner
+        function editBanner(bannerId) {
+            closeBannerDetail();
+            openBannerModal(bannerId);
+        }
+
+        // Delete banner
+        function deleteBanner(bannerId) {
+            const banner = banners.find(b => b.id === bannerId);
+            
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal danger">
+                    <div class="custom-modal-header">
+                        <h3>Confirm Delete</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>Are you sure you want to delete the banner <strong>${banner.name || banner.bannerId}</strong>? This action cannot be undone.</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                        <button class="btn-primary" style="background: var(--danger);" onclick="confirmDeleteBanner('${bannerId}')">Delete</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Confirm delete banner
+        async function confirmDeleteBanner(bannerId) {
+            try {
+                const bannerRef = ref(db, `emailBanners/${bannerId}`);
+                await remove(bannerRef);
+                
+                document.querySelector('.custom-modal-overlay').remove();
+                document.getElementById('bannerDetailView').classList.remove('show');
+                
+                await loadBanners(); // Reload banners from Firebase
+                
+                showCustomModal('Success', 'Banner deleted successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error deleting banner:', error);
+                showCustomModal('Error', 'Failed to delete banner: ' + error.message, 'danger');
+            }
+        }
+
+        // Show custom modal
+        function showCustomModal(title, message, type = 'info') {
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal ${type}">
+                    <div class="custom-modal-header">
+                        <h3>${title}</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Load chatbot component
+        async function loadChatbot() {
+            try {
+                const chatbotResponse = await fetch('../components/chatbot.html');
+                const chatbotHTML = await chatbotResponse.text();
+                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
+                
+                // Initialize chatbot
+                if (window.initChatbot) {
+                    setTimeout(window.initChatbot, 500);
+                }
+            } catch (error) {
+                console.error('Error loading chatbot:', error);
+            }
+        }
+
+        // Set up real-time listener for banners
+        const bannersRef = ref(db, 'emailBanners');
+        onValue(bannersRef, (snapshot) => {
+            if (snapshot.exists()) {
+                banners = [];
+                snapshot.forEach((child) => {
+                    banners.push({ id: child.key, ...child.val() });
+                });
+                // Sort by ID (newest first)
+                banners.sort((a, b) => {
+                    const aId = parseInt(a.bannerId?.replace('#', '') || '0');
+                    const bId = parseInt(b.bannerId?.replace('#', '') || '0');
+                    return bId - aId;
+                });
+                
+                filteredBanners = [...banners];
+                updateFilters();
+                updateStats();
+                renderTable();
+                updateVisualCards();
+            } else {
+                banners = [];
+                filteredBanners = [];
+                updateStats();
+                renderTable();
+                updateVisualCards();
+            }
+        });
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChatbot();
+            loadBanners();
+        });
+    </script>
+</body>
+</html>
