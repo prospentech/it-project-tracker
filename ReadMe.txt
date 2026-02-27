@@ -400,3 +400,11 @@ git commit -m "Describe changes"
 git push origin main
 
 No extra steps needed unless someone else updated the repo, then you’d git pull origin main first.
+
+🔥 Quick Full Fix Command
+
+If you want to make sure EVERYTHING updates:
+
+git add -A
+git commit -m "Full sync update"
+git push origin main
