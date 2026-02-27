@@ -792,7 +792,7 @@ function restoreScrollPosition() {
     }
 }
 
-// Sticky Header functionality
+// Sticky Header functionality to stick the quick action menu.
 function initStickyHeader() {
     // Create sticky header element if it doesn't exist
     if (document.getElementById('stickyHeader')) return;
