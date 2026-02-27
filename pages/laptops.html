@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laptop Inventory Management - Prospen Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Add this BEFORE your other scripts -->
+    <script type="import" src="../firebase-config.js"></script>
+    <script type="import" src="../firebase-service.js"></script>
+
+    <!-- Make your other scripts type="module" -->
+    <script type="module" src="../auth.js"></script>
+    <script type="module" src="../projects.js"></script>
+    <script type="module" src="../updates.js"></script>
+    <script type="module" src="../clocking.js"></script>
+    <script type="module" src="../chatbot.js"></script>
+    <script type="module" src="../modal.js"></script>
+    <script type="module" src="../theme.js"></script>
+    <script type="module" src="../stats.js"></script>
+    <script type="module" src="../tasks.js"></script>
+    <script type="module" src="../main.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px var(--accent-glow);
+        }
+        
+        .stat-card .stat-icon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-h);
+        }
+        
+        .stat-card .stat-label {
+            color: var(--text-p);
+            font-size: 0.9rem;
+        }
+        
+        .inventory-table, .release-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .inventory-table th, .release-table th {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .inventory-table td, .release-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .inventory-table tr:hover, .release-table tr:hover {
+            background: rgba(255,255,255,0.02);
+            cursor: pointer;
+        }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-available {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+        
+        .status-issued {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .status-maintenance {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .status-retired {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+        
+        .status-released {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+        }
+        
+        .status-returned {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+        
+        .status-overdue {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            animation: pulse 2s infinite;
+        }
+        
+        .cleaned-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .cleaned-yes {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+        
+        .cleaned-no {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+        
+        .overdue-row {
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+        
+        .overdue-row:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: var(--text-h);
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        
+        .action-btn.delete:hover {
+            background: var(--danger);
+        }
+        
+        .action-btn.success:hover {
+            background: var(--success);
+        }
+        
+        .filter-section {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-select {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-h);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .date-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .date-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-h);
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .date-btn:hover, .date-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            color: var(--accent);
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 10px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 5px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-p);
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 5px;
+        }
+        
+        .modal-content.large {
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .btn-small {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: var(--text-h);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-small.btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        
+        .btn-small.btn-primary:hover {
+            background: #0ea5e9;
+        }
+        
+        .btn-small.btn-success {
+            background: var(--success);
+            color: var(--bg);
+        }
+        
+        .btn-small.btn-success:hover {
+            background: #16a34a;
+        }
+        
+        .btn-small.btn-danger {
+            background: var(--danger);
+            color: var(--bg);
+        }
+        
+        .btn-small.btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-small.btn-warning {
+            background: var(--warning);
+            color: var(--bg);
+        }
+        
+        .btn-small.btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .btn-small:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .pagination-btn {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-h);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pagination-btn:hover,
+        .pagination-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-btn:disabled:hover {
+            background: var(--card);
+            color: var(--text-h);
+            border-color: rgba(255,255,255,0.1);
+        }
+        
+        .laptop-detail-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+        
+        .laptop-detail-view.show {
+            display: block;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+        
+        .detail-section {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-section h2 {
+            color: var(--accent);
+            margin-top: 0;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .detail-section h2 i {
+            font-size: 1.2rem;
+        }
+        
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .detail-label {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .detail-value {
+            color: var(--text-h);
+        }
+        
+        .items-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .item-tag {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-select {
+                width: 100%;
+            }
+            
+            .date-filters {
+                flex-wrap: wrap;
+            }
+            
+            .date-btn {
+                flex: 1;
+                min-width: calc(33.33% - 7px);
+            }
+            
+            .inventory-table, .release-table {
+                font-size: 0.8rem;
+            }
+            
+            .inventory-table th, .inventory-table td,
+            .release-table th, .release-table td {
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .date-btn {
+                width: 100%;
+            }
+            
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="stats-header">
+            <h1><i class="fas fa-laptop"></i> Laptop Inventory Management</h1>
+            <div class="stats-controls">
+                <button class="back-btn" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-chevron-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <!-- Section 1: Summary Cards -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-chart-pie"></i> Inventory Overview</h2>
+            <div class="stats-cards" id="summaryCards">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Section 2: Inventory Table -->
+        <div class="section">
+            <div class="header-actions">
+                <h2 class="section-title"><i class="fas fa-laptop"></i> Laptop Inventory</h2>
+                <button onclick="showAddLaptopModal()" class="control-btn">
+                    <i class="fas fa-plus"></i> Add Laptop
+                </button>
+            </div>
+            
+            <div class="filter-section">
+                <i class="fas fa-filter" style="color: var(--accent);"></i>
+                <span style="color: var(--text-p);">Filter by:</span>
+                
+                <select class="filter-select" id="brandFilter" onchange="applyInventoryFilters()">
+                    <option value="">All Brands</option>
+                </select>
+                
+                <select class="filter-select" id="statusFilter" onchange="applyInventoryFilters()">
+                    <option value="">All Status</option>
+                    <option value="Available">Available</option>
+                    <option value="Issued">Issued</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Retired">Retired</option>
+                </select>
+                
+                <select class="filter-select" id="cleanedFilter" onchange="applyInventoryFilters()">
+                    <option value="">All (Cleaned/Not)</option>
+                    <option value="Yes">Cleaned</option>
+                    <option value="No">Not Cleaned</option>
+                </select>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="inventory-table" id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Laptop Number</th>
+                            <th>Brand</th>
+                            <th>Model</th>
+                            <th>Serial Number</th>
+                            <th>Status</th>
+                            <th>Cleaned</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody">
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-laptop fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                                <p>Loading laptops...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 3: Release History -->
+        <div class="section">
+            <div class="header-actions">
+                <h2 class="section-title"><i class="fas fa-history"></i> Release History</h2>
+                <button onclick="showReleaseModal()" class="control-btn">
+                    <i class="fas fa-external-link-alt"></i> New Release
+                </button>
+            </div>
+
+            <div class="filter-section">
+                <i class="fas fa-calendar-alt" style="color: var(--accent);"></i>
+                <span style="color: var(--text-p);">Date Range:</span>
+                <div class="date-filters">
+                    <button class="date-btn active" onclick="filterByDate('all', this)">All Time</button>
+                    <button class="date-btn" onclick="filterByDate('7days', this)">7 Days</button>
+                    <button class="date-btn" onclick="filterByDate('30days', this)">30 Days</button>
+                    <button class="date-btn" onclick="filterByDate('3months', this)">3 Months</button>
+                    <button class="date-btn" onclick="filterByDate('1year', this)">1 Year</button>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="release-table" id="releaseTable">
+                    <thead>
+                        <tr>
+                            <th>Laptop</th>
+                            <th>Released To</th>
+                            <th>Company</th>
+                            <th>Release Time</th>
+                            <th>Expected Back</th>
+                            <th>Returned</th>
+                            <th>Items</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="releaseBody">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-history fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                                <p>Loading release history...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Laptop Modal -->
+    <div id="laptopModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="laptopModalTitle">Add Laptop</h2>
+                <button class="close-btn" onclick="closeLaptopModal()">&times;</button>
+            </div>
+            <form id="laptopForm" onsubmit="saveLaptop(event)">
+                <input type="hidden" id="laptopId">
+                
+                <div class="form-group">
+                    <label for="laptopNumber">Laptop Number *</label>
+                    <input type="text" id="laptopNumber" placeholder="e.g., LT-001, DELL-2025-001" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="brand">Brand *</label>
+                    <select id="brand" required>
+                        <option value="">Select Brand</option>
+                        <option value="Apple">Apple</option>
+                        <option value="HP">HP</option>
+                        <option value="Dell">Dell</option>
+                        <option value="Lenovo">Lenovo</option>
+                        <option value="ASUS">ASUS</option>
+                        <option value="Acer">Acer</option>
+                        <option value="MSI">MSI</option>
+                        <option value="Samsung">Samsung</option>
+                        <option value="Razer">Razer</option>
+                        <option value="Microsoft">Microsoft</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="model">Model *</label>
+                    <input type="text" id="model" placeholder="e.g., MacBook Pro 16, XPS 15, ThinkPad X1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="serialNumber">Serial Number *</label>
+                    <input type="text" id="serialNumber" placeholder="Enter serial number" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="purchaseDate">Purchase Date *</label>
+                        <input type="date" id="purchaseDate" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="laptopStatus">Status *</label>
+                        <select id="laptopStatus" required>
+                            <option value="Available">Available</option>
+                            <option value="Issued">Issued</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Retired">Retired</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cleaned">Cleaned *</label>
+                        <select id="cleaned" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" rows="3" placeholder="Any additional information..."></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="closeLaptopModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Laptop</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Release Laptop Modal -->
+    <div id="releaseModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>Release Laptop</h2>
+                <button class="close-btn" onclick="closeReleaseModal()">&times;</button>
+            </div>
+            <form id="releaseForm" onsubmit="saveRelease(event)">
+                <div class="form-group">
+                    <label for="releaseLaptop">Select Laptop *</label>
+                    <select id="releaseLaptop" required>
+                        <option value="">Select Laptop</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="releasedToName">Released To (Name) *</label>
+                        <input type="text" id="releasedToName" placeholder="Enter full name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="releasedToCompany">Company *</label>
+                        <input type="text" id="releasedToCompany" placeholder="Enter company name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="releasedBy">Released By *</label>
+                    <input type="text" id="releasedBy" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expectedReturnDate">Expected Return Date *</label>
+                        <input type="date" id="expectedReturnDate" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Items Included</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="itemLaptopBag" value="Laptop Bag">
+                            <label for="itemLaptopBag">Laptop Bag</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="itemCharger" value="Charger">
+                            <label for="itemCharger">Charger</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="itemMouse" value="Mouse">
+                            <label for="itemMouse">Mouse</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="itemHDMICable" value="HDMI Cable">
+                            <label for="itemHDMICable">HDMI Cable</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="releaseNotes">Notes</label>
+                    <textarea id="releaseNotes" rows="3" placeholder="Any additional notes..."></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="closeReleaseModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Release Laptop</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Return Laptop Modal -->
+    <div id="returnModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>Return Laptop</h2>
+                <button class="close-btn" onclick="closeReturnModal()">&times;</button>
+            </div>
+            <form id="returnForm" onsubmit="saveReturn(event)">
+                <input type="hidden" id="returnReleaseId">
+                
+                <div class="form-group">
+                    <label for="returnReceivedBy">Received By *</label>
+                    <input type="text" id="returnReceivedBy" placeholder="Enter name of person receiving" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="returnDatetime">Return Date & Time *</label>
+                    <input type="datetime-local" id="returnDatetime" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="returnCondition">Condition on Return</label>
+                    <select id="returnCondition">
+                        <option value="Good">Good</option>
+                        <option value="Fair">Fair</option>
+                        <option value="Poor">Poor</option>
+                        <option value="Damaged">Damaged</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="returnCleaned">Cleaned on Return</label>
+                    <select id="returnCleaned">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="returnNotes">Return Notes</label>
+                    <textarea id="returnNotes" rows="3" placeholder="Any notes about the return..."></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="closeReturnModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Confirm Return</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Laptop Detail View -->
+    <div id="laptopDetailView" class="laptop-detail-view">
+        <button class="back-btn" onclick="closeLaptopDetail()">
+            <i class="fas fa-chevron-left"></i> BACK TO INVENTORY
+        </button>
+        <div id="laptopDetailContent"></div>
+    </div>
+
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"></div>
+
+    <script type="module">
+        import auth from '../auth.js';
+        import { db, ref, push, set, remove, onValue, get } from '../firebase-config.js';
+
+        // Check authentication
+        const currentUser = auth.getCurrentUser();
+        if (!currentUser) {
+            window.location.href = '../login.html';
+        }
+
+        // Define the allowed brands
+        const ALLOWED_BRANDS = [
+            'Apple', 'HP', 'Dell', 'Lenovo', 'ASUS', 
+            'Acer', 'MSI', 'Samsung', 'Razer', 'Microsoft'
+        ];
+
+        // Initialize data
+        let laptops = [];
+        let releases = [];
+        let currentDateFilter = 'all';
+        let filteredReleases = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        // Make functions available globally
+        window.showAddLaptopModal = showAddLaptopModal;
+        window.closeLaptopModal = closeLaptopModal;
+        window.saveLaptop = saveLaptop;
+        window.showReleaseModal = showReleaseModal;
+        window.closeReleaseModal = closeReleaseModal;
+        window.saveRelease = saveRelease;
+        window.showReturnModal = showReturnModal;
+        window.closeReturnModal = closeReturnModal;
+        window.saveReturn = saveReturn;
+        window.applyInventoryFilters = applyInventoryFilters;
+        window.filterByDate = filterByDate;
+        window.editLaptop = editLaptop;
+        window.quickRelease = quickRelease;
+        window.quickReturn = quickReturn;
+        window.viewLaptopDetails = viewLaptopDetails;
+        window.closeLaptopDetail = closeLaptopDetail;
+        window.deleteLaptop = deleteLaptop;
+        window.confirmDeleteLaptop = confirmDeleteLaptop;
+
+        // Load laptops from Firebase
+        async function loadLaptops() {
+            try {
+                const laptopsRef = ref(db, 'laptops');
+                const snapshot = await get(laptopsRef);
+                
+                if (snapshot.exists()) {
+                    laptops = [];
+                    snapshot.forEach((child) => {
+                        laptops.push({ id: child.key, ...child.val() });
+                    });
+                    // Sort by laptop number
+                    laptops.sort((a, b) => (a.laptopNumber || '').localeCompare(b.laptopNumber || ''));
+                } else {
+                    laptops = [];
+                }
+                
+                loadBrandFilters();
+                loadSummaryCards();
+                loadInventoryTable();
+            } catch (error) {
+                console.error('Error loading laptops:', error);
+                laptops = [];
+                loadSummaryCards();
+                loadInventoryTable();
+            }
+        }
+
+        // Load releases from Firebase
+        async function loadReleases() {
+            try {
+                const releasesRef = ref(db, 'laptopReleases');
+                const snapshot = await get(releasesRef);
+                
+                if (snapshot.exists()) {
+                    releases = [];
+                    snapshot.forEach((child) => {
+                        releases.push({ id: child.key, ...child.val() });
+                    });
+                    // Sort by release date (newest first)
+                    releases.sort((a, b) => new Date(b.releaseDatetime) - new Date(a.releaseDatetime));
+                } else {
+                    releases = [];
+                }
+                
+                loadReleaseTable();
+            } catch (error) {
+                console.error('Error loading releases:', error);
+                releases = [];
+                loadReleaseTable();
+            }
+        }
+
+        // Load brand filters (only show brands that have laptops)
+        function loadBrandFilters() {
+            const brandFilter = document.getElementById('brandFilter');
+            if (!brandFilter) return;
+            
+            // Get unique brands from laptops
+            const brandsInUse = [...new Set(laptops.map(l => l.brand).filter(b => b))];
+            
+            brandFilter.innerHTML = '<option value="">All Brands</option>';
+            
+            // Only add brands that are in the allowed list and have laptops
+            ALLOWED_BRANDS.forEach(brand => {
+                if (brandsInUse.includes(brand)) {
+                    const option = document.createElement('option');
+                    option.value = brand;
+                    option.textContent = brand;
+                    brandFilter.appendChild(option);
+                }
+            });
+        }
+
+        // Load summary cards (only show stats with values > 0)
+        function loadSummaryCards() {
+            const total = laptops.length;
+            
+            // Count by brand (only show brands that have laptops)
+            const brandCounts = {};
+            ALLOWED_BRANDS.forEach(brand => {
+                const count = laptops.filter(l => l.brand === brand).length;
+                if (count > 0) {
+                    brandCounts[brand] = count;
+                }
+            });
+            
+            const issued = laptops.filter(l => l.status === 'Issued').length;
+            const available = laptops.filter(l => l.status === 'Available').length;
+            const maintenance = laptops.filter(l => l.status === 'Maintenance').length;
+            
+            // Count overdue releases
+            const overdue = releases.filter(r => {
+                const expectedDate = new Date(r.expectedReturnDate);
+                const today = new Date();
+                return !r.actualReturnDatetime && expectedDate < today;
+            }).length;
+
+            let cardsHtml = `
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-laptop"></i></div>
+                    <div class="stat-number">${total}</div>
+                    <div class="stat-label">Total Laptops</div>
+                </div>
+            `;
+
+            // Show brand stats only where count > 0
+            Object.entries(brandCounts).forEach(([brand, count]) => {
+                cardsHtml += `
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-tag"></i></div>
+                        <div class="stat-number">${count}</div>
+                        <div class="stat-label">${brand}</div>
+                    </div>
+                `;
+            });
+
+            // Always show these status cards even if zero
+            cardsHtml += `
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-play-circle" style="color: var(--warning);"></i></div>
+                    <div class="stat-number">${issued}</div>
+                    <div class="stat-label">Currently Issued</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-check-circle" style="color: var(--success);"></i></div>
+                    <div class="stat-number">${available}</div>
+                    <div class="stat-label">Available</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-tools" style="color: var(--warning);"></i></div>
+                    <div class="stat-number">${maintenance}</div>
+                    <div class="stat-label">Maintenance</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i></div>
+                    <div class="stat-number" style="color: var(--danger);">${overdue}</div>
+                    <div class="stat-label">Overdue Returns</div>
+                </div>
+            `;
+
+            document.getElementById('summaryCards').innerHTML = cardsHtml;
+        }
+
+        // Load inventory table
+        function loadInventoryTable() {
+            const brandFilter = document.getElementById('brandFilter')?.value || '';
+            const statusFilter = document.getElementById('statusFilter')?.value || '';
+            const cleanedFilter = document.getElementById('cleanedFilter')?.value || '';
+
+            let filteredLaptops = laptops;
+
+            if (brandFilter) {
+                filteredLaptops = filteredLaptops.filter(l => l.brand === brandFilter);
+            }
+            if (statusFilter) {
+                filteredLaptops = filteredLaptops.filter(l => l.status === statusFilter);
+            }
+            if (cleanedFilter) {
+                filteredLaptops = filteredLaptops.filter(l => l.cleaned === cleanedFilter);
+            }
+
+            const tbody = document.getElementById('inventoryBody');
+            
+            if (filteredLaptops.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-laptop fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                            <p>No laptops found. Click "Add Laptop" to add your first laptop.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            filteredLaptops.forEach((laptop, index) => {
+                const row = tbody.insertRow();
+                row.onclick = () => viewLaptopDetails(laptop.id);
+                
+                const statusClass = {
+                    'Available': 'status-available',
+                    'Issued': 'status-issued',
+                    'Maintenance': 'status-maintenance',
+                    'Retired': 'status-retired'
+                }[laptop.status] || 'status-available';
+                
+                const cleanedClass = laptop.cleaned === 'Yes' ? 'cleaned-yes' : 'cleaned-no';
+                
+                // Generate sequential ID
+                const sequentialId = (index + 1).toString().padStart(3, '0');
+                
+                row.innerHTML = `
+                    <td><strong>${sequentialId}</strong></td>
+                    <td><strong>${laptop.laptopNumber || 'N/A'}</strong></td>
+                    <td>${laptop.brand}</td>
+                    <td>${laptop.model}</td>
+                    <td>${laptop.serialNumber}</td>
+                    <td><span class="status-badge ${statusClass}">${laptop.status}</span></td>
+                    <td><span class="cleaned-badge ${cleanedClass}">${laptop.cleaned || 'No'}</span></td>
+                    <td>
+                        <div class="action-buttons" onclick="event.stopPropagation()">
+                            <button onclick="editLaptop('${laptop.id}')" class="action-btn" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${laptop.status === 'Available' ? 
+                                `<button onclick="quickRelease('${laptop.id}')" class="action-btn success" title="Release">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>` : 
+                                laptop.status === 'Issued' ? 
+                                `<button onclick="quickReturn('${laptop.id}')" class="action-btn success" title="Return">
+                                    <i class="fas fa-undo-alt"></i>
+                                </button>` : ''}
+                            <button onclick="deleteLaptop('${laptop.id}')" class="action-btn delete" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+
+        // Load release table
+        function loadReleaseTable() {
+            filteredReleases = [...releases];
+
+            // Apply date filter
+            if (currentDateFilter !== 'all') {
+                const now = new Date();
+                let cutoffDate = new Date();
+
+                switch(currentDateFilter) {
+                    case '7days':
+                        cutoffDate.setDate(now.getDate() - 7);
+                        break;
+                    case '30days':
+                        cutoffDate.setDate(now.getDate() - 30);
+                        break;
+                    case '3months':
+                        cutoffDate.setMonth(now.getMonth() - 3);
+                        break;
+                    case '1year':
+                        cutoffDate.setFullYear(now.getFullYear() - 1);
+                        break;
+                }
+
+                filteredReleases = filteredReleases.filter(r => {
+                    const releaseDate = new Date(r.releaseDatetime);
+                    return releaseDate >= cutoffDate;
+                });
+            }
+
+            // Sort by release date (newest first)
+            filteredReleases.sort((a, b) => new Date(b.releaseDatetime) - new Date(a.releaseDatetime));
+
+            const tbody = document.getElementById('releaseBody');
+            
+            if (filteredReleases.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-history fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                            <p>No release records found.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            filteredReleases.forEach(release => {
+                const laptop = laptops.find(l => l.id === release.laptopId);
+                const expectedDate = new Date(release.expectedReturnDate);
+                const today = new Date();
+                const isOverdue = !release.actualReturnDatetime && expectedDate < today;
+                
+                // Update status if overdue
+                if (isOverdue && release.status !== 'Overdue') {
+                    release.status = 'Overdue';
+                }
+
+                const row = tbody.insertRow();
+                if (isOverdue) {
+                    row.classList.add('overdue-row');
+                }
+                row.onclick = () => viewReleaseDetails(release.id);
+
+                const itemsList = release.itemsIncluded ? release.itemsIncluded.split(', ') : [];
+                const itemsHtml = itemsList.length > 0 ? itemsList.join(', ') : '-';
+                
+                const statusClass = {
+                    'Released': 'status-released',
+                    'Returned': 'status-returned',
+                    'Overdue': 'status-overdue'
+                }[release.status] || 'status-released';
+                
+                row.innerHTML = `
+                    <td><strong>${laptop ? `${laptop.brand} ${laptop.model} (${laptop.laptopNumber})` : 'Unknown'}</strong></td>
+                    <td>${release.releasedToName}</td>
+                    <td>${release.releasedToCompany}</td>
+                    <td>${new Date(release.releaseDatetime).toLocaleString()}</td>
+                    <td>${new Date(release.expectedReturnDate).toLocaleDateString()}</td>
+                    <td>${release.actualReturnDatetime ? new Date(release.actualReturnDatetime).toLocaleString() : '-'}</td>
+                    <td>${itemsHtml}</td>
+                    <td><span class="status-badge ${statusClass}">${release.status}</span></td>
+                    <td>
+                        <div class="action-buttons" onclick="event.stopPropagation()">
+                            ${!release.actualReturnDatetime ? 
+                                `<button onclick="showReturnModal('${release.id}')" class="action-btn success" title="Return">
+                                    <i class="fas fa-undo-alt"></i>
+                                </button>` : ''}
+                        </div>
+                    </td>
+                `;
+            });
+        }
+
+        // Show add laptop modal
+        function showAddLaptopModal() {
+            document.getElementById('laptopModalTitle').textContent = 'Add Laptop';
+            document.getElementById('laptopForm').reset();
+            document.getElementById('laptopId').value = '';
+            
+            // Set default purchase date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('purchaseDate').value = today;
+            
+            // Set default cleaned to No
+            document.getElementById('cleaned').value = 'No';
+            
+            document.getElementById('laptopModal').style.display = 'flex';
+        }
+
+        // Close laptop modal
+        function closeLaptopModal() {
+            document.getElementById('laptopModal').style.display = 'none';
+        }
+
+        // Generate laptop number if not provided
+        function generateLaptopNumber() {
+            const prefix = 'LT';
+            const timestamp = Date.now().toString().slice(-6);
+            return `${prefix}-${timestamp}`;
+        }
+
+        // Save laptop to Firebase
+        async function saveLaptop(event) {
+            event.preventDefault();
+
+            const laptopId = document.getElementById('laptopId').value;
+            const now = new Date().toISOString();
+
+            const laptop = {
+                laptopNumber: document.getElementById('laptopNumber').value || generateLaptopNumber(),
+                brand: document.getElementById('brand').value,
+                model: document.getElementById('model').value,
+                serialNumber: document.getElementById('serialNumber').value,
+                purchaseDate: document.getElementById('purchaseDate').value,
+                status: document.getElementById('laptopStatus').value,
+                cleaned: document.getElementById('cleaned').value,
+                notes: document.getElementById('notes').value,
+                createdAt: now,
+                updatedAt: now
+            };
+
+            // Show loading indicator
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+
+            try {
+                if (laptopId) {
+                    // Update existing laptop
+                    const laptopRef = ref(db, `laptops/${laptopId}`);
+                    await set(laptopRef, { ...laptop, id: laptopId });
+                } else {
+                    // Create new laptop
+                    const laptopsRef = ref(db, 'laptops');
+                    const newLaptopRef = push(laptopsRef);
+                    await set(newLaptopRef, { ...laptop, id: newLaptopRef.key });
+                }
+
+                closeLaptopModal();
+                await loadLaptops();
+                await loadReleases();
+                
+                showCustomModal('Success', 'Laptop saved successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error saving laptop:', error);
+                showCustomModal('Error', 'Failed to save laptop: ' + error.message, 'danger');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Edit laptop
+        function editLaptop(id) {
+            const laptop = laptops.find(l => l.id === id);
+            if (laptop) {
+                document.getElementById('laptopModalTitle').textContent = 'Edit Laptop';
+                document.getElementById('laptopId').value = laptop.id;
+                document.getElementById('laptopNumber').value = laptop.laptopNumber || '';
+                document.getElementById('brand').value = laptop.brand;
+                document.getElementById('model').value = laptop.model;
+                document.getElementById('serialNumber').value = laptop.serialNumber;
+                document.getElementById('purchaseDate').value = laptop.purchaseDate;
+                document.getElementById('laptopStatus').value = laptop.status;
+                document.getElementById('cleaned').value = laptop.cleaned || 'No';
+                document.getElementById('notes').value = laptop.notes || '';
+                document.getElementById('laptopModal').style.display = 'flex';
+            }
+        }
+
+        // Delete laptop
+        function deleteLaptop(id) {
+            const laptop = laptops.find(l => l.id === id);
+            
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal danger">
+                    <div class="custom-modal-header">
+                        <h3>Confirm Delete</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>Are you sure you want to delete laptop <strong>${laptop.laptopNumber}</strong>? This action cannot be undone.</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                        <button class="btn-primary" style="background: var(--danger);" onclick="confirmDeleteLaptop('${id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Confirm delete laptop
+        async function confirmDeleteLaptop(id) {
+            try {
+                await remove(ref(db, `laptops/${id}`));
+                
+                document.querySelector('.custom-modal-overlay').remove();
+                document.getElementById('laptopDetailView').classList.remove('show');
+                
+                await loadLaptops();
+                await loadReleases();
+                
+                showCustomModal('Success', 'Laptop deleted successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error deleting laptop:', error);
+                showCustomModal('Error', 'Failed to delete laptop: ' + error.message, 'danger');
+            }
+        }
+
+        // View laptop details
+        function viewLaptopDetails(id) {
+            const laptop = laptops.find(l => l.id === id);
+            if (!laptop) return;
+            
+            const detailView = document.getElementById('laptopDetailView');
+            const content = document.getElementById('laptopDetailContent');
+            
+            // Get release history for this laptop
+            const laptopReleases = releases.filter(r => r.laptopId === id).sort((a, b) => 
+                new Date(b.releaseDatetime) - new Date(a.releaseDatetime)
+            );
+            
+            const releaseHistoryHtml = laptopReleases.length > 0 ?
+                laptopReleases.map(r => {
+                    const statusClass = {
+                        'Released': 'status-released',
+                        'Returned': 'status-returned',
+                        'Overdue': 'status-overdue'
+                    }[r.status] || 'status-released';
+                    
+                    return `
+                        <div style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <strong>Released to: ${r.releasedToName}</strong>
+                                <span class="status-badge ${statusClass}">${r.status}</span>
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--text-p);">
+                                <div>Release: ${new Date(r.releaseDatetime).toLocaleString()}</div>
+                                <div>Expected: ${new Date(r.expectedReturnDate).toLocaleDateString()}</div>
+                                ${r.actualReturnDatetime ? `<div>Returned: ${new Date(r.actualReturnDatetime).toLocaleString()}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('') : '<p>No release history</p>';
+            
+            const cleanedClass = laptop.cleaned === 'Yes' ? 'cleaned-yes' : 'cleaned-no';
+            
+            let html = `
+                <div class="grid-layout">
+                    <div class="main-col">
+                        <div class="detail-section">
+                            <h2><i class="fas fa-info-circle"></i> Laptop Information</h2>
+                            <div class="detail-row"><span class="detail-label">Laptop Number:</span><span class="detail-value"><strong>${laptop.laptopNumber || 'N/A'}</strong></span></div>
+                            <div class="detail-row"><span class="detail-label">Brand:</span><span class="detail-value">${laptop.brand}</span></div>
+                            <div class="detail-row"><span class="detail-label">Model:</span><span class="detail-value">${laptop.model}</span></div>
+                            <div class="detail-row"><span class="detail-label">Serial Number:</span><span class="detail-value">${laptop.serialNumber}</span></div>
+                            <div class="detail-row"><span class="detail-label">Purchase Date:</span><span class="detail-value">${new Date(laptop.purchaseDate).toLocaleDateString()}</span></div>
+                            <div class="detail-row"><span class="detail-label">Status:</span>
+                                <span class="detail-value">
+                                    <span class="status-badge status-${laptop.status.toLowerCase()}">${laptop.status}</span>
+                                </span>
+                            </div>
+                            <div class="detail-row"><span class="detail-label">Cleaned:</span>
+                                <span class="detail-value">
+                                    <span class="cleaned-badge ${cleanedClass}">${laptop.cleaned || 'No'}</span>
+                                </span>
+                            </div>
+                            ${laptop.notes ? `
+                            <div class="detail-row"><span class="detail-label">Notes:</span><span class="detail-value">${laptop.notes}</span></div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h2><i class="fas fa-history"></i> Release History</h2>
+                            ${releaseHistoryHtml}
+                        </div>
+                    </div>
+                    
+                    <div class="side-col">
+                        <div class="detail-section">
+                            <h2><i class="fas fa-tasks"></i> Quick Actions</h2>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <button class="control-btn" onclick="editLaptop('${laptop.id}')" style="width: 100%;">
+                                    <i class="fas fa-edit"></i> Edit Laptop
+                                </button>
+                                ${laptop.status === 'Available' ? 
+                                    `<button class="control-btn" style="background: var(--success); width: 100%;" onclick="quickRelease('${laptop.id}')">
+                                        <i class="fas fa-external-link-alt"></i> Release Laptop
+                                    </button>` : 
+                                    laptop.status === 'Issued' ? 
+                                    `<button class="control-btn" style="background: var(--warning); width: 100%;" onclick="quickReturn('${laptop.id}')">
+                                        <i class="fas fa-undo-alt"></i> Return Laptop
+                                    </button>` : ''}
+                                <button class="control-btn" style="background: var(--danger); width: 100%;" onclick="deleteLaptop('${laptop.id}')">
+                                    <i class="fas fa-trash"></i> Delete Laptop
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            detailView.classList.add('show');
+        }
+
+        // View release details
+        function viewReleaseDetails(id) {
+            const release = releases.find(r => r.id === id);
+            if (!release) return;
+            
+            const laptop = laptops.find(l => l.id === release.laptopId);
+            
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal" style="max-width: 500px;">
+                    <div class="custom-modal-header">
+                        <h3>Release Details</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: var(--accent);">Laptop:</strong>
+                            <p>${laptop ? `${laptop.brand} ${laptop.model} (${laptop.laptopNumber})` : 'Unknown'}</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: var(--accent);">Released To:</strong>
+                            <p>${release.releasedToName} (${release.releasedToCompany})</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: var(--accent);">Released By:</strong>
+                            <p>${release.releasedBy}</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: var(--accent);">Release Date:</strong>
+                            <p>${new Date(release.releaseDatetime).toLocaleString()}</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: var(--accent);">Expected Return:</strong>
+                            <p>${new Date(release.expectedReturnDate).toLocaleDateString()}</p>
+                        </div>
+                        ${release.actualReturnDatetime ? `
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: var(--accent);">Actual Return:</strong>
+                                <p>${new Date(release.actualReturnDatetime).toLocaleString()}</p>
+                            </div>
+                        ` : ''}
+                        ${release.returnCondition ? `
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: var(--accent);">Return Condition:</strong>
+                                <p>${release.returnCondition}</p>
+                            </div>
+                        ` : ''}
+                        ${release.returnCleaned ? `
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: var(--accent);">Return Cleaned:</strong>
+                                <p>${release.returnCleaned}</p>
+                            </div>
+                        ` : ''}
+                        ${release.itemsIncluded ? `
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: var(--accent);">Items Included:</strong>
+                                <div class="items-list">
+                                    ${release.itemsIncluded.split(', ').map(item => 
+                                        `<span class="item-tag">${item}</span>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${release.notes ? `
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: var(--accent);">Notes:</strong>
+                                <p style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;">${release.notes}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Close laptop detail
+        function closeLaptopDetail() {
+            document.getElementById('laptopDetailView').classList.remove('show');
+        }
+
+        // Show release modal
+        function showReleaseModal() {
+            const availableLaptops = laptops.filter(l => l.status === 'Available');
+            const select = document.getElementById('releaseLaptop');
+            select.innerHTML = '<option value="">Select Laptop</option>';
+            
+            if (availableLaptops.length === 0) {
+                showCustomModal('No Laptops', 'No available laptops to release.', 'warning');
+                return;
+            }
+            
+            availableLaptops.forEach(laptop => {
+                select.innerHTML += `<option value="${laptop.id}">${laptop.laptopNumber} - ${laptop.brand} ${laptop.model}</option>`;
+            });
+
+            document.getElementById('releaseForm').reset();
+            document.getElementById('releasedBy').value = currentUser.username;
+            
+            // Set default expected return date to 7 days from now
+            const defaultDate = new Date();
+            defaultDate.setDate(defaultDate.getDate() + 7);
+            document.getElementById('expectedReturnDate').value = defaultDate.toISOString().split('T')[0];
+
+            document.getElementById('releaseModal').style.display = 'flex';
+        }
+
+        // Close release modal
+        function closeReleaseModal() {
+            document.getElementById('releaseModal').style.display = 'none';
+        }
+
+        // Quick release
+        function quickRelease(laptopId) {
+            showReleaseModal();
+            setTimeout(() => {
+                document.getElementById('releaseLaptop').value = laptopId;
+            }, 100);
+        }
+
+        // Save release
+        async function saveRelease(event) {
+            event.preventDefault();
+
+            const laptopId = document.getElementById('releaseLaptop').value;
+            const laptop = laptops.find(l => l.id === laptopId);
+
+            if (laptop) {
+                // Get selected items
+                const items = [];
+                ['itemLaptopBag', 'itemCharger', 'itemMouse', 'itemHDMICable'].forEach(id => {
+                    if (document.getElementById(id).checked) {
+                        items.push(document.getElementById(id).value);
+                    }
+                });
+
+                const now = new Date().toISOString();
+
+                const release = {
+                    laptopId: laptopId,
+                    laptopNumber: laptop.laptopNumber,
+                    releasedToName: document.getElementById('releasedToName').value,
+                    releasedToCompany: document.getElementById('releasedToCompany').value,
+                    releasedBy: document.getElementById('releasedBy').value,
+                    releaseDatetime: now,
+                    expectedReturnDate: document.getElementById('expectedReturnDate').value,
+                    actualReturnDatetime: null,
+                    returnedReceivedBy: null,
+                    returnCondition: null,
+                    returnCleaned: null,
+                    itemsIncluded: items.join(', '),
+                    notes: document.getElementById('releaseNotes').value,
+                    status: 'Released',
+                    createdAt: now,
+                    updatedAt: now
+                };
+
+                // Save release to Firebase
+                const releasesRef = ref(db, 'laptopReleases');
+                const newReleaseRef = push(releasesRef);
+                release.id = newReleaseRef.key;
+                await set(newReleaseRef, release);
+                
+                // Update laptop status
+                laptop.status = 'Issued';
+                laptop.updatedAt = now;
+                await set(ref(db, `laptops/${laptopId}`), laptop);
+
+                closeReleaseModal();
+                await loadLaptops();
+                await loadReleases();
+                
+                showCustomModal('Success', 'Laptop released successfully!', 'success');
+            }
+        }
+
+        // Show return modal
+        function showReturnModal(releaseId) {
+            const release = releases.find(r => r.id === releaseId);
+            if (release) {
+                document.getElementById('returnReleaseId').value = releaseId;
+                document.getElementById('returnReceivedBy').value = currentUser.username;
+                
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                document.getElementById('returnDatetime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+                document.getElementById('returnModal').style.display = 'flex';
+            }
+        }
+
+        // Close return modal
+        function closeReturnModal() {
+            document.getElementById('returnModal').style.display = 'none';
+        }
+
+        // Quick return
+        function quickReturn(laptopId) {
+            const activeRelease = releases.find(r => r.laptopId === laptopId && !r.actualReturnDatetime);
+            if (activeRelease) {
+                showReturnModal(activeRelease.id);
+            } else {
+                showCustomModal('No Active Release', 'This laptop does not have an active release.', 'warning');
+            }
+        }
+
+        // Save return
+        async function saveReturn(event) {
+            event.preventDefault();
+
+            const releaseId = document.getElementById('returnReleaseId').value;
+            const release = releases.find(r => r.id === releaseId);
+
+            if (release) {
+                release.actualReturnDatetime = document.getElementById('returnDatetime').value;
+                release.returnedReceivedBy = document.getElementById('returnReceivedBy').value;
+                release.returnCondition = document.getElementById('returnCondition').value;
+                release.returnCleaned = document.getElementById('returnCleaned').value;
+                release.notes += (release.notes ? '\n' : '') + 'Return Notes: ' + document.getElementById('returnNotes').value;
+                release.status = 'Returned';
+                release.updatedAt = new Date().toISOString();
+
+                // Update release in Firebase
+                await set(ref(db, `laptopReleases/${releaseId}`), release);
+
+                // Update laptop status
+                const laptop = laptops.find(l => l.id === release.laptopId);
+                if (laptop) {
+                    laptop.status = 'Available';
+                    laptop.cleaned = document.getElementById('returnCleaned').value;
+                    laptop.updatedAt = new Date().toISOString();
+                    await set(ref(db, `laptops/${laptop.id}`), laptop);
+                }
+
+                closeReturnModal();
+                await loadLaptops();
+                await loadReleases();
+                
+                showCustomModal('Success', 'Laptop returned successfully!', 'success');
+            }
+        }
+
+        // Apply inventory filters
+        function applyInventoryFilters() {
+            loadInventoryTable();
+        }
+
+        // Filter by date
+        function filterByDate(filter, btn) {
+            currentDateFilter = filter;
+            
+            // Update active button
+            document.querySelectorAll('.date-btn').forEach(button => {
+                button.classList.remove('active');
+            });
+            btn.classList.add('active');
+            
+            loadReleaseTable();
+        }
+
+        // Show custom modal
+        function showCustomModal(title, message, type = 'info') {
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal ${type}">
+                    <div class="custom-modal-header">
+                        <h3>${title}</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Load chatbot
+        async function loadChatbot() {
+            try {
+                const chatbotResponse = await fetch('../components/chatbot.html');
+                const chatbotHTML = await chatbotResponse.text();
+                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
+                
+                // Initialize chatbot
+                if (window.initChatbot) {
+                    setTimeout(window.initChatbot, 500);
+                }
+            } catch (error) {
+                console.error('Error loading chatbot:', error);
+            }
+        }
+
+        // Set up real-time listeners
+        const laptopsRef = ref(db, 'laptops');
+        onValue(laptopsRef, () => {
+            loadLaptops();
+        });
+
+        const releasesRef = ref(db, 'laptopReleases');
+        onValue(releasesRef, () => {
+            loadReleases();
+        });
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChatbot();
+            loadLaptops();
+            loadReleases();
+            
+            // Set released by field
+            document.getElementById('releasedBy').value = currentUser?.username || '';
+        });
+    </script>
+</body>
+</html>

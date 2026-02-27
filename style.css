@@ -1696,3 +1696,141 @@ input:checked + .toggle-slider:before {
         opacity: 1;
     }
 }
+
+/* Sticky Header Styles */
+.sticky-header {
+    position: fixed;
+    top: -100px;
+    left: 0;
+    width: 100%;
+    background: var(--card);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 999;
+    transition: top 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.sticky-header.visible {
+    top: 0;
+}
+
+.sticky-header .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sticky-header .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-decoration: none;
+}
+
+.sticky-header .logo i {
+    font-size: 1.5rem;
+}
+
+.sticky-header .quick-nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.sticky-header .nav-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-h);
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.sticky-header .nav-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+}
+
+.sticky-header .nav-btn i {
+    font-size: 0.9rem;
+}
+
+.sticky-header .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: var(--text-p);
+    font-size: 0.9rem;
+}
+
+.sticky-header .user-badge strong {
+    color: var(--accent);
+}
+
+@media (max-width: 1024px) {
+    .sticky-header .container {
+        flex-wrap: wrap;
+    }
+    
+    .sticky-header .quick-nav {
+        order: 3;
+        width: 100%;
+        margin-top: 10px;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    
+    .sticky-header .nav-btn {
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .sticky-header .container {
+        padding: 10px;
+    }
+    
+    .sticky-header .nav-btn span {
+        display: none;
+    }
+    
+    .sticky-header .nav-btn i {
+        font-size: 1.2rem;
+    }
+    
+    .sticky-header .nav-btn {
+        padding: 8px 12px;
+    }
+}
+
+/* Animation for sticky header */
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.sticky-header.visible {
+    animation: slideDown 0.3s ease forwards;
+}

@@ -792,6 +792,132 @@ function restoreScrollPosition() {
     }
 }
 
+// Sticky Header functionality
+function initStickyHeader() {
+    // Create sticky header element if it doesn't exist
+    if (document.getElementById('stickyHeader')) return;
+    
+    const currentUser = auth.getCurrentUser();
+    if (!currentUser) return;
+    
+    const stickyHeader = document.createElement('div');
+    stickyHeader.id = 'stickyHeader';
+    stickyHeader.className = 'sticky-header';
+    
+    // Get the first part of the path to determine if we're in pages folder
+    const isInPages = window.location.pathname.includes('/pages/');
+    const basePath = isInPages ? '..' : '.';
+    
+    stickyHeader.innerHTML = `
+        <div class="container">
+            <a href="${basePath}/index.html" class="logo">
+                <i class="fas fa-cube"></i>
+                <span>PROSPEN</span>
+            </a>
+            
+            <div class="quick-nav">
+                <a href="${basePath}/pages/all-projects.html" class="nav-btn" title="Projects">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>Projects</span>
+                </a>
+                <a href="${basePath}/pages/tasks.html" class="nav-btn" title="Tasks">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tasks</span>
+                </a>
+                <a href="${basePath}/pages/team-duties.html" class="nav-btn" title="Duties">
+                    <i class="fas fa-users"></i>
+                    <span>Duties</span>
+                </a>
+                <a href="${basePath}/pages/client-projects.html" class="nav-btn" title="Clients">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Clients</span>
+                </a>
+                <a href="${basePath}/pages/email-banners.html" class="nav-btn" title="Banners">
+                    <i class="fas fa-images"></i>
+                    <span>Banners</span>
+                </a>
+                <a href="${basePath}/pages/meeting-minutes.html" class="nav-btn" title="Meetings">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Meetings</span>
+                </a>
+                <a href="${basePath}/pages/statistics.html" class="nav-btn" title="Stats">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Stats</span>
+                </a>
+                <a href="${basePath}/pages/tech-news.html" class="nav-btn" title="News">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Tech News</span>
+                </a>
+                <a href="${basePath}/pages/settings.html" class="nav-btn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+            
+            <div class="user-badge">
+                <i class="fas fa-user-circle"></i>
+                <strong id="stickyUserName">${currentUser.username}</strong>
+                <button class="clock-btn" id="stickyClockBtn" onclick="confirmClockAction()" style="margin-left: 5px;">
+                    <i class="fas fa-sign-in-alt"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(stickyHeader);
+    
+    // Scroll event listener
+    let lastScrollTop = 0;
+    const headerHeight = document.querySelector('header')?.offsetHeight || 80;
+    
+    window.addEventListener('scroll', function() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > headerHeight) {
+            stickyHeader.classList.add('visible');
+        } else {
+            stickyHeader.classList.remove('visible');
+        }
+        
+        lastScrollTop = scrollTop;
+    });
+    
+    // Update sticky clock button when main clock button changes
+    setInterval(() => {
+        const mainClockBtn = document.getElementById('clockBtn');
+        const stickyClockBtn = document.getElementById('stickyClockBtn');
+        
+        if (mainClockBtn && stickyClockBtn) {
+            if (mainClockBtn.classList.contains('clocked-in')) {
+                stickyClockBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
+                stickyClockBtn.classList.add('clocked-in');
+            } else {
+                stickyClockBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i>';
+                stickyClockBtn.classList.remove('clocked-in');
+            }
+        }
+        
+        // Update username
+        const stickyUserName = document.getElementById('stickyUserName');
+        if (stickyUserName && currentUser) {
+            stickyUserName.textContent = currentUser.username;
+        }
+    }, 1000);
+}
+
+// Initialize sticky header when app starts
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for auth to initialize
+    setTimeout(() => {
+        if (auth.getCurrentUser()) {
+            initStickyHeader();
+        }
+    }, 1000);
+});
+
+// Make function available globally
+window.initStickyHeader = initStickyHeader;
+
 // Initialize clocking system (NEW - to be used with the updated clocking.js)
 async function initClocking() {
   const currentUser = auth.getCurrentUser();
