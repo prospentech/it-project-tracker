@@ -3,46 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistics - Prospen Hub</title>
+    <title>Attendance Statistics - Prospen Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Add this BEFORE your other scripts -->
+    <!-- Firebase -->
     <script type="import" src="firebase-config.js"></script>
     <script type="import" src="firebase-service.js"></script>
 
-    <!-- Make your other scripts type="module" -->
+    <!-- Core Modules -->
     <script type="module" src="../auth.js"></script>
-    <script type="module" src="../projects.js"></script>
-    <script type="module" src="../updates.js"></script>
     <script type="module" src="../clocking.js"></script>
     <script type="module" src="../chatbot.js"></script>
-    <script type="module" src="../modal.js"></script>
     <script type="module" src="../theme.js"></script>
-    <script type="module" src="../stats.js"></script>
-    <script type="module" src="../main.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Statistics Page Specific Styles */
+        .stats-grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .kpi-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .kpi-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px var(--accent-glow);
+        }
+        
+        .kpi-icon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-h);
+        }
+        
+        .kpi-label {
+            color: var(--text-p);
+            font-size: 0.9rem;
+        }
+        
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .attendance-table th {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .attendance-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .attendance-table tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-present { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .status-late { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .status-absent { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .status-leave { background: rgba(56, 189, 248, 0.2); color: var(--accent); }
+        .status-overtime { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+        .status-early { background: rgba(100, 116, 139, 0.2); color: #64748b; }
+        
+        .stat-section {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-section h2 {
+            color: var(--accent);
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stat-section h2 i {
+            font-size: 1.2rem;
+        }
+        
+        .leave-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .leave-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .leave-card h3 {
+            color: var(--accent);
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+        }
+        
+        .leave-progress {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .leave-progress-bar {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        
+        .alert-box {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--warning);
+        }
+        
+        .time-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .time-stat:last-child {
+            border-bottom: none;
+        }
+        
+        .time-stat .label {
+            color: var(--text-p);
+        }
+        
+        .time-stat .value {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .month-selector {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-h);
+            padding: 8px 15px;
+            border-radius: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .attendance-table {
+                font-size: 0.8rem;
+            }
+            
+            .attendance-table th,
+            .attendance-table td {
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
+        <!-- Header -->
         <div class="stats-header">
             <h1>
-                <i class="fas fa-chart-pie"></i> System Statistics & History
+                <i class="fas fa-clock"></i> Attendance & Leave Statistics
                 <span class="realtime-badge">LIVE</span>
             </h1>
             <div class="stats-controls">
-                <button class="export-btn" onclick="exportStats()">
-                    <i class="fas fa-download"></i> Export Data
+                <button class="control-btn" onclick="openLeaveModal()">
+                    <i class="fas fa-calendar-plus"></i> Request Leave
                 </button>
                 <button class="back-btn" onclick="window.location.href='../index.html'">
                     <i class="fas fa-chevron-left"></i> Back to Dashboard
                 </button>
             </div>
         </div>
-        
-        <div id="statsContainer">
-            <!-- Stats will be loaded here -->
+
+        <!-- Month/Year Filter -->
+        <div class="filter-bar">
+            <select id="monthFilter" class="month-selector" onchange="loadAttendanceStats()">
+                <option value="0">January</option>
+                <option value="1">February</option>
+                <option value="2">March</option>
+                <option value="3">April</option>
+                <option value="4">May</option>
+                <option value="5">June</option>
+                <option value="6">July</option>
+                <option value="7">August</option>
+                <option value="8">September</option>
+                <option value="9">October</option>
+                <option value="10">November</option>
+                <option value="11">December</option>
+            </select>
+            <select id="yearFilter" class="month-selector" onchange="loadAttendanceStats()">
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+            </select>
+        </div>
+
+        <!-- SECTION 1: KPI CARDS -->
+        <div class="stat-section">
+            <h2><i class="fas fa-chart-pie"></i> Attendance Overview</h2>
+            <div class="kpi-grid" id="kpiCards">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+
+        <!-- SECTION 2: DAILY ATTENDANCE TABLE -->
+        <div class="stat-section">
+            <h2><i class="fas fa-calendar-day"></i> Daily Attendance</h2>
+            <div style="overflow-x: auto;">
+                <table class="attendance-table" id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Clock In</th>
+                            <th>Clock Out</th>
+                            <th>Hours</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-clock fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                                <p>Loading attendance data...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 3 & 4: CLOCK-IN/OUT STATS -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+            <!-- Clock-In Stats -->
+            <div class="stat-section">
+                <h2><i class="fas fa-sign-in-alt"></i> Clock-In Statistics</h2>
+                <div id="clockInStats">
+                    <!-- Dynamically loaded -->
+                </div>
+            </div>
+            
+            <!-- Clock-Out Stats -->
+            <div class="stat-section">
+                <h2><i class="fas fa-sign-out-alt"></i> Clock-Out Statistics</h2>
+                <div id="clockOutStats">
+                    <!-- Dynamically loaded -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 5: WORK HOURS STATS -->
+        <div class="stat-section">
+            <h2><i class="fas fa-chart-line"></i> Work Hours Analysis</h2>
+            <div class="kpi-grid" id="workHoursStats">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+
+        <!-- SECTION 6: LEAVE SUMMARY -->
+        <div class="stat-section">
+            <h2><i class="fas fa-umbrella-beach"></i> Leave Summary</h2>
+            <div class="leave-summary" id="leaveSummary">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+
+        <!-- SECTION 7: ALERTS -->
+        <div class="stat-section">
+            <h2><i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> Alerts & Notifications</h2>
+            <div id="alertsContainer">
+                <!-- Dynamically loaded -->
+            </div>
         </div>
     </div>
 
@@ -52,76 +353,476 @@
     <script type="module">
         import auth from '../auth.js';
         import firebaseService from '../firebase-service.js';
+        import { clockingSystem, openLeaveModal } from '../clocking.js';
+
+        // Make functions available globally
+        window.openLeaveModal = openLeaveModal;
 
         // Check authentication
         const currentUser = auth.getCurrentUser();
         if (!currentUser) {
             window.location.href = '../login.html';
         }
-        
-        // Make exportStats available globally
-        window.exportStats = function() {
-            const activities = statsSystem.getActivities();
-            const sessions = statsSystem.getSessions();
-            const projects = JSON.parse(localStorage.getItem('prospenProjects')) || {};
-            const updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
-            const enquiries = JSON.parse(localStorage.getItem('prospenEnquiries')) || [];
-            const profiles = JSON.parse(localStorage.getItem('prospenProfiles')) || {};
-            
-            const data = {
-                exportDate: new Date().toISOString(),
-                exportedBy: currentUser.username,
-                activities: activities,
-                sessions: sessions,
-                currentUser: currentUser,
-                projects: projects,
-                updates: updates,
-                profiles: profiles,
-                enquiries: enquiries
-            };
-            
-            const dataStr = JSON.stringify(data, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `prospen-stats-${new Date().toISOString().split('T')[0]}.json`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
+
+        // Configuration
+        const CONFIG = {
+            REQUIRED_CLOCK_IN: '08:00',
+            REQUIRED_CLOCK_OUT: '17:00',
+            REQUIRED_HOURS: 8,
+            LEAVE_TYPES: {
+                annual: { name: 'Annual Leave', allocation: 15 },
+                sick: { name: 'Sick Leave', allocation: 10 },
+                study: { name: 'Study Leave', allocation: 5 },
+                family: { name: 'Family Responsibility', allocation: 3 },
+                unpaid: { name: 'Unpaid Leave', allocation: 0 }
+            }
         };
 
-        // Load chatbot component
+        // State
+        let attendanceLogs = [];
+        let leaveRequests = [];
+        let isAdmin = currentUser.username === 'admin';
+
+        // Initialize
+        async function loadAttendanceStats() {
+            const month = parseInt(document.getElementById('monthFilter').value);
+            const year = parseInt(document.getElementById('yearFilter').value);
+            
+            // Get data
+            if (isAdmin) {
+                attendanceLogs = await firebaseService.getAttendanceLogs(null, month, year);
+                leaveRequests = await firebaseService.getLeaveRequests();
+            } else {
+                attendanceLogs = await firebaseService.getAttendanceLogs(currentUser.uid, month, year);
+                leaveRequests = await firebaseService.getLeaveRequests(currentUser.uid);
+            }
+            
+            // Calculate and render all sections
+            renderKPICards();
+            renderAttendanceTable();
+            renderClockInOutStats();
+            renderWorkHoursStats();
+            renderLeaveSummary();
+            renderAlerts();
+        }
+
+        // SECTION 1: KPI CARDS
+        function renderKPICards() {
+            const totalDays = attendanceLogs.length;
+            const presentDays = attendanceLogs.filter(log => 
+                log.attendanceStatus === 'Present' || log.attendanceStatus === 'Late' || log.attendanceStatus === 'Overtime'
+            ).length;
+            const lateDays = attendanceLogs.filter(log => log.attendanceStatus === 'Late').length;
+            const earlyLeaveDays = attendanceLogs.filter(log => log.attendanceStatus === 'Early Leave').length;
+            const overtimeDays = attendanceLogs.filter(log => log.attendanceStatus === 'Overtime').length;
+            const leaveDays = attendanceLogs.filter(log => log.attendanceStatus === 'On Leave').length;
+            const absentDays = attendanceLogs.filter(log => log.attendanceStatus === 'Absent').length;
+            
+            const workingDays = totalDays - leaveDays;
+            const attendanceRate = workingDays > 0 ? Math.round((presentDays / workingDays) * 100) : 0;
+            const punctualityRate = presentDays > 0 ? Math.round(((presentDays - lateDays) / presentDays) * 100) : 0;
+            
+            const container = document.getElementById('kpiCards');
+            container.innerHTML = `
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-check-circle" style="color: var(--success);"></i></div>
+                    <div class="kpi-value">${presentDays}</div>
+                    <div class="kpi-label">Days Present</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-clock" style="color: var(--warning);"></i></div>
+                    <div class="kpi-value">${lateDays}</div>
+                    <div class="kpi-label">Late Days</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-door-open" style="color: var(--text-p);"></i></div>
+                    <div class="kpi-value">${earlyLeaveDays}</div>
+                    <div class="kpi-label">Early Leave Days</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-bolt" style="color: #a855f7;"></i></div>
+                    <div class="kpi-value">${overtimeDays}</div>
+                    <div class="kpi-label">Overtime Days</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-umbrella-beach" style="color: var(--accent);"></i></div>
+                    <div class="kpi-value">${leaveDays}</div>
+                    <div class="kpi-label">Leave Days</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-times-circle" style="color: var(--danger);"></i></div>
+                    <div class="kpi-value">${absentDays}</div>
+                    <div class="kpi-label">Absent Days</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="kpi-value">${attendanceRate}%</div>
+                    <div class="kpi-label">Attendance Rate</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-stopwatch"></i></div>
+                    <div class="kpi-value">${punctualityRate}%</div>
+                    <div class="kpi-label">Punctuality Rate</div>
+                </div>
+            `;
+        }
+
+        // SECTION 2: ATTENDANCE TABLE
+        function renderAttendanceTable() {
+            const tbody = document.getElementById('attendanceTableBody');
+            
+            if (attendanceLogs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-clock fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                            <p>No attendance records found for this period</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            attendanceLogs.forEach(log => {
+                const date = new Date(log.date).toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                
+                const hours = log.totalMinutesWorked ? 
+                    `${Math.floor(log.totalMinutesWorked / 60)}h ${log.totalMinutesWorked % 60}m` : 
+                    '—';
+                
+                const statusClass = {
+                    'Present': 'status-present',
+                    'Late': 'status-late',
+                    'Absent': 'status-absent',
+                    'On Leave': 'status-leave',
+                    'Overtime': 'status-overtime',
+                    'Early Leave': 'status-early'
+                }[log.attendanceStatus] || 'status-present';
+                
+                html += `
+                    <tr>
+                        <td>${date}</td>
+                        <td>${log.clockInTime || '—'}</td>
+                        <td>${log.clockOutTime || '—'}</td>
+                        <td>${hours}</td>
+                        <td><span class="status-badge ${statusClass}">${log.attendanceStatus || 'Present'}</span></td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // SECTION 3 & 4: CLOCK-IN/OUT STATS
+        function renderClockInOutStats() {
+            const validLogs = attendanceLogs.filter(log => log.clockInTime && log.clockOutTime);
+            
+            if (validLogs.length === 0) {
+                document.getElementById('clockInStats').innerHTML = '<p style="color: var(--text-p);">No clock-in data available</p>';
+                document.getElementById('clockOutStats').innerHTML = '<p style="color: var(--text-p);">No clock-out data available</p>';
+                return;
+            }
+            
+            // Convert times to minutes for calculations
+            const clockInMinutes = validLogs.map(log => {
+                const [hours, minutes] = log.clockInTime.split(':').map(Number);
+                return hours * 60 + minutes;
+            });
+            
+            const clockOutMinutes = validLogs.map(log => {
+                const [hours, minutes] = log.clockOutTime.split(':').map(Number);
+                return hours * 60 + minutes;
+            });
+            
+            const avgClockIn = averageTime(clockInMinutes);
+            const earliestClockIn = minTime(clockInMinutes);
+            const latestClockIn = maxTime(clockInMinutes);
+            
+            const avgClockOut = averageTime(clockOutMinutes);
+            const earliestClockOut = minTime(clockOutMinutes);
+            const latestClockOut = maxTime(clockOutMinutes);
+            
+            const requiredInMinutes = 8 * 60;
+            const avgLateMinutes = Math.max(0, avgClockIn - requiredInMinutes);
+            
+            const requiredOutMinutes = 17 * 60;
+            const avgEarlyLeave = Math.max(0, requiredOutMinutes - avgClockOut);
+            
+            // Clock-In Stats
+            document.getElementById('clockInStats').innerHTML = `
+                <div class="time-stat">
+                    <span class="label">Average Clock-In:</span>
+                    <span class="value">${formatTime(avgClockIn)}</span>
+                </div>
+                <div class="time-stat">
+                    <span class="label">Earliest Clock-In:</span>
+                    <span class="value">${formatTime(earliestClockIn)}</span>
+                </div>
+                <div class="time-stat">
+                    <span class="label">Latest Clock-In:</span>
+                    <span class="value">${formatTime(latestClockIn)}</span>
+                </div>
+                <div class="time-stat">
+                    <span class="label">Average Late Minutes:</span>
+                    <span class="value">${Math.round(avgLateMinutes)} min</span>
+                </div>
+            `;
+            
+            // Clock-Out Stats
+            document.getElementById('clockOutStats').innerHTML = `
+                <div class="time-stat">
+                    <span class="label">Average Clock-Out:</span>
+                    <span class="value">${formatTime(avgClockOut)}</span>
+                </div>
+                <div class="time-stat">
+                    <span class="label">Earliest Clock-Out:</span>
+                    <span class="value">${formatTime(earliestClockOut)}</span>
+                </div>
+                <div class="time-stat">
+                    <span class="label">Latest Clock-Out:</span>
+                    <span class="value">${formatTime(latestClockOut)}</span>
+                </div>
+                <div class="time-stat">
+                    <span class="label">Average Early Leave:</span>
+                    <span class="value">${Math.round(avgEarlyLeave)} min</span>
+                </div>
+            `;
+        }
+
+        // SECTION 5: WORK HOURS STATS
+        function renderWorkHoursStats() {
+            const validLogs = attendanceLogs.filter(log => log.totalMinutesWorked > 0);
+            
+            if (validLogs.length === 0) {
+                document.getElementById('workHoursStats').innerHTML = '<p style="color: var(--text-p);">No work hours data available</p>';
+                return;
+            }
+            
+            const avgMinutes = validLogs.reduce((sum, log) => sum + log.totalMinutesWorked, 0) / validLogs.length;
+            const avgHours = avgMinutes / 60;
+            
+            const totalMinutes = validLogs.reduce((sum, log) => sum + log.totalMinutesWorked, 0);
+            const totalHours = totalMinutes / 60;
+            
+            const overtimeMinutes = validLogs.reduce((sum, log) => sum + (log.overtimeMinutes || 0), 0);
+            const overtimeHours = overtimeMinutes / 60;
+            
+            const expectedTotal = validLogs.length * 8 * 60;
+            const shortfallMinutes = Math.max(0, expectedTotal - totalMinutes);
+            const shortfallHours = shortfallMinutes / 60;
+            
+            document.getElementById('workHoursStats').innerHTML = `
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="kpi-value">${avgHours.toFixed(1)}h</div>
+                    <div class="kpi-label">Avg Daily Hours</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+                    <div class="kpi-value">${Math.round(totalHours)}h</div>
+                    <div class="kpi-label">Total Hours This Month</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-bolt" style="color: #a855f7;"></i></div>
+                    <div class="kpi-value">${overtimeHours.toFixed(1)}h</div>
+                    <div class="kpi-label">Total Overtime Hours</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i></div>
+                    <div class="kpi-value">${shortfallHours.toFixed(1)}h</div>
+                    <div class="kpi-label">Shortfall Hours</div>
+                </div>
+            `;
+        }
+
+        // SECTION 6: LEAVE SUMMARY
+        function renderLeaveSummary() {
+            const leaveUsage = {};
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            
+            // Initialize leave types
+            Object.entries(CONFIG.LEAVE_TYPES).forEach(([type, data]) => {
+                leaveUsage[type] = {
+                    name: data.name,
+                    allocated: data.allocation,
+                    used: 0
+                };
+            });
+            
+            // Calculate used leave days
+            leaveRequests.forEach(request => {
+                if (request.status === 'Approved') {
+                    const requestYear = new Date(request.startDate).getFullYear();
+                    if (requestYear === currentYear) {
+                        if (leaveUsage[request.leaveTypeId]) {
+                            leaveUsage[request.leaveTypeId].used += request.totalDays || 1;
+                        }
+                    }
+                }
+            });
+            
+            let html = '';
+            Object.values(leaveUsage).forEach(leave => {
+                const remaining = Math.max(0, leave.allocated - leave.used);
+                const percentUsed = leave.allocated > 0 ? (leave.used / leave.allocated) * 100 : 0;
+                
+                html += `
+                    <div class="leave-card">
+                        <h3>${leave.name}</h3>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>Allocated: <strong>${leave.allocated}</strong></span>
+                            <span>Used: <strong>${leave.used.toFixed(1)}</strong></span>
+                            <span>Remaining: <strong>${remaining.toFixed(1)}</strong></span>
+                        </div>
+                        <div class="leave-progress">
+                            <div class="leave-progress-bar" style="width: ${percentUsed}%;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('leaveSummary').innerHTML = html;
+        }
+
+        // SECTION 7: ALERTS
+        function renderAlerts() {
+            const alerts = [];
+            const today = new Date();
+            
+            // Alert 1: Missing clock-out
+            const missingClockOut = attendanceLogs.filter(log => 
+                log.clockInTime && !log.clockOutTime && 
+                new Date(log.date).toDateString() !== today.toDateString()
+            );
+            
+            if (missingClockOut.length > 0) {
+                alerts.push({
+                    type: 'danger',
+                    title: 'Missing Clock-Out',
+                    message: `${missingClockOut.length} day(s) with missing clock-out. Please check your records.`
+                });
+            }
+            
+            // Alert 2: 3+ consecutive late days
+            let lateStreak = 0;
+            attendanceLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+            for (let i = 0; i < attendanceLogs.length; i++) {
+                if (attendanceLogs[i].attendanceStatus === 'Late') {
+                    lateStreak++;
+                    if (lateStreak >= 3) {
+                        alerts.push({
+                            type: 'warning',
+                            title: 'Consecutive Late Days',
+                            message: 'You have been late for 3 or more consecutive days.'
+                        });
+                        break;
+                    }
+                } else {
+                    lateStreak = 0;
+                }
+            }
+            
+            // Alert 3: Leave balance low
+            Object.entries(CONFIG.LEAVE_TYPES).forEach(([type, data]) => {
+                const used = leaveRequests
+                    .filter(r => r.leaveTypeId === type && r.status === 'Approved')
+                    .reduce((sum, r) => sum + (r.totalDays || 1), 0);
+                const remaining = data.allocation - used;
+                
+                if (remaining < 3 && remaining > 0) {
+                    alerts.push({
+                        type: 'warning',
+                        title: `${data.name} Balance Low`,
+                        message: `Only ${remaining.toFixed(1)} ${data.name} days remaining.`
+                    });
+                }
+            });
+            
+            // Alert 4: Excessive overtime
+            const overtimeTotal = attendanceLogs.reduce((sum, log) => sum + (log.overtimeMinutes || 0), 0);
+            if (overtimeTotal > 30 * 60) { // More than 30 hours
+                alerts.push({
+                    type: 'warning',
+                    title: 'Excessive Overtime',
+                    message: `You have accumulated ${Math.round(overtimeTotal / 60)} hours of overtime this month.`
+                });
+            }
+            
+            const container = document.getElementById('alertsContainer');
+            
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--success);">
+                        <i class="fas fa-check-circle fa-3x"></i>
+                        <p style="margin-top: 10px;">No alerts at this time. All systems normal.</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = alerts.map(alert => `
+                    <div class="alert-box alert-${alert.type}">
+                        <strong style="color: ${alert.type === 'danger' ? 'var(--danger)' : 'var(--warning)'}">
+                            <i class="fas fa-exclamation-circle"></i> ${alert.title}
+                        </strong>
+                        <p style="margin: 5px 0 0 0; color: var(--text-p);">${alert.message}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Helper Functions
+        function formatTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+        }
+
+        function averageTime(minutesArray) {
+            if (minutesArray.length === 0) return 8 * 60;
+            const sum = minutesArray.reduce((a, b) => a + b, 0);
+            return Math.round(sum / minutesArray.length);
+        }
+
+        function minTime(minutesArray) {
+            return Math.min(...minutesArray);
+        }
+
+        function maxTime(minutesArray) {
+            return Math.max(...minutesArray);
+        }
+
+        // Load chatbot
         async function loadChatbot() {
             try {
-                const chatbotResponse = await fetch('../components/chatbot.html');
-                const chatbotHTML = await chatbotResponse.text();
-                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
-                
-                // Initialize chatbot
-                if (window.initChatbot) {
-                    setTimeout(window.initChatbot, 500);
-                }
+                const response = await fetch('../components/chatbot.html');
+                document.getElementById('chatbot-container').innerHTML = await response.text();
+                if (window.initChatbot) setTimeout(window.initChatbot, 500);
             } catch (error) {
                 console.error('Error loading chatbot:', error);
             }
         }
-        
-        // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            loadChatbot(); // Load chatbot
+
+        // Set current month/year as default
+        const now = new Date();
+        document.getElementById('monthFilter').value = now.getMonth();
+        document.getElementById('yearFilter').value = '2026';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadChatbot();
+            loadAttendanceStats();
             
-            if (window.updateStatsDisplay) {
-                window.updateStatsDisplay();
-            }
-            
-            // Update stats every 30 seconds
-            setInterval(() => {
-                if (window.updateStatsDisplay) {
-                    window.updateStatsDisplay();
-                }
-            }, 30000);
+            // Auto-refresh every 30 seconds
+            setInterval(loadAttendanceStats, 30000);
         });
+
+        // Make function available globally
+        window.loadAttendanceStats = loadAttendanceStats;
     </script>
 </body>
 </html>

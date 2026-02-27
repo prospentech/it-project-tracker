@@ -5,56 +5,25 @@ import firebaseService from './firebase-service.js';
 let tasks = [];
 let users = [];
 let projects = {};
+let duties = []; // Add this line to store duties
 let currentPage = 1;
 const itemsPerPage = 15;
 let currentFilters = {
     status: 'all',
     priority: 'all',
     type: 'all',
-    project: 'all'
+    project: 'all',
+    dateRange: 'all' // New date range filter: 'all', 'today', 'week', 'month', 'year'
 };
-
-// Initialize tasks
-async function initTasks() {
-    console.log('Initializing tasks...');
-    try {
-        // Load all required data
-        await Promise.all([
-            loadTasks(),
-            loadUsers(),
-            loadProjects()
-        ]);
-        
-        console.log('Tasks loaded:', tasks.length);
-        console.log('Users loaded:', users.length);
-        console.log('Projects loaded:', Object.keys(projects).length);
-        
-        // Subscribe to real-time updates
-        firebaseService.subscribeToTasks((updatedTasks) => {
-            console.log('Real-time tasks update received:', updatedTasks.length);
-            tasks = updatedTasks;
-            checkOverdueTasks();
-            updateStats();
-            renderTable();
-        });
-        
-        // Force an immediate render
-        renderTable();
-        
-    } catch (error) {
-        console.error('Error initializing tasks:', error);
-        showCustomModal('Error', 'Failed to initialize tasks: ' + error.message, 'danger');
-    }
-}
 
 // Load tasks from Firebase
 async function loadTasks() {
     try {
         tasks = await firebaseService.getTasks();
-        console.log('Tasks loaded from Firebase:', tasks.length);
+        //console.log('Tasks loaded from Firebase:', tasks.length);
         return tasks;
     } catch (error) {
-        console.error('Error loading tasks:', error);
+        //console.error('Error loading tasks:', error);
         tasks = [];
         return [];
     }
@@ -66,7 +35,7 @@ async function loadUsers() {
         users = await firebaseService.getAllUsers();
         return users;
     } catch (error) {
-        console.error('Error loading users:', error);
+        //console.error('Error loading users:', error);
         users = [];
         return [];
     }
@@ -78,9 +47,22 @@ async function loadProjects() {
         projects = await firebaseService.getProjects();
         return projects;
     } catch (error) {
-        console.error('Error loading projects:', error);
+        //console.error('Error loading projects:', error);
         projects = {};
         return {};
+    }
+}
+
+// Load duties from Firebase
+async function loadDuties() {
+    try {
+        duties = await firebaseService.getDuties();
+        //console.log('Duties loaded from Firebase:', duties.length);
+        return duties;
+    } catch (error) {
+        //console.error('Error loading duties:', error);
+        duties = [];
+        return [];
     }
 }
 
@@ -108,18 +90,54 @@ function checkOverdueTasks() {
     }
 }
 
-// Generate Task ID (TASK-00001 format)
+// Generate Task ID (01, 02, 03 format)
 function generateTaskId() {
     const maxId = tasks.reduce((max, task) => {
-        if (task.taskId && task.taskId.startsWith('TASK-')) {
-            const num = parseInt(task.taskId.split('-')[1]);
+        // Check if task ID is a number (without any prefix)
+        if (task.taskId && !isNaN(parseInt(task.taskId))) {
+            const num = parseInt(task.taskId);
             return num > max ? num : max;
         }
         return max;
     }, 0);
     
     const nextNum = maxId + 1;
-    return `TASK-${nextNum.toString().padStart(5, '0')}`;
+    // Pad with leading zeros to ensure at least 2 digits (01, 02, etc.)
+    return nextNum.toString().padStart(2, '0');
+}
+
+// Helper function to check if a date is within a date range
+function isDateInRange(dateStr, range) {
+    if (!dateStr) return false;
+    
+    const taskDate = new Date(dateStr);
+    taskDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    switch(range) {
+        case 'today':
+            return taskDate.getTime() === today.getTime();
+            
+        case 'week':
+            const weekAgo = new Date(today);
+            weekAgo.setDate(today.getDate() - 7);
+            return taskDate >= weekAgo;
+            
+        case 'month':
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(today.getMonth() - 1);
+            return taskDate >= monthAgo;
+            
+        case 'year':
+            const yearAgo = new Date(today);
+            yearAgo.setFullYear(today.getFullYear() - 1);
+            return taskDate >= yearAgo;
+            
+        case 'all':
+        default:
+            return true;
+    }
 }
 
 // Update statistics cards
@@ -149,6 +167,12 @@ function updateStats() {
         dueDate.setHours(0, 0, 0, 0);
         return dueDate < now;
     }).length;
+    
+    // Count tasks by date range
+    const todayTasks = filteredTasks.filter(t => isDateInRange(t.createdAt || t.dueDate, 'today')).length;
+    const weekTasks = filteredTasks.filter(t => isDateInRange(t.createdAt || t.dueDate, 'week')).length;
+    const monthTasks = filteredTasks.filter(t => isDateInRange(t.createdAt || t.dueDate, 'month')).length;
+    const yearTasks = filteredTasks.filter(t => isDateInRange(t.createdAt || t.dueDate, 'year')).length;
     
     const statsContainer = document.getElementById('statsCards');
     if (!statsContainer) return;
@@ -189,66 +213,73 @@ function updateStats() {
 
 // Render table with pagination
 function renderTable() {
-    console.log('Rendering table. Tasks count:', tasks.length);
+    //console.log('Rendering table. Tasks count:', tasks.length);
     
     const tbody = document.getElementById('tasksTableBody');
     if (!tbody) {
-        console.log('Tasks table body not found');
+        //console.log('Tasks table body not found');
         return;
     }
     
     const currentUser = auth.getCurrentUser();
     if (!currentUser) {
-        console.log('No current user');
+       // console.log('No current user');
         return;
     }
     
     const isAdmin = currentUser.username === 'admin';
-    console.log('Current user:', currentUser.username, 'Is admin:', isAdmin);
+    //console.log('Current user:', currentUser.username, 'Is admin:', isAdmin);
     
     // Start with all tasks
     let filteredTasks = [...tasks];
-    console.log('Total tasks before any filtering:', filteredTasks.length);
+    //console.log('Total tasks before any filtering:', filteredTasks.length);
     
-    // Log sample tasks to see their structure
-    if (filteredTasks.length > 0) {
-        console.log('Sample task structure:', filteredTasks[0]);
-        console.log('AssignedTo values in tasks:', filteredTasks.map(t => t.assignedTo));
-    }
-    
-    // Filter tasks based on user role - FIXED LOGIC
+    // Filter tasks based on user role
     if (!isAdmin) {
         filteredTasks = filteredTasks.filter(task => {
             // Check if task.assignedTo exists and matches current user
             return task.assignedTo === currentUser.username;
         });
-        console.log('After user filter (non-admin):', filteredTasks.length);
+        //console.log('After user filter (non-admin):', filteredTasks.length);
     } else {
-        console.log('Admin user - showing all tasks');
+        //console.log('Admin user - showing all tasks');
     }
     
-    // Apply other filters
+    // Apply status filter
     if (currentFilters.status !== 'all') {
         filteredTasks = filteredTasks.filter(task => task.status === currentFilters.status);
-        console.log(`After status filter (${currentFilters.status}):`, filteredTasks.length);
+        //console.log(`After status filter (${currentFilters.status}):`, filteredTasks.length);
     }
     
+    // Apply priority filter
     if (currentFilters.priority !== 'all') {
         filteredTasks = filteredTasks.filter(task => task.priority === currentFilters.priority);
-        console.log(`After priority filter (${currentFilters.priority}):`, filteredTasks.length);
+        //console.log(`After priority filter (${currentFilters.priority}):`, filteredTasks.length);
     }
     
+    // Apply type filter
     if (currentFilters.type !== 'all') {
         filteredTasks = filteredTasks.filter(task => task.type === currentFilters.type);
-        console.log(`After type filter (${currentFilters.type}):`, filteredTasks.length);
+        //console.log(`After type filter (${currentFilters.type}):`, filteredTasks.length);
     }
     
+    // Apply project filter
     if (currentFilters.project !== 'all') {
         filteredTasks = filteredTasks.filter(task => task.projectId === currentFilters.project);
-        console.log(`After project filter (${currentFilters.project}):`, filteredTasks.length);
+        //console.log(`After project filter (${currentFilters.project}):`, filteredTasks.length);
     }
     
-    console.log('Final filtered tasks:', filteredTasks.length);
+    // Apply date range filter
+    if (currentFilters.dateRange !== 'all') {
+        filteredTasks = filteredTasks.filter(task => {
+            // Use createdAt if available, otherwise use dueDate as fallback
+            const dateToCheck = task.createdAt || task.dueDate;
+            return isDateInRange(dateToCheck, currentFilters.dateRange);
+        });
+        //console.log(`After date range filter (${currentFilters.dateRange}):`, filteredTasks.length);
+    }
+    
+    //console.log('Final filtered tasks:', filteredTasks.length);
     
     // Update stats after filtering
     updateStats();
@@ -271,7 +302,7 @@ function renderTable() {
         
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" style="text-align: center; padding: 40px;">
+                <td colspan="10" style="text-align: center; padding: 40px;">
                     <i class="fas fa-tasks fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
                     <p>${message}</p>
                     ${tasks.length > 0 ? `<p style="color: var(--warning);">Total tasks in system: ${tasks.length}</p>` : ''}
@@ -302,6 +333,7 @@ function renderTable() {
             }[task.priority] || 'priority-medium';
             
             const projectName = task.projectId && projects[task.projectId] ? projects[task.projectId].name : 'None';
+            const dutyName = getDutyName(task.dutyId); // Get duty name from helper function
             
             html += `
                 <tr onclick="viewTaskDetails('${task.id}')">
@@ -317,6 +349,7 @@ function renderTable() {
                     </td>
                     <td>${formatDate(task.dueDate)}</td>
                     <td>${projectName}</td>
+                    <td>${dutyName || 'None'}</td>
                     <td>
                         <div class="action-buttons" onclick="event.stopPropagation()">
                             <button class="action-btn" onclick="viewTaskDetails('${task.id}')" title="View Details">
@@ -337,6 +370,13 @@ function renderTable() {
     }
     
     renderPagination(filteredTasks.length);
+}
+
+// Helper function to get duty name
+function getDutyName(dutyId) {
+    if (!dutyId) return null;
+    const duty = duties.find(d => d.id === dutyId);
+    return duty ? (duty.name || duty.role) : null;
 }
 
 // Render pagination controls
@@ -406,6 +446,14 @@ function changePage(page) {
         filteredTasks = filteredTasks.filter(task => task.projectId === currentFilters.project);
     }
     
+    // Apply date range filter for pagination
+    if (currentFilters.dateRange !== 'all') {
+        filteredTasks = filteredTasks.filter(task => {
+            const dateToCheck = task.createdAt || task.dueDate;
+            return isDateInRange(dateToCheck, currentFilters.dateRange);
+        });
+    }
+    
     const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
     if (page < 1 || page > totalPages) return;
     
@@ -434,13 +482,15 @@ function applyFilters() {
     const priorityFilter = document.getElementById('priorityFilter');
     const typeFilter = document.getElementById('typeFilter');
     const projectFilter = document.getElementById('projectFilter');
+    const dateRangeFilter = document.getElementById('dateRangeFilter');
     
     currentFilters.status = statusFilter ? statusFilter.value : 'all';
     currentFilters.priority = priorityFilter ? priorityFilter.value : 'all';
     currentFilters.type = typeFilter ? typeFilter.value : 'all';
     currentFilters.project = projectFilter ? projectFilter.value : 'all';
+    currentFilters.dateRange = dateRangeFilter ? dateRangeFilter.value : 'all';
     
-    console.log('Applied filters:', currentFilters);
+    //console.log('Applied filters:', currentFilters);
     
     currentPage = 1;
     renderTable();
@@ -452,17 +502,20 @@ function resetFilters() {
     const priorityFilter = document.getElementById('priorityFilter');
     const typeFilter = document.getElementById('typeFilter');
     const projectFilter = document.getElementById('projectFilter');
+    const dateRangeFilter = document.getElementById('dateRangeFilter');
     
     if (statusFilter) statusFilter.value = 'all';
     if (priorityFilter) priorityFilter.value = 'all';
     if (typeFilter) typeFilter.value = 'all';
     if (projectFilter) projectFilter.value = 'all';
+    if (dateRangeFilter) dateRangeFilter.value = 'all';
     
     currentFilters = {
         status: 'all',
         priority: 'all',
         type: 'all',
-        project: 'all'
+        project: 'all',
+        dateRange: 'all'
     };
     
     currentPage = 1;
@@ -515,7 +568,36 @@ function populateProjectsDropdown() {
     });
 }
 
-// Open task modal for add/edit
+// Populate duties dropdown
+function populateDutiesDropdown() {
+    const select = document.getElementById('taskDuty');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">None</option>';
+    
+    const currentUser = auth.getCurrentUser();
+    const isAdmin = currentUser?.username === 'admin';
+    
+    // Filter duties based on user role
+    let filteredDuties = duties;
+    if (!isAdmin) {
+        filteredDuties = duties.filter(d => d.userId === currentUser.username);
+    }
+    
+    filteredDuties.forEach(duty => {
+        const option = document.createElement('option');
+        option.value = duty.id;
+        option.textContent = duty.name || duty.role || 'Unnamed Duty';
+        select.appendChild(option);
+    });
+}
+
+// Close task modal
+function closeTaskModal() {
+    document.getElementById('taskModal').style.display = 'none';
+}
+
+// Open task modal
 function openTaskModal(taskId = null) {
     const modal = document.getElementById('taskModal');
     if (!modal) {
@@ -528,6 +610,7 @@ function openTaskModal(taskId = null) {
     
     populateUsersDropdown();
     populateProjectsDropdown();
+    populateDutiesDropdown();
     
     const today = new Date().toISOString().split('T')[0];
     
@@ -542,6 +625,7 @@ function openTaskModal(taskId = null) {
         document.getElementById('taskDescription').value = task.description || '';
         document.getElementById('taskAssignedTo').value = task.assignedTo || '';
         document.getElementById('taskProject').value = task.projectId || '';
+        document.getElementById('taskDuty').value = task.dutyId || '';
         document.getElementById('taskType').value = task.type || '';
         document.getElementById('taskPriority').value = task.priority || '';
         document.getElementById('taskStartDate').value = task.startDate || today;
@@ -564,12 +648,7 @@ function openTaskModal(taskId = null) {
     modal.style.display = 'flex';
 }
 
-// Close task modal
-function closeTaskModal() {
-    document.getElementById('taskModal').style.display = 'none';
-}
-
-// Save task to Firebase
+// Save task
 async function saveTask(event) {
     event.preventDefault();
     
@@ -589,6 +668,7 @@ async function saveTask(event) {
         description: document.getElementById('taskDescription').value,
         assignedTo: document.getElementById('taskAssignedTo').value,
         projectId: document.getElementById('taskProject').value || null,
+        dutyId: document.getElementById('taskDuty').value || null,
         type: document.getElementById('taskType').value,
         priority: document.getElementById('taskPriority').value,
         startDate: document.getElementById('taskStartDate').value,
@@ -633,6 +713,7 @@ async function saveTask(event) {
             closeTaskModal();
             await loadTasks();
             await loadProjects();
+            await loadDuties(); // Reload duties
             renderTable();
             
             showCustomModal('Success', 'Task saved successfully!', 'success');
@@ -677,6 +758,7 @@ function viewTaskDetails(taskId) {
     }[task.priority] || 'priority-medium';
     
     const projectName = task.projectId && projects[task.projectId] ? projects[task.projectId].name : 'None';
+    const dutyName = getDutyName(task.dutyId) || 'None';
     
     let html = `
         <div class="grid-layout">
@@ -688,6 +770,7 @@ function viewTaskDetails(taskId) {
                     <div class="detail-row"><span class="detail-label">Description:</span><span class="detail-value">${task.description || 'No description'}</span></div>
                     <div class="detail-row"><span class="detail-label">Assigned To:</span><span class="detail-value">${getUserFullName(task.assignedTo) || 'Unassigned'}</span></div>
                     <div class="detail-row"><span class="detail-label">Project Linked:</span><span class="detail-value">${projectName}</span></div>
+                    <div class="detail-row"><span class="detail-label">Duty Linked:</span><span class="detail-value">${dutyName}</span></div>
                 </div>
                 
                 <div class="detail-section">
@@ -844,6 +927,7 @@ async function confirmDeleteTask(taskId) {
     if (result.success) {
         await loadTasks();
         await loadProjects();
+        await loadDuties(); // Reload duties
         renderTable();
         showCustomModal('Success', 'Task deleted successfully!', 'success');
     } else {
@@ -909,11 +993,40 @@ function showCustomModal(title, message, type = 'info') {
     document.body.appendChild(modal);
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, initializing tasks...');
-    initTasks();
-});
+// Initialize tasks
+async function initTasks() {
+    //console.log('Initializing tasks...');
+    try {
+        // Load all required data
+        await Promise.all([
+            loadTasks(),
+            loadUsers(),
+            loadProjects(),
+            loadDuties() // Load duties
+        ]);
+        
+        //console.log('Tasks loaded:', tasks.length);
+        //console.log('Users loaded:', users.length);
+        //console.log('Projects loaded:', Object.keys(projects).length);
+        //console.log('Duties loaded:', duties.length);
+        
+        // Subscribe to real-time updates
+        firebaseService.subscribeToTasks((updatedTasks) => {
+            //console.log('Real-time tasks update received:', updatedTasks.length);
+            tasks = updatedTasks;
+            checkOverdueTasks();
+            updateStats();
+            renderTable();
+        });
+        
+        // Force an immediate render
+        renderTable();
+        
+    } catch (error) {
+        //console.error('Error initializing tasks:', error);
+        showCustomModal('Error', 'Failed to initialize tasks: ' + error.message, 'danger');
+    }
+}
 
 // Make all functions available globally
 window.initTasks = initTasks;
@@ -934,6 +1047,12 @@ window.formatDate = formatDate;
 window.formatDateTime = formatDateTime;
 window.getUserFullName = getUserFullName;
 window.renderTasks = renderTable;
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    //console.log('DOM loaded, initializing tasks...');
+    initTasks();
+});
 
 // Export for module usage
 export {

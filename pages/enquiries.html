@@ -84,31 +84,71 @@
             if (window.updateSuggestionIndicator) {
                 window.updateSuggestionIndicator();
             }
-            alert('All suggestions marked as read!');
+            showCustomModal('Success', 'All suggestions marked as read!', 'success');
         };
 
         window.replyToSuggestion = function(id, email) {
             window.location.href = `mailto:${email}?subject=Re: Your suggestion to Prospen Hub`;
         };
 
-        window.deleteSuggestion = async function(id) {
-            if (confirm('Are you sure you want to delete this suggestion?')) {
-                // Note: You'll need to add a deleteEnquiry method to firebase-service.js
-                // For now, we'll use update with a deleted flag or implement delete
-                try {
-                    // If you have a delete method:
-                    // await firebaseService.deleteEnquiry(id);
-                    
-                    // Or mark as deleted:
-                    await firebaseService.updateEnquiry(id, { deleted: true, status: 'deleted' });
-                    loadSuggestions();
-                    if (window.updateSuggestionIndicator) {
-                        window.updateSuggestionIndicator();
-                    }
-                } catch (error) {
-                    console.error('Error deleting suggestion:', error);
-                    alert('Failed to delete suggestion');
+        // FIXED: Delete suggestion function - now uses custom modal and proper Firebase deletion
+        window.deleteSuggestion = async function(id, name) {
+            // Get suggestion details if name not provided
+            if (!name) {
+                const suggestions = await firebaseService.getEnquiries();
+                const suggestion = suggestions.find(s => s.id === id);
+                name = suggestion?.name || 'this suggestion';
+            }
+            
+            // Create custom modal
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal danger">
+                    <div class="custom-modal-header">
+                        <h3>Confirm Delete</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>Are you sure you want to delete the suggestion from <strong>${name}</strong>? This action cannot be undone.</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                        <button class="btn-primary" style="background: var(--danger);" onclick="confirmDeleteSuggestion('${id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        };
+
+        // Make sure it's also attached to window (add this line right after the function)
+        window.deleteSuggestion = deleteSuggestion;
+
+        // FIXED: Confirm delete suggestion function
+        window.confirmDeleteSuggestion = async function(id) {
+            try {
+                // Use the firebaseService.deleteEnquiry method (need to add it to firebase-service.js)
+                // For now, we'll use remove directly
+                const { db, ref, remove } = await import('../firebase-config.js');
+                await remove(ref(db, `enquiries/${id}`));
+                
+                // Close the modal
+                document.querySelector('.custom-modal-overlay').remove();
+                
+                // Reload suggestions
+                await loadSuggestions();
+                
+                // Update suggestion indicator
+                if (window.updateSuggestionIndicator) {
+                    window.updateSuggestionIndicator();
                 }
+                
+                // Show success message
+                showCustomModal('Success', 'Suggestion deleted successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error deleting suggestion:', error);
+                showCustomModal('Error', 'Failed to delete suggestion: ' + error.message, 'danger');
             }
         };
 
@@ -126,6 +166,30 @@
             linkElement.setAttribute('download', exportFileDefaultName);
             linkElement.click();
         };
+
+        // Show custom modal function (if not already available globally)
+        function showCustomModal(title, message, type = 'info') {
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal ${type}">
+                    <div class="custom-modal-header">
+                        <h3>${title}</h3>
+                        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Make showCustomModal available globally
+        window.showCustomModal = showCustomModal;
 
         async function loadSuggestions() {
             try {
@@ -166,7 +230,7 @@
                                     <button onclick="replyToSuggestion('${suggestion.id}', '${suggestion.email}')" class="small-btn" title="Reply" style="background: var(--success);">
                                         <i class="fas fa-reply"></i>
                                     </button>
-                                    <button onclick="deleteSuggestion('${suggestion.id}')" class="small-btn" title="Delete" style="background: var(--danger);">
+                                    <button onclick="deleteSuggestion('${suggestion.id}', '${suggestion.name}')" class="small-btn" title="Delete" style="background: var(--danger);">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>

@@ -71,6 +71,54 @@
             font-size: 0.9rem;
             color: var(--text-p);
         }
+
+        /* Dropdown preview styles */
+        .dropdown-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+
+        .dropdown-preview select {
+            width: 100%;
+            padding: 12px;
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-h);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .dropdown-preview select option {
+            background: var(--card);
+            color: var(--text-h);
+            padding: 10px;
+        }
+
+        .info-note {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--text-p);
+        }
+
+        .info-note i {
+            color: var(--accent);
+            margin-right: 8px;
+        }
+
+        .color-preview-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            margin: 0 auto 5px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
     </style>
 </head>
 <body>
@@ -214,6 +262,123 @@
                 </div>
             </div>
 
+            <!-- Dropdown Text Color Section -->
+            <div class="settings-section">
+                <h3><i class="fas fa-caret-down"></i> Dropdown Text Color</h3>
+                <p style="color: var(--text-p); font-size: 0.9rem; margin-bottom: 15px;">
+                    <i class="fas fa-info-circle"></i> 
+                    Choose the text color for dropdown menus to make them more visible
+                </p>
+                
+                <div class="toggle-group" style="margin-bottom: 20px;">
+                    <span>Auto (Theme Based)</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dropdownAutoToggle" checked onchange="toggleDropdownAuto()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span>Custom Color</span>
+                </div>
+
+                <div id="dropdownCustomColorSection" style="display: none;">
+                    <div class="color-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 15px;">
+                        <div class="color-option" style="background: #FFFFFF; border: 2px solid #ccc;" onclick="setDropdownTextColor('#FFFFFF')" title="White"></div>
+                        <div class="color-option" style="background: #F8FAFC;" onclick="setDropdownTextColor('#F8FAFC')" title="Off White"></div>
+                        <div class="color-option" style="background: #E5E7EB;" onclick="setDropdownTextColor('#E5E7EB')" title="Light Grey"></div>
+                        <div class="color-option" style="background: #9CA3AF;" onclick="setDropdownTextColor('#9CA3AF')" title="Medium Grey"></div>
+                        <div class="color-option" style="background: #94A3B8;" onclick="setDropdownTextColor('#94A3B8')" title="Slate Grey"></div>
+                        <div class="color-option" style="background: #64748B;" onclick="setDropdownTextColor('#64748B')" title="Dark Slate"></div>
+                        <div class="color-option" style="background: #38BDF8;" onclick="setDropdownTextColor('#38BDF8')" title="Sky Blue"></div>
+                        <div class="color-option" style="background: #22C55E;" onclick="setDropdownTextColor('#22C55E')" title="Green"></div>
+                        <div class="color-option" style="background: #F59E0B;" onclick="setDropdownTextColor('#F59E0B')" title="Orange"></div>
+                        <div class="color-option" style="background: #EF4444;" onclick="setDropdownTextColor('#EF4444')" title="Red"></div>
+                        <div class="color-option" style="background: #A855F7;" onclick="setDropdownTextColor('#A855F7')" title="Purple"></div>
+                        <div class="color-option" style="background: #EC4899;" onclick="setDropdownTextColor('#EC4899')" title="Pink"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customDropdownColor">Custom Hex Color</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="color" id="customDropdownColorPicker" value="#ffffff" style="width: 50px; height: 40px; border-radius: 4px; cursor: pointer;">
+                            <input type="text" id="customDropdownColor" placeholder="#ffffff" value="#ffffff" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-h);">
+                            <button type="button" class="small-btn" onclick="applyCustomDropdownColor()" style="padding: 0 20px; background: var(--accent); color: var(--bg);">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dropdown Background Color Section -->
+            <div class="settings-section">
+                <h3><i class="fas fa-layer-group"></i> Dropdown Background Color</h3>
+                <p style="color: var(--text-p); font-size: 0.9rem; margin-bottom: 15px;">
+                    <i class="fas fa-info-circle"></i> 
+                    Choose the background color for dropdown options (the expanded menu)
+                </p>
+                
+                <div class="toggle-group" style="margin-bottom: 20px;">
+                    <span>Auto (Use Card Color)</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dropdownBgAutoToggle" checked onchange="toggleDropdownBgAuto()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span>Custom Background</span>
+                </div>
+
+                <div id="dropdownBgCustomColorSection" style="display: none;">
+                    <div class="color-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 15px;">
+                        <div class="color-option" style="background: #1e293b;" onclick="setDropdownBgColor('#1e293b')" title="Dark Slate (Default)"></div>
+                        <div class="color-option" style="background: #020617;" onclick="setDropdownBgColor('#020617')" title="Dark Blue"></div>
+                        <div class="color-option" style="background: #111827;" onclick="setDropdownBgColor('#111827')" title="Charcoal"></div>
+                        <div class="color-option" style="background: #374151;" onclick="setDropdownBgColor('#374151')" title="Dark Grey"></div>
+                        <div class="color-option" style="background: #4B5563;" onclick="setDropdownBgColor('#4B5563')" title="Medium Grey"></div>
+                        <div class="color-option" style="background: #6B7280;" onclick="setDropdownBgColor('#6B7280')" title="Grey"></div>
+                        <div class="color-option" style="background: #0A1F44;" onclick="setDropdownBgColor('#0A1F44')" title="Navy Blue"></div>
+                        <div class="color-option" style="background: #1E3A8A;" onclick="setDropdownBgColor('#1E3A8A')" title="Blue"></div>
+                        <div class="color-option" style="background: #065F46;" onclick="setDropdownBgColor('#065F46')" title="Dark Green"></div>
+                        <div class="color-option" style="background: #92400E;" onclick="setDropdownBgColor('#92400E')" title="Dark Orange"></div>
+                        <div class="color-option" style="background: #7F1D1D;" onclick="setDropdownBgColor('#7F1D1D')" title="Dark Red"></div>
+                        <div class="color-option" style="background: #581C87;" onclick="setDropdownBgColor('#581C87')" title="Dark Purple"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customDropdownBgColor">Custom Hex Color</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="color" id="customDropdownBgColorPicker" value="#1e293b" style="width: 50px; height: 40px; border-radius: 4px; cursor: pointer;">
+                            <input type="text" id="customDropdownBgColor" placeholder="#1e293b" value="#1e293b" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-h);">
+                            <button type="button" class="small-btn" onclick="applyCustomDropdownBgColor()" style="padding: 0 20px; background: var(--accent); color: var(--bg);">Apply</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combined Dropdown Preview -->
+                <div class="dropdown-preview">
+                    <h4 style="color: var(--accent); margin: 0 0 10px 0;">Live Preview:</h4>
+                    <select style="width: 100%; padding: 12px; border-radius: 8px; font-size: 14px;">
+                        <option>Select an option...</option>
+                        <option>Dashboard View</option>
+                        <option>Projects Overview</option>
+                        <option>Task Management</option>
+                        <option>Team Duties</option>
+                        <option>Client Projects</option>
+                    </select>
+                    <div style="margin-top: 15px; display: flex; gap: 20px; justify-content: center;">
+                        <div style="text-align: center;">
+                            <div class="color-preview-box" style="background: var(--dropdown-text-preview, #ffffff);"></div>
+                            <span style="color: var(--text-p); font-size: 0.8rem;">Text Color</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="color-preview-box" style="background: var(--dropdown-bg-preview, #1e293b);"></div>
+                            <span style="color: var(--text-p); font-size: 0.8rem;">Background</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-note">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong>Tip:</strong> For best readability, choose a background color that contrasts well with your selected text color.
+                    Dark backgrounds work best with light text, and vice versa.
+                </div>
+            </div>
+
             <div class="settings-section">
                 <h3>Live Preview</h3>
                 <div class="settings-preview">
@@ -223,6 +388,13 @@
                         <div style="display: flex; gap: 10px; margin-top: 15px;">
                             <span class="status-badge">In Progress</span>
                             <span class="countdown" style="margin-top: 0;">7 Days Remaining</span>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <select style="width: 100%; padding: 8px; background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
+                                <option>Sample dropdown with your colors</option>
+                                <option>Option 1</option>
+                                <option>Option 2</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -280,6 +452,16 @@
             // Apply theme (function from theme.js)
             if (window.applyTheme) {
                 window.applyTheme();
+            }
+            
+            // Load dropdown text settings
+            if (window.loadDropdownSettings) {
+                setTimeout(window.loadDropdownSettings, 200);
+            }
+            
+            // Load dropdown background settings
+            if (window.loadDropdownBgSettings) {
+                setTimeout(window.loadDropdownBgSettings, 200);
             }
             
             // Set initial font preview

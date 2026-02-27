@@ -22,13 +22,31 @@ class AuthSystem {
     }
   }
 
+  // auth.js - Update the login method
+
   async login(username, password) {
     const result = await firebaseService.login(username, password);
     
     if (result.success) {
+      // Get the display name from the user object
+      const displayName = result.user.displayName || username;
+      
+      // Map display name back to email prefix for reference if needed
+      let emailPrefix = username;
+      if (displayName === 'AJay') {
+        emailPrefix = 'infotech';
+      } else if (displayName === 'Junior') {
+        emailPrefix = 'techsupport';
+      } else if (displayName === 'Buhle') {
+        emailPrefix = 'buhle';
+      } else if (displayName === 'admin') {
+        emailPrefix = 'admin';
+      }
+      
       this.currentUser = {
         uid: result.user.uid,
-        username: username,
+        username: displayName, // Store the display name (AJay, Junior, etc.)
+        emailPrefix: emailPrefix, // Store the email prefix for reference
         email: result.user.email,
         loginTime: new Date().toISOString()
       };

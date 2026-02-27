@@ -1,12 +1,17 @@
-<!-- Example: Update header.html with data-i18n attributes -->
+<!-- Example: Update header.html with leave button -->
 <header>
     <div class="user-info" id="userInfo">
         <span data-i18n="logged_in_as">Logged in as:</span> <strong id="currentUserName">Guest</strong>
-        <button class="clock-btn" id="clockBtn" onclick="event.stopPropagation(); confirmClockAction();" data-i18n="clock_in">CLOCK IN</button>
+        <button class="clock-btn" id="clockBtn" onclick="confirmClockAction()">
+            <i class="fas fa-sign-in-alt"></i> CLOCK IN
+        </button>
         <span class="clock-status" id="clockStatus"></span>
     </div>
     
     <div class="header-controls">
+        <button class="control-btn" onclick="openLeaveModal()" style="background: var(--accent);">
+            <i class="fas fa-calendar-plus"></i> LEAVE
+        </button>
         <button class="control-btn" onclick="window.location.href='pages/profile.html'" data-i18n="profile">
             <i class="fas fa-user"></i> PROFILE
         </button>

@@ -100,30 +100,135 @@ async function initApp() {
     return;
   }
 
+  // Load all data
   await loadData();
+  
+  // Initialize all modules
   initHeroSlider();
   updateUserInfo();
   renderProjects();
-  if (typeof loadUpdates === 'function') {
+  
+  // Initialize updates
+  if (typeof initUpdates === 'function') {
+    initUpdates();
+  } else if (typeof loadUpdates === 'function') {
     loadUpdates();
   }
-  updateClockDisplay();
+  
+  // Initialize projects
+  if (typeof initProjects === 'function') {
+    initProjects();
+  }
+  
+  // Initialize clocking system (NEW)
+  if (typeof initClocking === 'function') {
+    initClocking();
+  } else {
+    // Fallback to legacy clocking
+    updateClockDisplay();
+  }
+  
+  // Initialize chatbot
+  if (typeof initChatbot === 'function') {
+    setTimeout(initChatbot, 500);
+  }
+  
+  // Apply theme
+  if (typeof applyTheme === 'function') {
+    applyTheme();
+  }
+  
+  // Update additional UI elements
   updateTopProject();
+  updateWelcomeMessage();
   
-  setInterval(updateUserInfo, 60000);
+  // Update suggestion indicator
+  if (typeof updateSuggestionIndicator === 'function') {
+    updateSuggestionIndicator();
+  }
   
+  // Set up real-time subscriptions
+  firebaseService.subscribeToProjects((updatedProjects) => {
+    projects = updatedProjects;
+    localStorage.setItem('prospenProjects', JSON.stringify(projects));
+    if (document.getElementById('project-grid')) {
+      renderProjects();
+    }
+    if (document.getElementById('allProjectsContainer')) {
+      renderAllProjects();
+    }
+    updateTopProject();
+  });
+  
+  firebaseService.subscribeToUpdates((updatedUpdates) => {
+    updates = updatedUpdates;
+    localStorage.setItem('prospenUpdates', JSON.stringify(updates));
+    if (document.getElementById('updatesContainer')) {
+      if (typeof renderUpdates === 'function') {
+        renderUpdates();
+      } else if (typeof loadUpdates === 'function') {
+        loadUpdates();
+      }
+    }
+    if (document.getElementById('allUpdatesContainer')) {
+      if (typeof loadAllUpdates === 'function') {
+        loadAllUpdates();
+      }
+    }
+  });
+  
+  // Subscribe to activities
+  firebaseService.subscribeToActivities((activities) => {
+    localStorage.setItem('userActivities', JSON.stringify(activities.slice(0, 100)));
+    if (document.getElementById('userActivityContainer')) {
+      loadUserActivity();
+    }
+    if (window.location.pathname.includes('statistics.html')) {
+      if (typeof updateStatsDisplay === 'function') {
+        updateStatsDisplay();
+      }
+    }
+  });
+  
+  // Set up periodic updates
+  setInterval(updateUserInfo, 60000); // Update session duration every minute
+  setInterval(updateClockDisplay, 60000); // Update clock display every minute
+  
+  // Record initial view activity
   if (currentUser) {
     auth.recordActivity('view', 'Viewed dashboard');
-    //playNotificationSound('login');
   }
+  
+  // Check if we need to open a specific project view
+  const projectId = localStorage.getItem('currentProjectView');
+  if (projectId && typeof showProjectView === 'function') {
+    setTimeout(() => {
+      showProjectView(projectId);
+    }, 500);
+  }
+  
+  console.log('✅ App initialized successfully');
 }
 
 async function loadData() {
-  projects = await firebaseService.getProjects();
-  updates = await firebaseService.getUpdates();
-  
-  localStorage.setItem('prospenProjects', JSON.stringify(projects));
-  localStorage.setItem('prospenUpdates', JSON.stringify(updates));
+  try {
+    projects = await firebaseService.getProjects();
+    updates = await firebaseService.getUpdates();
+    
+    localStorage.setItem('prospenProjects', JSON.stringify(projects));
+    localStorage.setItem('prospenUpdates', JSON.stringify(updates));
+    
+    console.log('📊 Data loaded:', {
+      projects: Object.keys(projects).length,
+      updates: updates.length
+    });
+  } catch (error) {
+    console.error('Error loading data:', error);
+    
+    // Fallback to localStorage
+    projects = JSON.parse(localStorage.getItem('prospenProjects')) || {};
+    updates = JSON.parse(localStorage.getItem('prospenUpdates')) || [];
+  }
 }
 
 function updateUserInfo() {
@@ -232,6 +337,71 @@ function renderProjects() {
   });
 }
 
+function renderAllProjects() {
+  const container = document.getElementById('allProjectsContainer');
+  if (!container) return;
+  
+  if (Object.keys(projects).length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: var(--text-p);">
+        <i class="fas fa-folder-open fa-4x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+        <h3>No projects found</h3>
+        <p>Click the "New Project" button to create your first project.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = '';
+  
+  Object.values(projects).forEach(project => {
+    const dueDate = new Date(project.due);
+    const now = new Date();
+    const diff = dueDate - now;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    let countdownText = "No due date";
+    if (!isNaN(days)) {
+      if (days > 0) {
+        countdownText = `${days} Days Remaining`;
+      } else if (days === 0) {
+        countdownText = "Due Today!";
+      } else {
+        countdownText = `${Math.abs(days)} Days Overdue`;
+      }
+    }
+    
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.onclick = (e) => {
+      if (!e.target.closest('.card-btn')) {
+        openProject(project.id);
+      }
+    };
+    card.innerHTML = `
+      <div class="card-actions">
+        <button class="card-btn" onclick="editProject('${project.id}', event)">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="card-btn" onclick="deleteProject('${project.id}', event)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+      <div style="display:flex; justify-content:space-between">
+        <i class="${project.icon || 'fas fa-project-diagram'} fa-2x" style="color:var(--accent)"></i>
+        <span class="status-badge">${project.status}</span>
+      </div>
+      <h3>${project.name}</h3>
+      <p>${project.desc.substring(0, 100)}${project.desc.length > 100 ? '...' : ''}</p>
+      <div><b>Lead:</b> ${project.lead}</div>
+      <div><b>Due:</b> ${formatDate(project.due)}</div>
+      <div><b>Last Updated:</b> ${project.lastUpdatedBy ? `By ${project.lastUpdatedBy}` : 'Never'}</div>
+      <div class="countdown">${countdownText}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
 function formatDate(dateStr) {
   try {
     const date = new Date(dateStr);
@@ -289,7 +459,7 @@ function showProjectView(id) {
             <tbody>
               ${p.tasks && p.tasks.length > 0 ? p.tasks.map(t => `
                 <tr>
-                  <td>${t.id}</td>
+                  <td>${t.id ? t.id.substring(0, 8) : 'N/A'}</td>
                   <td>${t.name}</td>
                   <td>${t.who}</td>
                   <td class="priority-high">${t.prio}</td>
@@ -500,6 +670,84 @@ function getPendingTaskCount() {
   return total;
 }
 
+function updateClockDisplay() {
+  const currentUser = auth.getCurrentUser();
+  if (!currentUser) return;
+  
+  const status = clockingSystem.getClockingStatus(currentUser.username);
+  const btn = document.getElementById('clockBtn');
+  const statusSpan = document.getElementById('clockStatus');
+  
+  if (btn && statusSpan) {
+    if (status.clockedIn) {
+      btn.textContent = 'CLOCK OUT';
+      btn.className = 'clock-btn clocked-in';
+      
+      if (status.clockInTime) {
+        const clockStatus = clockingSystem.getClockInStatus(status.clockInTime);
+        let statusText = '';
+        if (clockStatus.status === 'late') {
+          if (clockStatus.hours > 0) {
+            statusText = `${clockStatus.hours}h ${clockStatus.minutes}m late`;
+          } else {
+            statusText = `${clockStatus.minutes}m late`;
+          }
+        } else if (clockStatus.status === 'early') {
+          if (clockStatus.hours > 0) {
+            statusText = `${clockStatus.hours}h ${clockStatus.minutes}m early`;
+          } else {
+            statusText = `${clockStatus.minutes}m early`;
+          }
+        } else {
+          statusText = 'On Time';
+        }
+        
+        statusSpan.textContent = statusText;
+        statusSpan.className = 'clock-status ' + 
+          (clockStatus.status === 'late' ? 'late' : 'on-time');
+      }
+    } else {
+      btn.textContent = 'CLOCK IN';
+      btn.className = 'clock-btn';
+      statusSpan.textContent = '';
+      statusSpan.className = 'clock-status';
+    }
+  }
+}
+
+function loadUserActivity() {
+  const activities = JSON.parse(localStorage.getItem('userActivities')) || [];
+  const currentUser = auth.getCurrentUser();
+  if (!currentUser) return;
+  
+  const userActivities = activities.filter(a => a.user === currentUser.username).slice(0, 10);
+  const activityContainer = document.getElementById('userActivityContainer');
+  
+  if (!activityContainer) return;
+  
+  if (userActivities.length === 0) {
+    activityContainer.innerHTML = '<p>No recent activity</p>';
+    return;
+  }
+  
+  let html = '<div style="margin-top: 15px;">';
+  userActivities.forEach(activity => {
+    html += `
+      <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <strong style="color: var(--accent);">${activity.action.replace('_', ' ')}</strong>
+          <small style="color: var(--text-p);">${activity.time}</small>
+        </div>
+        <p style="margin: 0; font-size: 0.9rem;">${activity.details}</p>
+        ${activity.projectId ? `<small style="color: var(--accent);">Project ID: ${activity.projectId}</small>` : ''}
+      </div>
+    `;
+  });
+  html += '</div>';
+  
+  activityContainer.innerHTML = html;
+}
+
 function showCustomModal(title, message, type = 'info') {
   const modal = document.createElement('div');
   modal.className = 'custom-modal-overlay';
@@ -544,6 +792,45 @@ function restoreScrollPosition() {
     }
 }
 
+// Initialize clocking system (NEW - to be used with the updated clocking.js)
+async function initClocking() {
+  const currentUser = auth.getCurrentUser();
+  if (currentUser) {
+    // Update clock button based on today's attendance
+    if (typeof window.clockingSystem !== 'undefined' && window.clockingSystem.getTodayAttendance) {
+      const attendance = await window.clockingSystem.getTodayAttendance(currentUser.uid);
+      const clockBtn = document.getElementById('clockBtn');
+      
+      if (clockBtn) {
+        if (attendance && attendance.clockInTime && !attendance.clockOutTime) {
+          clockBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> CLOCK OUT';
+          clockBtn.classList.add('clocked-in');
+        } else {
+          clockBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> CLOCK IN';
+          clockBtn.classList.remove('clocked-in');
+        }
+      }
+    }
+  }
+  
+  // Auto-generate absent records at midnight
+  const now = new Date();
+  const night = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1,
+    0, 5, 0
+  );
+  const msToMidnight = night.getTime() - now.getTime();
+  
+  setTimeout(() => {
+    if (typeof window.clockingSystem !== 'undefined' && window.clockingSystem.generateAbsentRecords) {
+      window.clockingSystem.generateAbsentRecords();
+      setInterval(window.clockingSystem.generateAbsentRecords, 24 * 60 * 60 * 1000);
+    }
+  }, msToMidnight);
+}
+
 // Save scroll before leaving page
 window.addEventListener('beforeunload', saveScrollPosition);
 window.addEventListener('pagehide', saveScrollPosition);
@@ -551,11 +838,13 @@ window.addEventListener('pagehide', saveScrollPosition);
 // Restore scroll when page loads
 document.addEventListener('DOMContentLoaded', restoreScrollPosition);
 
+// Make functions available globally
 window.clockingSystem = clockingSystem;
 window.showCustomModal = showCustomModal;
 window.updateUserInfo = updateUserInfo;
 window.updateTopProject = updateTopProject;
 window.renderProjects = renderProjects;
+window.renderAllProjects = renderAllProjects;
 window.openProject = openProject;
 window.closeProject = closeProject;
 window.showProjectView = showProjectView;
@@ -568,7 +857,11 @@ window.formatDate = formatDate;
 window.playNotificationSound = playNotificationSound;
 window.calculateTotalBudget = calculateTotalBudget;
 window.calculateSpentBudget = calculateSpentBudget;
+window.updateClockDisplay = updateClockDisplay;
+window.loadUserActivity = loadUserActivity;
+window.initClocking = initClocking;
 
+// Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   if (window.location.pathname.includes('index.html') || 
       window.location.pathname === '/' ||

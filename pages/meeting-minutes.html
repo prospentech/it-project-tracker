@@ -19,7 +19,7 @@
     <script type="module" src="../modal.js"></script>
     <script type="module" src="../theme.js"></script>
     <script type="module" src="../stats.js"></script>
-    <script type="module" src="../tasks.js"></script>
+    <!-- <script type="module" src="../tasks.js"></script> -->
     <script type="module" src="../main.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -636,10 +636,13 @@
                 `;
             } else {
                 let html = '';
-                paginatedMeetings.forEach(meeting => {
+                paginatedMeetings.forEach((meeting, index) => {
+                    // Generate sequential ID (01, 02, 03, etc.) based on pagination
+                    const sequentialId = (startIndex + index + 1).toString().padStart(2, '0');
+                    
                     html += `
                         <tr>
-                            <td><strong>${meeting.id.substring(0, 8)}</strong></td>
+                            <td><strong>${sequentialId}</strong></td>
                             <td>${meeting.title || 'N/A'}</td>
                             <td>${meeting.meetingDate ? new Date(meeting.meetingDate).toLocaleDateString() : 'N/A'}</td>
                             <td>${meeting.location || 'N/A'}</td>

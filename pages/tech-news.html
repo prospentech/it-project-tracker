@@ -23,37 +23,236 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="../style.css">
+    <style>
+        .news-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .category-filter {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-h);
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            min-width: 150px;
+        }
+        
+        .source-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            margin-right: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .source-badge:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        
+        .category-tag {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading-spinner i {
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .last-updated {
+            font-size: 0.8rem;
+            color: var(--text-p);
+            margin-top: 10px;
+        }
+        
+        .tech-news-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .tech-news-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px var(--accent-glow);
+        }
+        
+        .tech-news-source {
+            font-size: 0.8rem;
+            color: var(--text-p);
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .read-more-btn {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .read-more-btn:hover {
+            background: #0ea5e9;
+            transform: translateY(-1px);
+        }
+        
+        /* Pagination Styles */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination-btn {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-h);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 40px;
+        }
+        
+        .pagination-btn:hover,
+        .pagination-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-btn:disabled:hover {
+            background: var(--card);
+            color: var(--text-h);
+            border-color: rgba(255,255,255,0.1);
+        }
+        
+        .pagination-info {
+            text-align: center;
+            color: var(--text-p);
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="stats-header">
-            <h1><i class="fas fa-newspaper"></i> Global Tech News & Trends</h1>
+            <h1><i class="fas fa-newspaper"></i> Global Tech News & Trends <span id="refreshIndicator" style="font-size: 0.8rem; background: var(--accent); color: var(--bg); padding: 2px 8px; border-radius: 12px; margin-left: 10px;">LIVE</span></h1>
             <div class="stats-controls">
+                <button class="control-btn" onclick="refreshNews()" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i> Refresh News
+                </button>
                 <button class="back-btn" onclick="window.location.href='../index.html'">
                     <i class="fas fa-chevron-left"></i> Back to Dashboard
                 </button>
             </div>
         </div>
 
+        <!-- Filters -->
+        <div class="news-filters">
+            <i class="fas fa-filter" style="color: var(--accent);"></i>
+            <span style="color: var(--text-p);">Filter by:</span>
+            
+            <select id="categoryFilter" class="category-filter" onchange="filterNews()">
+                <option value="all">All Categories</option>
+                <option value="Startups">Startups</option>
+                <option value="AI">AI & Machine Learning</option>
+                <option value="Dev">Developer & Programming</option>
+                <option value="Security">Cybersecurity</option>
+                <option value="Mobile">Mobile & Apps</option>
+                <option value="Hardware">Hardware & Gadgets</option>
+                <option value="Cloud">Cloud Computing</option>
+                <option value="Business">Business Tech</option>
+                <option value="Science">Science & Space</option>
+                <option value="Africa">African Tech</option>
+            </select>
+            
+            <input type="text" id="searchInput" placeholder="Search articles..." style="flex: 1; padding: 8px 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-h);" onkeyup="filterNews()">
+            
+            <span id="articleCount" style="color: var(--text-p);">Loading...</span>
+        </div>
+
+        <!-- Source Quick Filters -->
+        <div id="sourceFilters" style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 5px;">
+            <!-- Will be populated dynamically -->
+        </div>
+
         <div class="section-box">
-            <h2>Latest Technology News</h2>
+            <h2>Latest Technology News <span id="newsDate" style="font-size: 0.9rem; color: var(--text-p); margin-left: 10px;"></span></h2>
             <div id="techNewsContainer">
                 <!-- News will be loaded here -->
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p style="margin-top: 20px;">Fetching latest tech news from 50+ global sources...</p>
+                </div>
             </div>
+            
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+            <div class="pagination-info" id="paginationInfo"></div>
+            
+            <div class="last-updated" id="lastUpdated"></div>
         </div>
         
         <div class="section-box">
             <h3>About Tech News</h3>
-            <p>Our tech news section provides curated technology updates from reliable sources including:</p>
-            <ul>
-                <li>TechCrunch - Startup and innovation news</li>
-                <li>Wired - Technology and culture</li>
-                <li>Dev.to - Developer community updates</li>
-                <li>Security Weekly - Cybersecurity insights</li>
-                <li>Cloud Times - Cloud computing trends</li>
-                <li>Mobile Dev Journal - Mobile development updates</li>
-            </ul>
-            <p>News is refreshed automatically every hour to keep you updated with the latest trends.</p>
+            <p>Our tech news section provides curated technology updates from 50+ reliable sources including:</p>
+            <div id="sourcesList" style="display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0;">
+                <!-- Sources will be populated dynamically -->
+            </div>
+            <p>News is fetched live from RSS feeds every 6 hours. Click the refresh button for the latest updates.</p>
         </div>
     </div>
 
@@ -70,93 +269,492 @@
             window.location.href = '../login.html';
         }
 
-        const techNews = [
-            {
-                title: "AI Development Trends 2026",
-                description: "The latest advancements in artificial intelligence show significant improvements in natural language processing and computer vision applications. Companies are investing heavily in ethical AI frameworks.",
-                source: "TechCrunch",
-                category: "Artificial Intelligence",
-                date: "2026-01-15",
-                url: "https://techcrunch.com/ai-trends-2026"
-            },
-            {
-                title: "Quantum Computing Breakthrough",
-                description: "Researchers have achieved a new milestone in quantum computing stability, bringing practical quantum applications closer to reality. This could revolutionize cryptography and drug discovery.",
-                source: "Wired",
-                category: "Quantum Computing",
-                date: "2026-01-14",
-                url: "https://wired.com/quantum-computing-breakthrough"
-            },
-            {
-                title: "Web Development Framework Updates",
-                description: "New versions of popular JavaScript frameworks introduce improved performance and developer experience features. React 19 and Vue 4 bring significant improvements.",
-                source: "Dev.to",
-                category: "Web Development",
-                date: "2026-01-13",
-                url: "https://dev.to/web-dev-updates"
-            },
-            {
-                title: "Cybersecurity Threats Analysis",
-                description: "Latest report shows an increase in sophisticated phishing attacks targeting corporate networks and cloud infrastructure. Zero-trust architecture is becoming essential.",
-                source: "Security Weekly",
-                category: "Cybersecurity",
-                date: "2026-01-12",
-                url: "https://securityweekly.com/threat-analysis"
-            },
-            {
-                title: "Cloud Computing Cost Optimization",
-                description: "New tools and strategies help companies reduce cloud spending while maintaining performance and scalability. Serverless architectures are gaining popularity.",
-                source: "Cloud Times",
-                category: "Cloud Computing",
-                date: "2026-01-11",
-                url: "https://cloudtimes.com/cost-optimization"
-            },
-            {
-                title: "Mobile App Development Trends",
-                description: "Cross-platform frameworks continue to gain popularity with improved native performance and developer tools. Flutter and React Native lead the market.",
-                source: "Mobile Dev Journal",
-                category: "Mobile Development",
-                date: "2026-01-10",
-                url: "https://mobiledevjournal.com/trends-2026"
-            },
-            {
-                title: "Edge Computing Expansion",
-                description: "Edge computing infrastructure is expanding rapidly to support IoT devices and real-time applications. 5G networks are accelerating this trend.",
-                source: "Tech Insider",
-                category: "Infrastructure",
-                date: "2026-01-09",
-                url: "https://techinsider.com/edge-computing"
-            },
-            {
-                title: "Sustainable Technology Initiatives",
-                description: "Tech companies are adopting green computing practices and carbon-neutral data centers to reduce environmental impact.",
-                source: "Green Tech News",
-                category: "Sustainability",
-                date: "2026-01-08",
-                url: "https://greentechnews.com/sustainability"
-            }
+        // ALL 50 Tech news sources with RSS feeds (keeping your original list)
+        const newsSources = [
+            // 🌐 Global & Mainstream Tech News (10)
+            { name: 'TechCrunch', url: 'https://techcrunch.com/feed/', category: 'Startups', region: 'Global', icon: 'fa-rocket' },
+            { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', category: 'Consumer Tech', region: 'Global', icon: 'fa-mobile-alt' },
+            { name: 'Mashable', url: 'https://mashable.com/feeds/rss/all', category: 'Tech Lifestyle', region: 'Global', icon: 'fa-fire' },
+            { name: 'Wired', url: 'https://www.wired.com/feed/rss', category: 'Tech & Culture', region: 'Global', icon: 'fa-wifi' },
+            { name: 'CNET', url: 'https://www.cnet.com/rss/news/', category: 'Product Reviews', region: 'Global', icon: 'fa-box-open' },
+            { name: 'The Next Web', url: 'https://thenextweb.com/feed/', category: 'Tech Trends', region: 'Global', icon: 'fa-chart-line' },
+            { name: 'BGR', url: 'https://bgr.com/feed/', category: 'Consumer Tech', region: 'Global', icon: 'fa-mobile' },
+            { name: 'ZDNet', url: 'https://www.zdnet.com/news/rss.xml', category: 'Business Tech', region: 'Global', icon: 'fa-briefcase' },
+            { name: 'TechSpot', url: 'https://www.techspot.com/backend.xml', category: 'Tech News', region: 'Global', icon: 'fa-desktop' },
+            { name: 'GeekWire', url: 'https://www.geekwire.com/feed/', category: 'Tech News', region: 'US', icon: 'fa-map-pin' },
+
+            // 🧠 Developer, Enterprise & Deep Tech (10)
+            { name: 'Ars Technica', url: 'http://feeds.arstechnica.com/arstechnica/index', category: 'Deep Tech', region: 'Global', icon: 'fa-microchip' },
+            { name: 'Computerworld', url: 'https://www.computerworld.com/index.rss', category: 'IT News', region: 'Global', icon: 'fa-server' },
+            { name: 'InfoWorld', url: 'https://www.infoworld.com/index.rss', category: 'Enterprise', region: 'Global', icon: 'fa-cloud' },
+            { name: 'TechRepublic', url: 'https://www.techrepublic.com/rssfeeds/', category: 'IT Strategies', region: 'Global', icon: 'fa-chart-pie' },
+            { name: 'TechTarget', url: 'https://www.techtarget.com/rss/', category: 'IT News', region: 'Global', icon: 'fa-bullseye' },
+            { name: 'ComputerWeekly', url: 'https://www.computerweekly.com/rss/All-Computer-Weekly-content.xml', category: 'IT News', region: 'UK', icon: 'fa-flag' },
+            { name: 'CIO', url: 'https://www.cio.com/index.rss', category: 'Tech Leadership', region: 'Global', icon: 'fa-user-tie' },
+            { name: 'InfoQ', url: 'https://feed.infoq.com/', category: 'Dev & Architecture', region: 'Global', icon: 'fa-code' },
+            { name: 'The New Stack', url: 'https://thenewstack.io/feed/', category: 'Cloud Native', region: 'Global', icon: 'fa-cubes' },
+            { name: 'LWN.net', url: 'https://lwn.net/headlines/newrss', category: 'Linux & Open Source', region: 'Global', icon: 'fa-linux' },
+
+            // 📰 Aggregators & Curated Feeds (5)
+            { name: 'Techmeme', url: 'https://www.techmeme.com/feed.xml', category: 'Aggregator', region: 'Global', icon: 'fa-layer-group' },
+            { name: 'Hacker News', url: 'https://news.ycombinator.com/rss', category: 'Community', region: 'Global', icon: 'fa-hacker-news' },
+            { name: 'Digg Tech', url: 'http://digg.com/rss/tech.xml', category: 'Curated', region: 'Global', icon: 'fa-digg' },
+            { name: 'Flipboard Tech', url: 'https://flipboard.com/@tech/technology-rss.rss', category: 'Curated', region: 'Global', icon: 'fa-flipboard' },
+            { name: 'Feedly', url: 'https://feedly.com/i/tech/feed', category: 'Aggregator', region: 'Global', icon: 'fa-rss' },
+
+            // 🔍 Specialized Tech & Niche News (10)
+            { name: 'TechNewsWorld', url: 'https://www.technewsworld.com/feeds/home/', category: 'Tech Analysis', region: 'Global', icon: 'fa-globe' },
+            { name: 'e27', url: 'https://e27.co/feed/', category: 'Startups', region: 'Asia', icon: 'fa-coffee' },
+            { name: 'Talk Android', url: 'https://www.talkandroid.com/feed/', category: 'Mobile', region: 'Global', icon: 'fa-android' },
+            { name: 'TechPP', url: 'https://techpp.com/feed/', category: 'Personal Tech', region: 'Global', icon: 'fa-user' },
+            { name: 'Stratechery', url: 'https://stratechery.com/feed/', category: 'Tech Strategy', region: 'Global', icon: 'fa-chart-line' },
+            { name: 'ExtremeTech', url: 'https://www.extremetech.com/feed', category: 'Emerging Tech', region: 'Global', icon: 'fa-bolt' },
+            { name: 'Komando', url: 'https://komando.com/feed/', category: 'Digital Lifestyle', region: 'US', icon: 'fa-headphones' },
+            { name: 'SiliconANGLE', url: 'https://siliconangle.com/feed/', category: 'Enterprise', region: 'Global', icon: 'fa-cube' },
+            { name: 'AppleInsider', url: 'https://appleinsider.com/rss/news/', category: 'Apple', region: 'Global', icon: 'fa-apple' },
+            { name: 'TechRadar', url: 'https://www.techradar.com/rss', category: 'Consumer Tech', region: 'Global', icon: 'fa-laptop' },
+
+            // 🌍 Regional & Community Tech News (7)
+            { name: 'MyBroadband', url: 'https://mybroadband.co.za/news/feed', category: 'African Tech', region: 'South Africa', icon: 'fa-south-africa' },
+            { name: 'TechCentral', url: 'https://techcentral.co.za/feed/', category: 'African Tech', region: 'South Africa', icon: 'fa-africa' },
+            { name: 'ITWeb', url: 'https://itweb.co.za/rss/', category: 'African Enterprise', region: 'South Africa', icon: 'fa-building' },
+            { name: 'TechDailyPost', url: 'https://techdailypost.co.za/feed/', category: 'African Tech', region: 'South Africa', icon: 'fa-newspaper' },
+            { name: 'Geeky Nigeria', url: 'https://geeky.com.ng/feed/', category: 'African Tech', region: 'Nigeria', icon: 'fa-nigeria' },
+            { name: 'Techpoint Africa', url: 'https://techpoint.africa/feed/', category: 'African Startups', region: 'Africa', icon: 'fa-africa' },
+            { name: 'iTechPost', url: 'https://www.itechpost.com/feed/', category: 'Tech News', region: 'Global', icon: 'fa-globe' },
+
+            // 🌏 More Regional & Tech News (5)
+            { name: 'Gadgets Now', url: 'https://www.gadgetsnow.com/rss.cms', category: 'Consumer Tech', region: 'India', icon: 'fa-india' },
+            { name: 'The News Minute Tech', url: 'https://www.thenewsminute.com/tech/feed', category: 'Tech News', region: 'India', icon: 'fa-india' },
+            { name: 'VentureBeat', url: 'https://feeds.feedburner.com/venturebeat/SZYF', category: 'AI & Innovation', region: 'Global', icon: 'fa-brain' },
+            { name: 'Gizmodo', url: 'https://gizmodo.com/rss', category: 'Gadgets & Policy', region: 'Global', icon: 'fa-gamepad' },
+            { name: 'MacityNet', url: 'https://www.macitynet.it/feed/', category: 'Apple', region: 'Italy', icon: 'fa-italy' },
+
+            // 🔐 Security & Forums (3)
+            { name: 'Slashdot', url: 'https://rss.slashdot.org/Slashdot/slashdotMain', category: 'Community', region: 'Global', icon: 'fa-slash' },
+            { name: 'BleepingComputer', url: 'https://www.bleepingcomputer.com/feed/', category: 'Security', region: 'Global', icon: 'fa-shield' },
+            { name: 'Security Affairs', url: 'https://securityaffairs.com/feed', category: 'Security', region: 'Global', icon: 'fa-lock' }
         ];
 
-        function loadTechNews() {
+        // RSS to JSON converter service
+        const RSS_CONVERTER = 'https://api.rss2json.com/v1/api.json?rss_url=';
+
+        // Cache settings
+        let newsCache = null;
+        let allArticles = [];
+        let filteredArticles = [];
+        let activeSourceFilter = null;
+        let activeCategoryFilter = 'all';
+        let searchQuery = '';
+        
+        // Pagination variables
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        // Populate sources list and filters
+        function populateSourcesList() {
+            const sourcesList = document.getElementById('sourcesList');
+            const sourceFilters = document.getElementById('sourceFilters');
+            if (!sourcesList || !sourceFilters) return;
+            
+            // Sort sources by name
+            const sortedSources = [...newsSources].sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Populate sources list with badges
+            let sourcesHtml = '';
+            sortedSources.forEach(source => {
+                sourcesHtml += `<span class="source-badge" onclick="filterBySource('${source.name}')"><i class="fas ${source.icon}"></i> ${source.name}</span>`;
+            });
+            sourcesList.innerHTML = sourcesHtml;
+            
+            // Populate source filters row
+            let filtersHtml = '<span class="source-badge" onclick="filterBySource(null)" style="background: var(--accent); color: var(--bg);"><i class="fas fa-globe"></i> All Sources</span>';
+            sortedSources.slice(0, 15).forEach(source => {
+                filtersHtml += `<span class="source-badge" onclick="filterBySource('${source.name}')"><i class="fas ${source.icon}"></i> ${source.name}</span>`;
+            });
+            filtersHtml += `<span class="source-badge" onclick="showAllSources()" title="Show all 50 sources"><i class="fas fa-ellipsis-h"></i> More...</span>`;
+            sourceFilters.innerHTML = filtersHtml;
+        }
+
+        // Show all sources in a modal
+        window.showAllSources = function() {
+            const sortedSources = [...newsSources].sort((a, b) => a.name.localeCompare(b.name));
+            
+            let modalHtml = `
+                <div class="custom-modal" style="max-width: 800px;">
+                    <div class="custom-modal-header">
+                        <h3>All News Sources (50)</h3>
+                        <button class="custom-modal-close" onclick="this.closest('.custom-modal-overlay').remove()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body" style="max-height: 60vh; overflow-y: auto;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            `;
+            
+            sortedSources.forEach(source => {
+                modalHtml += `<span class="source-badge" onclick="filterBySource('${source.name}'); this.closest('.custom-modal-overlay').remove();"><i class="fas ${source.icon}"></i> ${source.name}</span>`;
+            });
+            
+            modalHtml += `
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = modalHtml;
+            document.body.appendChild(modal);
+        };
+
+        // Filter by source
+        window.filterBySource = function(sourceName) {
+            activeSourceFilter = sourceName;
+            currentPage = 1; // Reset to first page when filtering
+            filterNews();
+        };
+
+        // Filter news
+        window.filterNews = function() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            const searchInput = document.getElementById('searchInput');
+            
+            activeCategoryFilter = categoryFilter ? categoryFilter.value : 'all';
+            searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
+            
+            filteredArticles = allArticles.filter(article => {
+                // Source filter
+                if (activeSourceFilter && article.source !== activeSourceFilter) {
+                    return false;
+                }
+                
+                // Category filter
+                if (activeCategoryFilter !== 'all') {
+                    const source = newsSources.find(s => s.name === article.source);
+                    if (!source || source.category !== activeCategoryFilter) {
+                        return false;
+                    }
+                }
+                
+                // Search query
+                if (searchQuery) {
+                    const titleMatch = article.title.toLowerCase().includes(searchQuery);
+                    const descMatch = article.description.toLowerCase().includes(searchQuery);
+                    const sourceMatch = article.source.toLowerCase().includes(searchQuery);
+                    if (!titleMatch && !descMatch && !sourceMatch) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            currentPage = 1; // Reset to first page when filtering
+            renderPaginatedNews();
+            updateArticleCount();
+            renderPagination();
+        };
+
+        // Update article count
+        function updateArticleCount() {
+            const countSpan = document.getElementById('articleCount');
+            if (countSpan) {
+                countSpan.textContent = `${filteredArticles.length} articles`;
+            }
+        }
+
+        // Fetch news from all sources with better error handling
+        async function fetchAllNews() {
             const container = document.getElementById('techNewsContainer');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const refreshIndicator = document.getElementById('refreshIndicator');
+            
+            if (refreshBtn) refreshBtn.disabled = true;
+            if (refreshIndicator) refreshIndicator.style.background = 'var(--warning)';
+            
+            container.innerHTML = `
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p style="margin-top: 20px;">Fetching news from 50+ sources (this may take a moment)...</p>
+                    <p style="color: var(--text-p); font-size: 0.9rem;">Please wait while we gather the latest tech headlines</p>
+                </div>
+            `;
+            
+            allArticles = [];
+            let fetchErrors = [];
+            let successfulFetches = 0;
+            
+            // Fetch from all sources with delays to avoid rate limiting
+            const batchSize = 3; // Smaller batch size to avoid rate limits
+            for (let i = 0; i < newsSources.length; i += batchSize) {
+                const batch = newsSources.slice(i, i + batchSize);
+                
+                // Update progress
+                if (container) {
+                    const progressText = container.querySelector('p');
+                    if (progressText) {
+                        progressText.textContent = `Fetching sources ${i+1}-${Math.min(i+batchSize, newsSources.length)} of ${newsSources.length}...`;
+                    }
+                }
+                
+                const promises = batch.map(source => fetchSourceNews(source));
+                
+                try {
+                    const results = await Promise.allSettled(promises);
+                    results.forEach(result => {
+                        if (result.status === 'fulfilled' && result.value && result.value.length > 0) {
+                            allArticles.push(...result.value);
+                            successfulFetches++;
+                        } else if (result.status === 'rejected') {
+                            fetchErrors.push(result.reason);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Batch fetch error:', error);
+                }
+                
+                // Longer delay between batches to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+            
+            // Sort by date (newest first)
+            allArticles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+            
+            // Remove duplicates (by title)
+            const uniqueTitles = new Set();
+            allArticles = allArticles.filter(article => {
+                const title = article.title.toLowerCase();
+                if (uniqueTitles.has(title)) {
+                    return false;
+                }
+                uniqueTitles.add(title);
+                return true;
+            });
+            
+            filteredArticles = [...allArticles];
+            
+            // Update UI
+            currentPage = 1;
+            renderPaginatedNews();
+            updateArticleCount();
+            renderPagination();
+            
+            // Save to cache
+            newsCache = {
+                articles: allArticles,
+                timestamp: new Date().toISOString(),
+                sources: newsSources.map(s => s.name)
+            };
+            localStorage.setItem('techNewsCache', JSON.stringify(newsCache));
+            
+            // Update last updated time
+            const lastUpdated = document.getElementById('lastUpdated');
+            if (lastUpdated) {
+                lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()} (${successfulFetches}/${newsSources.length} sources)`;
+            }
+            
+            if (refreshBtn) refreshBtn.disabled = false;
+            if (refreshIndicator) refreshIndicator.style.background = 'var(--success)';
+            
+            if (fetchErrors.length > 0) {
+                console.warn(`${fetchErrors.length} sources failed to load`);
+            }
+        }
+
+        // Fetch from a single source with timeout
+        async function fetchSourceNews(source) {
+            try {
+                // Encode the RSS URL
+                const encodedUrl = encodeURIComponent(source.url);
+                const apiUrl = `${RSS_CONVERTER}${encodedUrl}`;
+                
+                // Create an abort controller for timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    if (response.status === 429) {
+                        console.log(`Rate limited for ${source.name}`);
+                        return [];
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.status === 'ok' && data.items && data.items.length > 0) {
+                    return data.items.slice(0, 3).map(item => ({
+                        title: item.title || 'No title',
+                        description: (item.description || item.contentSnippet || 'No description available').replace(/<[^>]*>/g, ''),
+                        link: item.link || '#',
+                        pubDate: item.pubDate || new Date().toISOString(),
+                        source: source.name,
+                        category: source.category,
+                        region: source.region,
+                        icon: source.icon,
+                        thumbnail: item.thumbnail || item.enclosure?.link || null
+                    }));
+                }
+                return [];
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log(`Timeout for ${source.name}`);
+                } else {
+                    console.error(`Error fetching from ${source.name}:`, error);
+                }
+                return [];
+            }
+        }
+
+        // Render paginated news (keeping your original card design)
+        function renderPaginatedNews() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedArticles = filteredArticles.slice(startIndex, endIndex);
+            
+            renderNews(paginatedArticles);
+            renderPaginationInfo();
+        }
+
+        // Render pagination controls
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let html = `
+                <button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `;
+            
+            // Show first page, current page with neighbors, and last page
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage < maxVisible - 1) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            if (startPage > 1) {
+                html += `<button class="pagination-btn" onclick="changePage(1)">1</button>`;
+                if (startPage > 2) {
+                    html += `<span class="pagination-btn" style="cursor: default;">...</span>`;
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                html += `
+                    <button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += `<span class="pagination-btn" style="cursor: default;">...</span>`;
+                }
+                html += `<button class="pagination-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+            }
+            
+            html += `
+                <button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+            
+            pagination.innerHTML = html;
+        }
+
+        // Render pagination info
+        function renderPaginationInfo() {
+            const start = (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, filteredArticles.length);
+            const info = document.getElementById('paginationInfo');
+            
+            if (filteredArticles.length > 0) {
+                info.textContent = `Showing ${start}-${end} of ${filteredArticles.length} articles`;
+            } else {
+                info.textContent = '';
+            }
+        }
+
+        // Change page
+        window.changePage = function(page) {
+            const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderPaginatedNews();
+            renderPagination();
+        };
+
+        // Render news articles (YOUR ORIGINAL CARD DESIGN - UNCHANGED)
+        function renderNews(articles) {
+            const container = document.getElementById('techNewsContainer');
+            const newsDate = document.getElementById('newsDate');
+            
+            if (!container) return;
+            
+            if (articles.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px;">
+                        <i class="fas fa-newspaper fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
+                        <h3 style="color: var(--text-p);">No articles found</h3>
+                        <p>Try adjusting your filters or click refresh to fetch the latest news.</p>
+                        <button class="control-btn" onclick="refreshNews()" style="margin-top: 20px;">
+                            <i class="fas fa-sync-alt"></i> Refresh News
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Show current date
+            if (newsDate) {
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                newsDate.textContent = `• ${new Date().toLocaleDateString('en-US', options)}`;
+            }
+            
             let html = '';
             
-            techNews.forEach(news => {
+            articles.forEach(article => {
+                const pubDate = new Date(article.pubDate);
+                const timeAgo = getTimeAgo(pubDate);
+                
                 html += `
                     <div class="tech-news-card">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                            <h3 style="margin: 0; color: var(--accent);">${news.title}</h3>
-                            <span style="background: rgba(56, 189, 248, 0.1); color: var(--accent); padding: 3px 8px; border-radius: 12px; font-size: 0.8rem;">
-                                ${news.category}
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; flex-wrap: wrap;">
+                            <h3 style="margin: 0; color: var(--accent); flex: 1;">${article.title}</h3>
+                            <span style="background: rgba(56, 189, 248, 0.1); color: var(--accent); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; white-space: nowrap; margin-left: 10px;">
+                                ${article.category || 'Tech'}
                             </span>
                         </div>
-                        <p style="color: var(--text-p); margin-bottom: 15px;">${news.description}</p>
-                        <div class="tech-news-source">
-                            <i class="fas fa-newspaper"></i> ${news.source} • ${new Date(news.date).toLocaleDateString()}
+                        <p style="color: var(--text-p); margin-bottom: 15px;">${article.description.replace(/<[^>]*>/g, '').substring(0, 200)}${article.description.length > 200 ? '...' : ''}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                            <div class="tech-news-source">
+                                <i class="fas ${article.icon || 'fa-newspaper'}" style="color: var(--accent);"></i> 
+                                <strong>${article.source}</strong> • ${timeAgo}
+                                ${article.region !== 'Global' ? `<span style="margin-left: 5px;">(${article.region})</span>` : ''}
+                            </div>
+                            <a href="${article.link}" target="_blank" class="read-more-btn" style="display: inline-flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-external-link-alt"></i> Read Article
+                            </a>
                         </div>
-                        <a href="${news.url}" target="_blank" class="read-more-btn">
-                            <i class="fas fa-external-link-alt"></i> Read Full Article
-                        </a>
                     </div>
                 `;
             });
@@ -164,27 +762,119 @@
             container.innerHTML = html;
         }
 
-        // Load chatbot component
-        async function loadChatbot() {
-            try {
-                const chatbotResponse = await fetch('../components/chatbot.html');
-                const chatbotHTML = await chatbotResponse.text();
-                document.getElementById('chatbot-container').innerHTML = chatbotHTML;
-                
-                // Initialize chatbot
-                if (window.initChatbot) {
-                    setTimeout(window.initChatbot, 500);
-                }
-            } catch (error) {
-                console.error('Error loading chatbot:', error);
-            }
+        // Get time ago string
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + ' years ago';
+            
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + ' months ago';
+            
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + ' days ago';
+            
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + ' hours ago';
+            
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + ' minutes ago';
+            
+            return 'just now';
         }
 
-        // Initialize everything when page loads - SINGLE EVENT LISTENER
+        // Check cache and load news
+        async function loadTechNews() {
+            const cached = localStorage.getItem('techNewsCache');
+            
+            if (cached) {
+                try {
+                    newsCache = JSON.parse(cached);
+                    const cacheAge = new Date() - new Date(newsCache.timestamp);
+                    const sixHours = 6 * 60 * 60 * 1000;
+                    
+                    // Use cache if less than 6 hours old
+                    if (cacheAge < sixHours && newsCache.articles && newsCache.articles.length > 0) {
+                        allArticles = newsCache.articles;
+                        filteredArticles = [...allArticles];
+                        currentPage = 1;
+                        renderPaginatedNews();
+                        renderPagination();
+                        updateArticleCount();
+                        
+                        const lastUpdated = document.getElementById('lastUpdated');
+                        if (lastUpdated) {
+                            lastUpdated.textContent = `Last updated: ${new Date(newsCache.timestamp).toLocaleString()}`;
+                        }
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Cache parse error:', e);
+                }
+            }
+            
+            // Cache expired or invalid, fetch fresh
+            await fetchAllNews();
+        }
+
+        // Refresh news manually
+        window.refreshNews = function() {
+            fetchAllNews();
+        };
+
+        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            loadChatbot(); // Load chatbot
-            loadTechNews(); // Load tech news
+            populateSourcesList();
+            loadTechNews();
+            
+            // Load chatbot
+            fetch('../components/chatbot.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('chatbot-container').innerHTML = html;
+                    if (window.initChatbot) {
+                        setTimeout(window.initChatbot, 500);
+                    }
+                })
+                .catch(error => console.error('Error loading chatbot:', error));
+            
+            // Refresh every 6 hours
+            setInterval(() => {
+                const sixHours = 6 * 60 * 60 * 1000;
+                const lastUpdate = localStorage.getItem('techNewsCache') ? 
+                    new Date(JSON.parse(localStorage.getItem('techNewsCache')).timestamp) : 
+                    new Date(0);
+                
+                if (new Date() - lastUpdate > sixHours) {
+                    fetchAllNews();
+                }
+            }, 60 * 60 * 1000); // Check every hour
         });
+
+        // Add this function to handle smooth scrolling
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Change page with scroll to top
+        window.changePage = function(page) {
+            const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderPaginatedNews();
+            renderPagination();
+            scrollToTop(); // Scroll to top smoothly
+        };
+
+        // Make functions globally available
+        window.filterNews = filterNews;
+        window.refreshNews = refreshNews;
+        window.filterBySource = filterBySource;
+        window.showAllSources = showAllSources;
     </script>
 </body>
 </html>

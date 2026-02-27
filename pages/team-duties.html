@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Duties - Prospen Hub</title>
+    <title>Performance Profile - Prospen Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Add this BEFORE your other scripts -->
@@ -50,6 +50,7 @@
         
         .duties-table tr:hover {
             background: rgba(255,255,255,0.02);
+            cursor: pointer;
         }
         
         .duties-table ul {
@@ -62,24 +63,106 @@
             color: var(--text-p);
         }
         
-        .duties-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-        
-        .duty-card {
+        .stat-card {
             background: var(--card);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 15px;
             padding: 20px;
+            text-align: center;
             transition: all 0.3s;
         }
         
-        .duty-card:hover {
+        .stat-card:hover {
             border-color: var(--accent);
             transform: translateY(-3px);
             box-shadow: 0 10px 25px var(--accent-glow);
+        }
+        
+        .stat-card .stat-icon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-h);
+        }
+        
+        .stat-card .stat-label {
+            color: var(--text-p);
+            font-size: 0.9rem;
+        }
+        
+        .status-badge.active {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+        
+        .status-badge.inactive {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+        
+        .duty-detail-view, .kpi-detail-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+        
+        .duty-detail-view.show, .kpi-detail-view.show {
+            display: block;
+        }
+        
+        .detail-section {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-section h2 {
+            color: var(--accent);
+            margin-top: 0;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .detail-label {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .detail-value {
+            color: var(--text-h);
+        }
+        
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
         }
         
         .add-task-btn {
@@ -100,15 +183,68 @@
             background: var(--accent);
             color: var(--bg);
         }
+        
+        .section-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .section-box h3 {
+            color: var(--accent);
+            margin-top: 0;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 10px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-h);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn:hover {
+            border-color: var(--accent);
+        }
+        
+        .tab-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="stats-header">
-            <h1><i class="fas fa-tasks"></i> Team Duties</h1>
+            <h1><i class="fas fa-chart-line"></i> Performance Profile</h1>
             <div class="stats-controls">
                 <button class="control-btn" onclick="openDutyModal()">
                     <i class="fas fa-plus"></i> Add Duty
+                </button>
+                <button class="control-btn" onclick="openKPIModal()">
+                    <i class="fas fa-bullseye"></i> Add KPI
                 </button>
                 <button class="back-btn" onclick="window.location.href='../index.html'">
                     <i class="fas fa-chevron-left"></i> Back to Dashboard
@@ -116,12 +252,64 @@
             </div>
         </div>
 
-        <div class="section-box">
-            <h2>Duties & Responsibilities</h2>
-            <div id="dutiesContainer">
-                <!-- Duties will be loaded here -->
+        <!-- Performance Dashboard -->
+        <div id="performanceDashboard" class="section-box">
+            <!-- Dashboard content will be loaded here -->
+            <div style="text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin fa-3x"></i>
+                <p>Loading performance data...</p>
             </div>
         </div>
+
+        <!-- Monthly Trend Graph -->
+        <div class="section-box">
+            <h3><i class="fas fa-chart-line"></i> Monthly Completion Rate Trend</h3>
+            <div id="monthlyTrendChart" style="height: 200px; margin-top: 15px;">
+                <!-- Chart will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Tabs for Duties and KPIs -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('duties')" id="tabDutiesBtn">Duties</button>
+            <button class="tab-btn" onclick="switchTab('kpis')" id="tabKPIsBtn">KPIs</button>
+        </div>
+
+        <!-- Duties Tab -->
+        <div id="dutiesTab" class="tab-content active">
+            <div class="section-box">
+                <h2>Duties & Responsibilities</h2>
+                <div id="dutiesContainer">
+                    <!-- Duties will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIs Tab -->
+        <div id="kpisTab" class="tab-content">
+            <div class="section-box">
+                <h2>Key Performance Indicators (KPIs)</h2>
+                <div id="kpisContainer">
+                    <!-- KPIs will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duty Detail View -->
+    <div id="dutyDetailView" class="duty-detail-view">
+        <button class="back-btn" onclick="closeDutyDetail()">
+            <i class="fas fa-chevron-left"></i> BACK TO PERFORMANCE PROFILE
+        </button>
+        <div id="dutyDetailContent"></div>
+    </div>
+
+    <!-- KPI Detail View -->
+    <div id="kpiDetailView" class="kpi-detail-view">
+        <button class="back-btn" onclick="closeKPIDetail()">
+            <i class="fas fa-chevron-left"></i> BACK TO PERFORMANCE PROFILE
+        </button>
+        <div id="kpiDetailContent"></div>
     </div>
 
     <!-- Duty Modal -->
@@ -135,12 +323,38 @@
                 <input type="hidden" id="dutyId">
                 
                 <div class="form-group">
-                    <label for="dutyRole">Role / Key Responsibilities *</label>
-                    <input type="text" id="dutyRole" placeholder="e.g., Frontend Developer, Project Manager" required>
+                    <label for="dutyName">Duty Name *</label>
+                    <input type="text" id="dutyName" placeholder="e.g., Website Maintenance, Client Support" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Tasks *</label>
+                    <label for="dutyDescription">Description *</label>
+                    <textarea id="dutyDescription" rows="3" placeholder="Describe the duty and responsibilities" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dutyAssignedTo">Assigned To *</label>
+                        <select id="dutyAssignedTo" required>
+                            <option value="">Select User</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dutyStatus">Status *</label>
+                        <select id="dutyStatus" required>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="dutyPeriod">Period</label>
+                    <input type="text" id="dutyPeriod" placeholder="e.g., Ongoing, Q1 2026, Monthly">
+                </div>
+
+                <div class="form-group">
+                    <label>Tasks (linked to this duty)</label>
                     <div id="dutyTasksContainer">
                         <!-- Tasks will be added here dynamically -->
                     </div>
@@ -157,13 +371,73 @@
         </div>
     </div>
 
+    <!-- KPI Modal -->
+    <div id="kpiModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="kpiModalTitle">Add New KPI</h2>
+                <button class="close-btn" onclick="closeKPIModal()">&times;</button>
+            </div>
+            <form id="kpiForm" onsubmit="saveKPI(event)">
+                <input type="hidden" id="kpiId">
+                
+                <div class="form-group">
+                    <label for="kpiName">KPI Name *</label>
+                    <input type="text" id="kpiName" placeholder="e.g., Completion Rate, On-Time Delivery" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="kpiDescription">Description *</label>
+                    <textarea id="kpiDescription" rows="3" placeholder="Describe this KPI" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="kpiAssignedTo">Assigned To *</label>
+                        <select id="kpiAssignedTo" required>
+                            <option value="">Select User</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kpiPeriod">Period</label>
+                        <input type="text" id="kpiPeriod" placeholder="e.g., Ongoing, Q1 2026, Monthly">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="kpiTargetValue">Target Value *</label>
+                    <input type="text" id="kpiTargetValue" placeholder="e.g., ≥ 80%, 100 tasks" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="kpiStatus">Status *</label>
+                    <select id="kpiStatus" required>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="closeKPIModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save KPI</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Chatbot Container -->
     <div id="chatbot-container"></div>
 
     <script type="module">
         import auth from '../auth.js';
         import firebaseService from '../firebase-service.js';
-        import { initDuties, renderDuties, openDutyModal, closeDutyModal, saveDuty, editDuty, deleteDuty, confirmDeleteDuty, addTaskField } from '../team-duties.js';
+        import { 
+            initDuties, renderDuties, renderKPIs, renderPerformanceDashboard,
+            openDutyModal, closeDutyModal, saveDuty, editDuty, deleteDuty, 
+            openKPIModal, closeKPIModal, saveKPI, editKPI, deleteKPI,
+            addTaskField, viewDutyDetails, viewKPIDetails, closeDutyDetail, closeKPIDetail,
+            viewTasksForDuty
+        } from '../team-duties.js';
 
         // Check authentication
         const currentUser = auth.getCurrentUser();
@@ -177,8 +451,34 @@
         window.saveDuty = saveDuty;
         window.editDuty = editDuty;
         window.deleteDuty = deleteDuty;
-        window.confirmDeleteDuty = confirmDeleteDuty;
         window.addTaskField = addTaskField;
+        window.viewDutyDetails = viewDutyDetails;
+        window.closeDutyDetail = closeDutyDetail;
+        window.viewTasksForDuty = viewTasksForDuty;
+        
+        window.openKPIModal = openKPIModal;
+        window.closeKPIModal = closeKPIModal;
+        window.saveKPI = saveKPI;
+        window.editKPI = editKPI;
+        window.deleteKPI = deleteKPI;
+        window.viewKPIDetails = viewKPIDetails;
+        window.closeKPIDetail = closeKPIDetail;
+
+        // Tab switching
+        window.switchTab = function(tab) {
+            document.getElementById('tabDutiesBtn').classList.remove('active');
+            document.getElementById('tabKPIsBtn').classList.remove('active');
+            document.getElementById('dutiesTab').classList.remove('active');
+            document.getElementById('kpisTab').classList.remove('active');
+            
+            if (tab === 'duties') {
+                document.getElementById('tabDutiesBtn').classList.add('active');
+                document.getElementById('dutiesTab').classList.add('active');
+            } else {
+                document.getElementById('tabKPIsBtn').classList.add('active');
+                document.getElementById('kpisTab').classList.add('active');
+            }
+        };
 
         // Load chatbot component
         async function loadChatbot() {

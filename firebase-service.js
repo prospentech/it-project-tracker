@@ -33,6 +33,8 @@ class FirebaseService {
   }
 
   // Authentication
+  // firebase-service.js - Update the login method
+
   async login(username, password) {
     try {
       // Use the exact email format matching what you added in Firebase
@@ -41,13 +43,28 @@ class FirebaseService {
       
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      if (userCredential.user.displayName !== username) {
-        await updateProfile(userCredential.user, { displayName: username });
+      // Map the username from email to the correct display name
+      let displayName = username;
+      
+      // Map email usernames to actual display names
+      if (username === 'infotech') {
+        displayName = 'AJay';
+      } else if (username === 'techsupport') {
+        displayName = 'Junior';
+      } else if (username === 'buhle') {
+        displayName = 'Buhle';
+      } else if (username === 'admin') {
+        displayName = 'admin';
       }
       
-      // Store session in Realtime Database
+      // Update the user's display name in Firebase Auth
+      if (userCredential.user.displayName !== displayName) {
+        await updateProfile(userCredential.user, { displayName: displayName });
+      }
+      
+      // Store session in Realtime Database with the correct display name
       await set(ref(db, `sessions/${userCredential.user.uid}`), {
-        username: username,
+        username: displayName, // Store the display name, not the email prefix
         loginTime: new Date().toISOString(),
         lastActive: new Date().toISOString(),
         online: true
@@ -336,148 +353,172 @@ class FirebaseService {
   }
 
   // Get all users with their profiles and online status
-  // In firebase-service.js, update getAllUsers method
   async getAllUsers() {
-      try {
-          const usersSnapshot = await get(ref(db, 'users'));
-          const profilesSnapshot = await get(ref(db, 'profiles'));
-          const sessionsSnapshot = await get(ref(db, 'sessions'));
+    try {
+      const usersSnapshot = await get(ref(db, 'users'));
+      const profilesSnapshot = await get(ref(db, 'profiles'));
+      const sessionsSnapshot = await get(ref(db, 'sessions'));
+      
+      const users = [];
+      const userMap = new Map();
+      
+      // Get user data from auth (via users node)
+      if (usersSnapshot.exists()) {
+        usersSnapshot.forEach((child) => {
+          const userData = child.val();
+          const username = userData.username || userData.email?.split('@')[0];
           
-          const users = [];
-          const userMap = new Map();
-          
-          // Get user data from auth (via users node)
-          if (usersSnapshot.exists()) {
-              usersSnapshot.forEach((child) => {
-                  const userData = child.val();
-                  userMap.set(child.key, {
-                      uid: child.key,
-                      username: userData.username || userData.email?.split('@')[0],
-                      email: userData.email,
-                      ...userData
-                  });
-              });
+          // Map email prefixes to display names
+          let displayName = username;
+          if (username === 'infotech') {
+            displayName = 'AJay';
+          } else if (username === 'techsupport') {
+            displayName = 'Junior';
+          } else if (username === 'buhle') {
+            displayName = 'Buhle';
+          } else if (username === 'admin') {
+            displayName = 'admin';
           }
           
-          // Add profile data
-          if (profilesSnapshot.exists()) {
-              profilesSnapshot.forEach((child) => {
-                  const profileData = child.val();
-                  const existingUser = userMap.get(child.key) || {};
-                  userMap.set(child.key, {
-                      ...existingUser,
-                      uid: child.key,
-                      username: existingUser.username || profileData.username,
-                      fullName: profileData.fullName || profileData.username,
-                      email: profileData.email || existingUser.email,
-                      role: profileData.role || 'Team Member',
-                      ...profileData
-                  });
-              });
-          }
-          
-          // Add online status - Check last active within 5 minutes
-          const onlineUsers = new Set();
-          if (sessionsSnapshot.exists()) {
-              const fiveMinutesAgo = new Date();
-              fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
-              
-              sessionsSnapshot.forEach((child) => {
-                  const session = child.val();
-                  if (session.online && session.lastActive) {
-                      const lastActive = new Date(session.lastActive);
-                      if (lastActive > fiveMinutesAgo) {
-                          onlineUsers.add(session.username);
-                      }
-                  }
-              });
-          }
-          
-          userMap.forEach((user) => {
-              if (user.username) {
-                  user.online = onlineUsers.has(user.username);
-                  users.push(user);
-              }
+          userMap.set(child.key, {
+            uid: child.key,
+            username: displayName, // Store display name
+            email: userData.email,
+            ...userData
           });
+        });
+      }
+      
+      // Add profile data
+      if (profilesSnapshot.exists()) {
+        profilesSnapshot.forEach((child) => {
+          const profileData = child.val();
+          const existingUser = userMap.get(child.key) || {};
           
-          // Default users if none exist - UPDATED with correct user information
-          if (users.length === 0) {
-              const defaultUsers = [
-                  { 
-                      username: 'admin', 
-                      fullName: 'admin', 
-                      email: 'admin@prospen.co.za', 
-                      role: 'Administrator' 
-                  },
-                  { 
-                      username: 'Junior', 
-                      fullName: 'techsupport', 
-                      email: 'techsupport@prospen.co.za', 
-                      role: 'Team Member' 
-                  },
-                  { 
-                      username: 'Buhle', 
-                      fullName: 'buhle', 
-                      email: 'buhle@prospen.co.za', 
-                      role: 'Team Member' 
-                  },
-                  { 
-                      username: 'AJay', 
-                      fullName: 'infotech', 
-                      email: 'infotech@prospen.co.za', 
-                      role: 'Team Member' 
-                  }
-              ];
-              
-              defaultUsers.forEach((user, index) => {
-                  users.push({
-                      uid: `default_${index}`,
-                      ...user,
-                      online: false
-                  });
-              });
+          // Map email prefixes to display names in profiles too
+          let profileUsername = profileData.username;
+          if (profileUsername === 'infotech') {
+            profileUsername = 'AJay';
+          } else if (profileUsername === 'techsupport') {
+            profileUsername = 'Junior';
+          } else if (profileUsername === 'buhle') {
+            profileUsername = 'Buhle';
           }
           
-          return users;
-      } catch (error) {
-          console.error('Error getting users:', error);
-          
-          // Return default users as fallback - UPDATED with correct user information
-          return [
-              { 
-                  uid: '1', 
-                  username: 'admin', 
-                  fullName: 'admin', 
-                  email: 'admin@prospen.co.za', 
-                  role: 'Administrator', 
-                  online: false 
-              },
-              { 
-                  uid: '2', 
-                  username: 'Junior', 
-                  fullName: 'techsupport', 
-                  email: 'techsupport@prospen.co.za', 
-                  role: 'Team Member', 
-                  online: false 
-              },
-              { 
-                  uid: '3', 
-                  username: 'Buhle', 
-                  fullName: 'buhle', 
-                  email: 'buhle@prospen.co.za', 
-                  role: 'Team Member', 
-                  online: false 
-              },
-              { 
-                  uid: '4', 
-                  username: 'AJay', 
-                  fullName: 'infotech', 
-                  email: 'infotech@prospen.co.za', 
-                  role: 'Team Member', 
-                  online: false 
-              }
-          ];
+          userMap.set(child.key, {
+            ...existingUser,
+            uid: child.key,
+            username: profileUsername,
+            fullName: profileData.fullName || profileUsername,
+            email: profileData.email || existingUser.email,
+            role: profileData.role || 'Team Member',
+            ...profileData
+          });
+        });
       }
+      
+      // Add online status - Check last active within 5 minutes
+      const onlineUsers = new Set();
+      if (sessionsSnapshot.exists()) {
+        const fiveMinutesAgo = new Date();
+        fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+        
+        sessionsSnapshot.forEach((child) => {
+          const session = child.val();
+          if (session.online && session.lastActive) {
+            const lastActive = new Date(session.lastActive);
+            if (lastActive > fiveMinutesAgo) {
+              onlineUsers.add(session.username);
+            }
+          }
+        });
+      }
+      
+      userMap.forEach((user) => {
+        if (user.username) {
+          user.online = onlineUsers.has(user.username);
+          users.push(user);
+        }
+      });
+      
+      // Default users if none exist - UPDATED with correct user information
+      if (users.length === 0) {
+        const defaultUsers = [
+          { 
+            username: 'admin', 
+            fullName: 'admin', 
+            email: 'admin@prospen.co.za', 
+            role: 'Administrator' 
+          },
+          { 
+            username: 'Junior', 
+            fullName: 'techsupport', 
+            email: 'techsupport@prospen.co.za', 
+            role: 'Team Member' 
+          },
+          { 
+            username: 'Buhle', 
+            fullName: 'buhle', 
+            email: 'buhle@prospen.co.za', 
+            role: 'Team Member' 
+          },
+          { 
+            username: 'AJay', 
+            fullName: 'infotech', 
+            email: 'infotech@prospen.co.za', 
+            role: 'Team Member' 
+          }
+        ];
+        
+        defaultUsers.forEach((user, index) => {
+          users.push({
+            uid: `default_${index}`,
+            ...user,
+            online: false
+          });
+        });
+      }
+      
+      return users;
+    } catch (error) {
+      console.error('Error getting users:', error);
+      
+      // Return default users as fallback - UPDATED with correct user information
+      return [
+        { 
+          uid: '1', 
+          username: 'admin', 
+          fullName: 'admin', 
+          email: 'admin@prospen.co.za', 
+          role: 'Administrator', 
+          online: false 
+        },
+        { 
+          uid: '2', 
+          username: 'Junior', 
+          fullName: 'techsupport', 
+          email: 'techsupport@prospen.co.za', 
+          role: 'Team Member', 
+          online: false 
+        },
+        { 
+          uid: '3', 
+          username: 'Buhle', 
+          fullName: 'buhle', 
+          email: 'buhle@prospen.co.za', 
+          role: 'Team Member', 
+          online: false 
+        },
+        { 
+          uid: '4', 
+          username: 'AJay', 
+          fullName: 'infotech', 
+          email: 'infotech@prospen.co.za', 
+          role: 'Team Member', 
+          online: false 
+        }
+      ];
+    }
   }
 
   // Reset user password (admin only) - Note: This requires Firebase Admin SDK
@@ -616,6 +657,18 @@ class FirebaseService {
       console.error('Error updating enquiry:', error);
       return { success: false, error: error.message };
     }
+  }
+
+  // Add this to firebase-service.js inside the FirebaseService class
+  async deleteEnquiry(enquiryId) {
+      try {
+          await remove(ref(db, `enquiries/${enquiryId}`));
+          await this.recordActivity('delete', 'Suggestion deleted');
+          return { success: true };
+      } catch (error) {
+          console.error('Error deleting enquiry:', error);
+          return { success: false, error: error.message };
+      }
   }
 
   // Clocking
@@ -955,6 +1008,262 @@ class FirebaseService {
       }, (error) => {
           console.error('Meetings subscription error:', error);
       });
+  }
+
+  // KPI methods
+  async getKPIs() {
+      try {
+          const snapshot = await get(ref(db, 'kpis'));
+          if (!snapshot.exists()) return [];
+          
+          const kpis = [];
+          snapshot.forEach((child) => {
+              kpis.push({ id: child.key, ...child.val() });
+          });
+          
+          return kpis.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      } catch (error) {
+          console.error('Error getting KPIs:', error);
+          return [];
+      }
+  }
+
+  async saveKPI(kpi) {
+      try {
+          const kpiId = kpi.id || push(ref(db, 'kpis')).key;
+          const kpiRef = ref(db, `kpis/${kpiId}`);
+          
+          const kpiData = {
+              ...kpi,
+              id: kpiId,
+              lastUpdated: new Date().toISOString(),
+              lastUpdatedBy: this.currentUser?.username || 'system'
+          };
+          
+          await set(kpiRef, kpiData);
+          
+          await this.recordActivity(
+              kpi.id ? 'update' : 'create',
+              `KPI "${kpi.name}" ${kpi.id ? 'updated' : 'created'}`
+          );
+          
+          return { success: true, id: kpiId };
+      } catch (error) {
+          console.error('Error saving KPI:', error);
+          return { success: false, error: error.message };
+      }
+  }
+
+  async deleteKPI(kpiId) {
+      try {
+          await remove(ref(db, `kpis/${kpiId}`));
+          await this.recordActivity('delete', 'KPI deleted');
+          return { success: true };
+      } catch (error) {
+          console.error('Error deleting KPI:', error);
+          return { success: false, error: error.message };
+      }
+  }
+
+  subscribeToKPIs(callback) {
+      const kpisRef = ref(db, 'kpis');
+      return onValue(kpisRef, (snapshot) => {
+          if (!snapshot.exists()) {
+              callback([]);
+              return;
+          }
+          
+          const kpis = [];
+          snapshot.forEach((child) => {
+              kpis.push({ id: child.key, ...child.val() });
+          });
+          
+          callback(kpis.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      }, (error) => {
+          console.error('KPIs subscription error:', error);
+      });
+  }
+
+  // Add to firebase-service.js inside the FirebaseService class
+
+  // Attendance and Leave Management
+  async getAttendanceLogs(userId = null, month = null, year = null) {
+    try {
+      let logsRef = ref(db, 'attendance_logs');
+      const snapshot = await get(logsRef);
+      
+      if (!snapshot.exists()) return [];
+      
+      const logs = [];
+      snapshot.forEach((child) => {
+        logs.push({ id: child.key, ...child.val() });
+      });
+      
+      // Filter by userId if provided
+      let filteredLogs = userId ? logs.filter(log => log.userId === userId) : logs;
+      
+      // Filter by month/year if provided
+      if (month !== null && year !== null) {
+        filteredLogs = filteredLogs.filter(log => {
+          const logDate = new Date(log.date);
+          return logDate.getMonth() === month && logDate.getFullYear() === year;
+        });
+      }
+      
+      return filteredLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+    } catch (error) {
+      console.error('Error getting attendance logs:', error);
+      return [];
+    }
+  }
+
+  async saveAttendanceLog(log) {
+    try {
+      const logId = log.id || push(ref(db, 'attendance_logs')).key;
+      const logRef = ref(db, `attendance_logs/${logId}`);
+      
+      const logData = {
+        ...log,
+        id: logId,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      await set(logRef, logData);
+      return { success: true, id: logId };
+    } catch (error) {
+      console.error('Error saving attendance log:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async getLeaveTypes() {
+    try {
+      const snapshot = await get(ref(db, 'leave_types'));
+      if (!snapshot.exists()) {
+        // Default leave types
+        const defaultTypes = [
+          { id: 'annual', name: 'Annual Leave', annualAllocation: 15, isPaid: true },
+          { id: 'sick', name: 'Sick Leave', annualAllocation: 10, isPaid: true },
+          { id: 'study', name: 'Study Leave', annualAllocation: 5, isPaid: true },
+          { id: 'unpaid', name: 'Unpaid Leave', annualAllocation: 0, isPaid: false },
+          { id: 'family', name: 'Family Responsibility', annualAllocation: 3, isPaid: true }
+        ];
+        return defaultTypes;
+      }
+      
+      const types = [];
+      snapshot.forEach((child) => {
+        types.push({ id: child.key, ...child.val() });
+      });
+      return types;
+    } catch (error) {
+      console.error('Error getting leave types:', error);
+      return [];
+    }
+  }
+
+  async getLeaveRequests(userId = null) {
+    try {
+      const snapshot = await get(ref(db, 'leave_requests'));
+      if (!snapshot.exists()) return [];
+      
+      const requests = [];
+      snapshot.forEach((child) => {
+        requests.push({ id: child.key, ...child.val() });
+      });
+      
+      if (userId) {
+        return requests.filter(r => r.userId === userId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      }
+      return requests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } catch (error) {
+      console.error('Error getting leave requests:', error);
+      return [];
+    }
+  }
+
+  async saveLeaveRequest(request) {
+    try {
+      const requestId = request.id || push(ref(db, 'leave_requests')).key;
+      const requestRef = ref(db, `leave_requests/${requestId}`);
+      
+      const requestData = {
+        ...request,
+        id: requestId,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      await set(requestRef, requestData);
+      return { success: true, id: requestId };
+    } catch (error) {
+      console.error('Error saving leave request:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async getLeaveBalances(userId = null, year = new Date().getFullYear()) {
+    try {
+      const snapshot = await get(ref(db, 'leave_balances'));
+      if (!snapshot.exists()) return [];
+      
+      const balances = [];
+      snapshot.forEach((child) => {
+        balances.push({ id: child.key, ...child.val() });
+      });
+      
+      let filtered = balances.filter(b => b.year === year);
+      if (userId) {
+        filtered = filtered.filter(b => b.userId === userId);
+      }
+      return filtered;
+    } catch (error) {
+      console.error('Error getting leave balances:', error);
+      return [];
+    }
+  }
+
+  async saveLeaveBalance(balance) {
+    try {
+      const balanceId = balance.id || push(ref(db, 'leave_balances')).key;
+      const balanceRef = ref(db, `leave_balances/${balanceId}`);
+      
+      const balanceData = {
+        ...balance,
+        id: balanceId,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      await set(balanceRef, balanceData);
+      return { success: true, id: balanceId };
+    } catch (error) {
+      console.error('Error saving leave balance:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Public Holidays for 2026 (South Africa)
+  getPublicHolidays() {
+    return [
+      { date: '2026-01-01', name: "New Year's Day" },
+      { date: '2026-03-21', name: "Human Rights Day" },
+      { date: '2026-04-03', name: "Good Friday" },
+      { date: '2026-04-06', name: "Family Day" },
+      { date: '2026-04-27', name: "Freedom Day" },
+      { date: '2026-05-01', name: "Workers' Day" },
+      { date: '2026-06-16', name: "Youth Day" },
+      { date: '2026-08-09', name: "National Women's Day" },
+      { date: '2026-08-10', name: "Public Holiday (Observed)" },
+      { date: '2026-09-24', name: "Heritage Day" },
+      { date: '2026-12-16', name: "Day of Reconciliation" },
+      { date: '2026-12-25', name: "Christmas Day" },
+      { date: '2026-12-26', name: "Day of Goodwill" }
+    ];
+  }
+
+  isPublicHoliday(date) {
+    const dateStr = typeof date === 'string' ? date.split('T')[0] : date.toISOString().split('T')[0];
+    const holidays = this.getPublicHolidays();
+    return holidays.find(h => h.date === dateStr);
   }
 
   // Real-time subscriptions

@@ -394,6 +394,15 @@
                 <option value="Low">Low</option>
             </select>
             
+            <!-- Add this after the project filter and before the reset button -->
+            <select class="filter-select" id="dateRangeFilter" onchange="applyFilters()">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+            </select>
+            
             <select class="filter-select" id="typeFilter" onchange="applyFilters()">
                 <option value="all">All Types</option>
                 <option value="Design">Design</option>
@@ -430,7 +439,8 @@
                             <th>Status</th>
                             <th>Due Date</th>
                             <th>Project Linked</th>
-                            <th>Actions</th>
+                            <th>Duty Linked</th> <!-- This is column 9 -->
+                            <th>Actions</th>      <!-- This is column 10 -->
                         </tr>
                     </thead>
                     <tbody id="tasksTableBody">
@@ -535,6 +545,15 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Add this new row for Duty Linked -->
+                <div class="form-group">
+                    <label for="taskDuty">Duty Linked</label>
+                    <select id="taskDuty">
+                        <option value="">None</option>
+                    </select>
+                    <small style="color: var(--text-p);">Link this task to a duty for performance tracking</small>
+                </div>
                 
                 <!-- Dates -->
                 <div class="form-section">
@@ -595,13 +614,13 @@
     <script type="module">
         import auth from '../auth.js';
         import { 
-            initTasks, loadTasks, renderTasks, openTaskModal, closeTaskModal, 
-            saveTask, editTask, deleteTask, confirmDeleteTask, viewTaskDetails, 
-            closeTaskDetail, applyFilters, resetFilters 
+            initTasks, loadTasks, renderTasks, openTaskModal as openTaskModalImport, 
+            closeTaskModal, saveTask, editTask, deleteTask, confirmDeleteTask, 
+            viewTaskDetails, closeTaskDetail, applyFilters, resetFilters 
         } from '../tasks.js';
 
-        // Make functions available globally
-        window.openTaskModal = openTaskModal;
+        // Re-export as window functions without redeclaring
+        window.openTaskModal = openTaskModalImport;
         window.closeTaskModal = closeTaskModal;
         window.saveTask = saveTask;
         window.editTask = editTask;
