@@ -473,9 +473,9 @@
         <div id="taskDetailContent"></div>
     </div>
 
-    <!-- Task Modal (Add/Edit) -->
+        <!-- Task Modal (Add/Edit) -->
     <div id="taskModal" class="modal">
-        <div class="modal-content large">
+        <div class="modal-content" style="max-width: 800px; width: 90%;">
             <div class="modal-header">
                 <h2 id="taskModalTitle">Add New Task</h2>
                 <button class="close-btn" onclick="closeTaskModal()">&times;</button>
@@ -484,8 +484,8 @@
                 <input type="hidden" id="taskIdField">
                 
                 <!-- Task Information -->
-                <div class="form-section">
-                    <h3><i class="fas fa-info-circle"></i> Task Information</h3>
+                <div class="form-section" style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-info-circle"></i> Task Information</h3>
                     
                     <div class="form-group">
                         <label for="taskTitle">Task Title *</label>
@@ -499,10 +499,10 @@
                 </div>
                 
                 <!-- Assignment -->
-                <div class="form-section">
-                    <h3><i class="fas fa-user-check"></i> Assignment</h3>
+                <div class="form-section" style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-user-check"></i> Assignment</h3>
                     
-                    <div class="form-row">
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="form-group">
                             <label for="taskAssignedTo">Assigned To *</label>
                             <select id="taskAssignedTo" required>
@@ -519,12 +519,13 @@
                 </div>
                 
                 <!-- Type and Priority -->
-                <div class="form-section">
-                    <h3><i class="fas fa-tag"></i> Type & Priority</h3>
+                <div class="form-section" style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-tag"></i> Type & Priority</h3>
                     
-                    <div class="form-group">
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
                             <label for="taskType">Type of Work *</label>
-                            <select class="filter-select" id="taskTypeSelect" required>
+                            <select id="taskType" required>
                                 <option value="">Select Type</option>
                                 <option value="Design">Design (Email Banners, Brochures e.t.c)</option>
                                 <option value="Web Development">Web Development</option>
@@ -553,20 +554,23 @@
                     </div>
                 </div>
 
-                <!-- Add this new row for Duty Linked -->
-                <div class="form-group">
-                    <label for="taskDuty">Duty Linked</label>
-                    <select id="taskDuty">
-                        <option value="">None</option>
-                    </select>
-                    <small style="color: var(--text-p);">Link this task to a duty for performance tracking</small>
+                <!-- Duty Linked -->
+                <div class="form-section" style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-tasks"></i> Duty Link</h3>
+                    <div class="form-group">
+                        <label for="taskDuty">Duty Linked</label>
+                        <select id="taskDuty">
+                            <option value="">None</option>
+                        </select>
+                        <small style="color: var(--text-p); display: block; margin-top: 5px;">Link this task to a duty for performance tracking</small>
+                    </div>
                 </div>
                 
                 <!-- Dates -->
-                <div class="form-section">
-                    <h3><i class="fas fa-calendar-alt"></i> Dates</h3>
+                <div class="form-section" style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-calendar-alt"></i> Dates</h3>
                     
-                    <div class="form-row">
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="form-group">
                             <label for="taskStartDate">Start Date *</label>
                             <input type="date" id="taskStartDate" required>
@@ -580,25 +584,23 @@
                     <div class="form-group">
                         <label for="taskCompletedDate">Completed Date</label>
                         <input type="date" id="taskCompletedDate">
-                        <small style="color: var(--text-p);">Leave blank if not completed</small>
+                        <small style="color: var(--text-p); display: block; margin-top: 5px;">Leave blank if not completed</small>
                     </div>
                 </div>
                 
                 <!-- Status and Notes -->
-                <div class="form-section">
-                    <h3><i class="fas fa-tasks"></i> Status & Notes</h3>
+                <div class="form-section" style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-tasks"></i> Status & Notes</h3>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="taskStatus">Status *</label>
-                            <select id="taskStatus" required>
-                                <option value="">Select Status</option>
-                                <option value="Active">Active</option>
-                                <option value="Completed">Completed</option>
-                                <option value="On Hold">On Hold</option>
-                                <option value="Cancelled">Cancelled</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label for="taskStatus">Status *</label>
+                        <select id="taskStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Completed">Completed</option>
+                            <option value="On Hold">On Hold</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
@@ -607,9 +609,9 @@
                     </div>
                 </div>
                 
-                <div class="btn-group">
-                    <button type="button" class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Save Task</button>
+                <div class="btn-group" style="display: flex; gap: 10px; margin-top: 30px;">
+                    <button type="button" class="btn-secondary" onclick="closeTaskModal()" style="flex: 1; background: rgba(255,255,255,0.1); color: var(--text-h); border: 1px solid rgba(255,255,255,0.1); padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer;">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex: 1; background: var(--accent); color: var(--bg); border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer;">Save Task</button>
                 </div>
             </form>
         </div>
