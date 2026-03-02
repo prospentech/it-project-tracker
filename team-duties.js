@@ -224,15 +224,26 @@ async function renderPerformanceDashboard(tasks) {
     
     // Get all users
     const users = await firebaseService.getAllUsers();
-    const userList = isAdmin ? users : users.filter(u => u.username === currentUser.username);
     
-    // Calculate performance metrics for each user
+    // Filter tasks based on user role
+    let filteredTasks = tasks;
+    if (!isAdmin) {
+        filteredTasks = tasks.filter(t => t.assignedTo === currentUser.username);
+    }
+    
+    // Filter users based on role for performance table
+    let userList = users;
+    if (!isAdmin) {
+        userList = users.filter(u => u.username === currentUser.username);
+    }
+    
+    // Calculate performance metrics for each user (only show relevant users)
     const userPerformance = [];
     const dutyStats = {};
     const kpiStats = {};
     
     for (const user of userList) {
-        const userTasks = tasks.filter(t => t.assignedTo === user.username);
+        const userTasks = tasks.filter(t => t.assignedTo === user.username); // Use original tasks for user's tasks
         const totalTasks = userTasks.length;
         const activeTasks = userTasks.filter(t => t.status === 'Active' || t.status === 'In Progress').length;
         const completedTasks = userTasks.filter(t => t.status === 'Completed').length;
@@ -253,9 +264,13 @@ async function renderPerformanceDashboard(tasks) {
         const userDuties = duties.filter(d => d.userId === user.username && d.status === 'Active');
         const activeDuties = userDuties.length;
         
-        // Store duty stats for duties overview
+        // Store duty stats for duties overview (filter for non-admin)
         userDuties.forEach(duty => {
-            const dutyTasks = tasks.filter(t => t.dutyId === duty.id);
+            // For duty tasks, filter by user if not admin
+            let dutyTasks = tasks.filter(t => t.dutyId === duty.id);
+            if (!isAdmin) {
+                dutyTasks = dutyTasks.filter(t => t.assignedTo === currentUser.username);
+            }
             const dutyCompleted = dutyTasks.filter(t => t.status === 'Completed').length;
             dutyStats[duty.id] = {
                 name: duty.name || duty.role,
@@ -310,11 +325,11 @@ async function renderPerformanceDashboard(tasks) {
         });
     }
     
-    // Calculate overall stats
-    const totalTasks = tasks.length;
-    const totalActive = tasks.filter(t => t.status === 'Active' || t.status === 'In Progress').length;
-    const totalCompleted = tasks.filter(t => t.status === 'Completed').length;
-    const totalOverdue = tasks.filter(t => {
+    // Calculate overall stats using filtered tasks (user-specific for non-admin)
+    const totalTasks = filteredTasks.length;
+    const totalActive = filteredTasks.filter(t => t.status === 'Active' || t.status === 'In Progress').length;
+    const totalCompleted = filteredTasks.filter(t => t.status === 'Completed').length;
+    const totalOverdue = filteredTasks.filter(t => {
         if (t.status === 'Completed' || t.status === 'Cancelled') return false;
         const now = new Date();
         now.setHours(0, 0, 0, 0);
@@ -326,7 +341,7 @@ async function renderPerformanceDashboard(tasks) {
     
     // Build dashboard HTML
     let html = `
-        <!-- Top Summary Cards -->
+        <!-- Top Summary Cards (user-specific) -->
         <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 30px;">
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-tasks"></i></div>
@@ -355,7 +370,7 @@ async function renderPerformanceDashboard(tasks) {
             </div>
         </div>
         
-        <!-- User Performance Table -->
+        <!-- User Performance Table (shows only relevant users) -->
         <div class="section-box" style="margin-bottom: 30px;">
             <h3><i class="fas fa-users"></i> User Performance</h3>
             <div style="overflow-x: auto;">
@@ -399,18 +414,25 @@ async function renderPerformanceDashboard(tasks) {
         
         <!-- Charts Section -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-            <!-- Task Status Breakdown -->
+            <!-- Task Status Breakdown (user-specific) -->
             <div class="section-box">
                 <h3><i class="fas fa-chart-pie"></i> Task Status Breakdown</h3>
                 <div id="taskStatusChart" style="height: 200px; margin-top: 15px;">
     `;
     
-    // Simple bar chart representation
-    const activeCount = tasks.filter(t => t.status === 'Active' || t.status === 'In Progress').length;
-    const completedCount = tasks.filter(t => t.status === 'Completed').length;
-    const onHoldCount = tasks.filter(t => t.status === 'On Hold').length;
-    const cancelledCount = tasks.filter(t => t.status === 'Cancelled').length;
-    const overdueCount = totalOverdue;
+    // Simple bar chart representation (using filtered tasks)
+    const activeCount = filteredTasks.filter(t => t.status === 'Active' || t.status === 'In Progress').length;
+    const completedCount = filteredTasks.filter(t => t.status === 'Completed').length;
+    const onHoldCount = filteredTasks.filter(t => t.status === 'On Hold').length;
+    const cancelledCount = filteredTasks.filter(t => t.status === 'Cancelled').length;
+    const overdueCount = filteredTasks.filter(t => {
+        if (t.status === 'Completed' || t.status === 'Cancelled') return false;
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const dueDate = new Date(t.dueDate);
+        dueDate.setHours(0, 0, 0, 0);
+        return dueDate < now;
+    }).length;
     const maxCount = Math.max(activeCount, completedCount, onHoldCount, cancelledCount, overdueCount, 1);
     
     html += `
@@ -439,15 +461,15 @@ async function renderPerformanceDashboard(tasks) {
                 </div>
             </div>
             
-            <!-- Tasks by Type of Work -->
+            <!-- Tasks by Type of Work (user-specific) -->
             <div class="section-box">
                 <h3><i class="fas fa-chart-bar"></i> Tasks by Type</h3>
                 <div id="taskTypeChart" style="height: 200px; margin-top: 15px;">
     `;
     
-    // Group tasks by type
+    // Group filtered tasks by type
     const taskTypes = {};
-    tasks.forEach(t => {
+    filteredTasks.forEach(t => {
         const type = t.type || 'General';
         taskTypes[type] = (taskTypes[type] || 0) + 1;
     });
@@ -477,7 +499,7 @@ async function renderPerformanceDashboard(tasks) {
             </div>
         </div>
         
-        <!-- Duties Overview -->
+        <!-- Duties Overview (filtered for non-admin) -->
         <div class="section-box" style="margin-bottom: 30px;">
             <h3><i class="fas fa-tasks"></i> Duties Overview</h3>
             <div style="overflow-x: auto;">
@@ -515,7 +537,7 @@ async function renderPerformanceDashboard(tasks) {
             </div>
         </div>
         
-        <!-- KPI Performance Section -->
+        <!-- KPI Performance Section (filtered for non-admin) -->
         <div class="section-box" style="margin-bottom: 30px;">
             <h3><i class="fas fa-bullseye"></i> KPI Performance</h3>
             <div style="overflow-x: auto;">
@@ -553,23 +575,23 @@ async function renderPerformanceDashboard(tasks) {
             </div>
         </div>
         
-        <!-- Alerts Section -->
+        <!-- Alerts Section (user-specific) -->
         <div class="section-box" style="margin-bottom: 30px; border-left: 4px solid var(--danger);">
             <h3><i class="fas fa-exclamation-circle" style="color: var(--danger);"></i> Alerts & Warnings</h3>
     `;
     
-    // High priority active tasks
-    const highPriorityTasks = tasks.filter(t => 
+    // High priority active tasks (filtered)
+    const highPriorityTasks = filteredTasks.filter(t => 
         (t.priority === 'High' || t.priority === 'Critical' || t.priority === 'Urgent') && 
         t.status !== 'Completed' && t.status !== 'Cancelled'
     );
     
-    // Tasks due in 3 days
+    // Tasks due in 3 days (filtered)
     const threeDaysFromNow = new Date();
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
     threeDaysFromNow.setHours(0, 0, 0, 0);
     
-    const tasksDueSoon = tasks.filter(t => {
+    const tasksDueSoon = filteredTasks.filter(t => {
         if (t.status === 'Completed' || t.status === 'Cancelled') return false;
         const dueDate = new Date(t.dueDate);
         dueDate.setHours(0, 0, 0, 0);
@@ -624,11 +646,11 @@ async function renderPerformanceDashboard(tasks) {
     
     dashboardContainer.innerHTML = html;
     
-    // Render monthly trend graph
-    renderMonthlyTrend(tasks);
+    // Render monthly trend graph (user-specific)
+    renderMonthlyTrend(filteredTasks);
 }
 
-// Render monthly trend graph
+// Render monthly trend graph (user-specific)
 function renderMonthlyTrend(tasks) {
     const container = document.getElementById('monthlyTrendChart');
     if (!container) return;
@@ -696,7 +718,15 @@ function viewDutyDetails(dutyId) {
     
     // Load tasks linked to this duty
     firebaseService.getTasks().then(tasks => {
-        const linkedTasks = tasks.filter(t => t.dutyId === dutyId);
+        currentUser = auth.getCurrentUser();
+        const isAdmin = currentUser?.username === 'admin';
+        
+        let linkedTasks = tasks.filter(t => t.dutyId === dutyId);
+        // Filter tasks for non-admin users
+        if (!isAdmin && currentUser) {
+            linkedTasks = linkedTasks.filter(t => t.assignedTo === currentUser.username);
+        }
+        
         const activeTasks = linkedTasks.filter(t => t.status !== 'Completed').length;
         const completedTasks = linkedTasks.filter(t => t.status === 'Completed').length;
         
@@ -763,7 +793,12 @@ function viewKPIDetails(kpiId) {
     
     // Get user's current completion rate
     firebaseService.getTasks().then(tasks => {
-        const userTasks = tasks.filter(t => t.assignedTo === kpi.userId);
+        currentUser = auth.getCurrentUser();
+        const isAdmin = currentUser?.username === 'admin';
+        
+        let userTasks = tasks.filter(t => t.assignedTo === kpi.userId);
+        // For non-admin viewing their own KPI, this is fine. For admin, they see all.
+        
         const completedTasks = userTasks.filter(t => t.status === 'Completed').length;
         const completionRate = userTasks.length > 0 ? Math.round((completedTasks / userTasks.length) * 100) : 0;
         
