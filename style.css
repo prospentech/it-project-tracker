@@ -1834,3 +1834,45 @@ input:checked + .toggle-slider:before {
 .sticky-header.visible {
     animation: slideDown 0.3s ease forwards;
 }
+
+/* Add to style.css */
+.form-group textarea,
+#projectNotes,
+#budgetNotes,
+#additionalNotes,
+.project-notes textarea {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* For SharePoint links specifically */
+.sharepoint-link,
+a[href*="sharepoint"],
+a[href*="microsoft"],
+.long-url {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.sharepoint-link:hover,
+a[href*="sharepoint"]:hover,
+a[href*="microsoft"]:hover {
+    white-space: normal;
+    word-wrap: break-word;
+    background: var(--card);
+    padding: 5px;
+    border-radius: 4px;
+}
+
+/* For textarea content */
+.detail-section p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}

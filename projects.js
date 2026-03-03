@@ -5,8 +5,12 @@ import firebaseService from './firebase-service.js';
 // Store temporary data for the project being edited
 let tempTeamMembers = [];
 let tempTasks = [];
+let systemUsers = []; // Store all system users for dropdowns
 
 async function initProjects() {
+  // Load system users first
+  await loadSystemUsers();
+  
   const projects = await firebaseService.getProjects();
   localStorage.setItem('prospenProjects', JSON.stringify(projects));
   
@@ -22,6 +26,29 @@ async function initProjects() {
     }
     updateTopProject();
   });
+}
+
+// Load all system users from Firebase
+async function loadSystemUsers() {
+  try {
+    systemUsers = await firebaseService.getAllUsers();
+  } catch (error) {
+    console.error('Error loading users:', error);
+    // Fallback users
+    systemUsers = [
+      { uid: '1', username: 'admin', fullName: 'Administrator', email: 'admin@prospen.co.za' },
+      { uid: '2', username: 'Junior', fullName: 'Junior', email: 'techsupport@prospen.co.za' },
+      { uid: '3', username: 'Buhle', fullName: 'Buhle', email: 'buhle@prospen.co.za' },
+      { uid: '4', username: 'AJay', fullName: 'AJay', email: 'infotech@prospen.co.za' }
+    ];
+  }
+}
+
+// Get user display name from username
+function getUserDisplayName(username) {
+  if (!username) return '';
+  const user = systemUsers.find(u => u.username === username);
+  return user ? (user.fullName || user.username) : username;
 }
 
 function renderProjects() {
@@ -91,9 +118,9 @@ function renderProjects() {
       </div>
       <h3>${project.name}</h3>
       <p>${project.desc.substring(0, 100)}${project.desc.length > 100 ? '...' : ''}</p>
-      <div><b>Lead:</b> ${project.lead}</div>
+      <div><b>Lead:</b> ${getUserDisplayName(project.lead)}</div>
       <div><b>Due:</b> ${formatDate(project.due)}</div>
-      <div><b>Last Updated:</b> ${project.lastUpdatedBy ? `By ${project.lastUpdatedBy}` : 'Never'}</div>
+      <div><b>Last Updated:</b> ${project.lastUpdatedBy ? `By ${getUserDisplayName(project.lastUpdatedBy)}` : 'Never'}</div>
       <div class="countdown">${countdownText}</div>
     `;
     grid.appendChild(card);
@@ -158,9 +185,9 @@ async function renderAllProjects() {
       </div>
       <h3>${project.name}</h3>
       <p>${project.desc.substring(0, 100)}${project.desc.length > 100 ? '...' : ''}</p>
-      <div><b>Lead:</b> ${project.lead}</div>
+      <div><b>Lead:</b> ${getUserDisplayName(project.lead)}</div>
       <div><b>Due:</b> ${formatDate(project.due)}</div>
-      <div><b>Last Updated:</b> ${project.lastUpdatedBy ? `By ${project.lastUpdatedBy}` : 'Never'}</div>
+      <div><b>Last Updated:</b> ${project.lastUpdatedBy ? `By ${getUserDisplayName(project.lastUpdatedBy)}` : 'Never'}</div>
       <div class="countdown">${countdownText}</div>
     `;
     container.appendChild(card);
@@ -191,6 +218,7 @@ function openProject(id) {
   showProjectView(id);
 }
 
+// projects.js - Fix showProjectView to properly display notes
 function showProjectView(id) {
   const projectView = document.getElementById('project-view');
   const landing = document.getElementById('landing');
@@ -213,9 +241,9 @@ function showProjectView(id) {
           <h2>1. Project Overview: ${p.name}</h2>
           <p>${p.desc}</p>
           <table>
-            <tr><th>Lead</th><td>${p.lead}</td><th>Type</th><td>${p.type}</td></tr>
+            <tr><th>Lead</th><td>${getUserDisplayName(p.lead)}</td><th>Type</th><td>${p.type}</td></tr>
             <tr><th>Start</th><td>${formatDate(p.start)}</td><th>Status</th><td>${p.status}</td></tr>
-            <tr><th>Last Updated</th><td colspan="3">${p.lastUpdated ? formatDate(p.lastUpdated) + ' by ' + p.lastUpdatedBy : 'Never'}</td></tr>
+            <tr><th>Last Updated</th><td colspan="3">${p.lastUpdated ? formatDate(p.lastUpdated) + ' by ' + getUserDisplayName(p.lastUpdatedBy) : 'Never'}</td></tr>
           </table>
         </div>
 
@@ -228,7 +256,7 @@ function showProjectView(id) {
                 <tr>
                   <td>${t.id ? t.id.substring(0, 8) : 'N/A'}</td>
                   <td>${t.name}</td>
-                  <td>${t.who}</td>
+                  <td>${getUserDisplayName(t.who)}</td>
                   <td class="priority-high">${t.prio}</td>
                   <td>${formatDate(t.due)}</td>
                   <td>${t.status}</td>
@@ -286,6 +314,7 @@ function showProjectView(id) {
                 <th>Spent</th>
                 <th>Purchase Date</th>
                 <th>Receipt</th>
+                <th>Notes</th>
               </tr>
             </thead>
             <tbody>
@@ -297,10 +326,11 @@ function showProjectView(id) {
                   <td>R${(item.spent || 0).toFixed(2)}</td>
                   <td>${item.purchaseDate ? formatDate(item.purchaseDate) : '-'}</td>
                   <td>
-                    ${item.receipt ? `<a href="${item.receipt}" target="_blank" class="small-btn" style="text-decoration: none;"><i class="fas fa-file"></i> View</a>` : '-'}
+                    ${item.receipt ? `<a href="${item.receipt}" target="_blank" class="small-btn" style="text-decoration: none; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;"><i class="fas fa-file"></i> View</a>` : '-'}
                   </td>
+                  <td style="max-width: 200px; word-wrap: break-word;">${item.notes || '-'}</td>
                 </tr>
-              `).join('') : '<tr><td colspan="6" style="text-align: center;">No budget items added yet</td></tr>'}
+              `).join('') : '<tr><td colspan="7" style="text-align: center;">No budget items added yet</td></tr>'}
             </tbody>
           </table>
           <div style="text-align: right; margin-top: 15px;">
@@ -316,7 +346,7 @@ function showProjectView(id) {
           <h2>5. Team Roles</h2>
           ${p.members && p.members.length > 0 ? p.members.map(m => `
             <div class="team-member">
-              <b>${m.name}</b>
+              <b>${getUserDisplayName(m.username)}</b>
               <i>${m.role}</i>
               <div style="font-size:0.8rem; margin-top:5px;">${m.resp}</div>
               <div style="color:var(--accent); font-size:0.8rem;">${m.contact}</div>
@@ -325,7 +355,7 @@ function showProjectView(id) {
         </div>
         <div class="section-box">
           <h2>6. Notes</h2>
-          <p>${p.notes || 'No notes available.'}</p>
+          <p style="word-wrap: break-word; white-space: pre-wrap;">${p.notes || 'No notes available.'}</p>
         </div>
       </div>
     </div>
@@ -346,11 +376,32 @@ function closeProject() {
   window.location.hash = '';
 }
 
-function openProjectModal(projectId = null) {
+// Populate users dropdown for project lead
+function populateLeadDropdown() {
+  const leadSelect = document.getElementById('projectLead');
+  if (!leadSelect) return;
+  
+  leadSelect.innerHTML = '<option value="">Select Project Lead</option>';
+  
+  systemUsers.forEach(user => {
+    const option = document.createElement('option');
+    option.value = user.username;
+    option.textContent = user.fullName || user.username;
+    leadSelect.appendChild(option);
+  });
+}
+
+// projects.js - Fix the openProjectModal function
+async function openProjectModal(projectId = null) {
   const modal = document.getElementById('projectModal');
   if (!modal) {
     showCustomModal('Error', 'Project modal not found', 'danger');
     return;
+  }
+  
+  // Ensure users are loaded
+  if (systemUsers.length === 0) {
+    await loadSystemUsers();
   }
   
   const projects = JSON.parse(localStorage.getItem('prospenProjects')) || {};
@@ -360,8 +411,16 @@ function openProjectModal(projectId = null) {
   tempTeamMembers = [];
   tempTasks = [];
   
+  // Populate lead dropdown
+  populateLeadDropdown();
+  
   if (projectId) {
     const project = projects[projectId];
+    if (!project) {
+      showCustomModal('Error', 'Project not found', 'danger');
+      return;
+    }
+    
     title.textContent = 'Edit Project';
     document.getElementById('projectId').value = projectId;
     document.getElementById('projectName').value = project.name || '';
@@ -401,23 +460,29 @@ function renderTeamMembers() {
   
   container.innerHTML = '';
   
+  if (tempTeamMembers.length === 0) {
+    container.innerHTML = '<p style="color: var(--text-p); text-align: center;">No team members added yet. Click "Add Team Member" to add one.</p>';
+    return;
+  }
+  
   tempTeamMembers.forEach((member, index) => {
-    container.innerHTML += `
-      <div class="task-item">
-        <div>
-          <strong>${member.name}</strong><br>
-          <small>${member.role}</small>
-        </div>
-        <div class="task-actions">
-          <button type="button" class="small-btn" onclick="editTeamMember('${document.getElementById('projectId').value}', ${index})">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button type="button" class="small-btn" onclick="removeTeamMember('${document.getElementById('projectId').value}', ${index})">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
+    const memberDiv = document.createElement('div');
+    memberDiv.className = 'task-item';
+    memberDiv.innerHTML = `
+      <div>
+        <strong>${getUserDisplayName(member.username)}</strong><br>
+        <small>${member.role}</small>
+      </div>
+      <div class="task-actions">
+        <button type="button" class="small-btn" onclick="editTeamMember(${index})">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button type="button" class="small-btn" onclick="removeTeamMember(${index})">
+          <i class="fas fa-trash"></i>
+        </button>
       </div>
     `;
+    container.appendChild(memberDiv);
   });
 }
 
@@ -428,29 +493,40 @@ function renderTasks() {
   
   container.innerHTML = '';
   
+  if (tempTasks.length === 0) {
+    container.innerHTML = '<p style="color: var(--text-p); text-align: center;">No tasks added yet. Click "Add Task" to add one.</p>';
+    return;
+  }
+  
   tempTasks.forEach((task, index) => {
-    container.innerHTML += `
-      <div class="task-item">
-        <div>
-          <strong>${task.name}</strong><br>
-          <small>Assigned to: ${task.who} | Due: ${formatDate(task.due)}</small>
-        </div>
-        <div class="task-actions">
-          <button type="button" class="small-btn" onclick="editTask('${document.getElementById('projectId').value}', ${index})">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button type="button" class="small-btn" onclick="removeTask('${document.getElementById('projectId').value}', ${index})">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
+    const taskDiv = document.createElement('div');
+    taskDiv.className = 'task-item';
+    taskDiv.innerHTML = `
+      <div>
+        <strong>${task.name}</strong><br>
+        <small>Assigned to: ${getUserDisplayName(task.who)} | Due: ${formatDate(task.due)}</small>
+      </div>
+      <div class="task-actions">
+        <button type="button" class="small-btn" onclick="editTask(${index})">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button type="button" class="small-btn" onclick="removeTask(${index})">
+          <i class="fas fa-trash"></i>
+        </button>
       </div>
     `;
+    container.appendChild(taskDiv);
   });
 }
 
 // Add Team Member
 function addTeamMember() {
   const projectId = document.getElementById('projectId').value;
+  
+  // Create user options for dropdown
+  const userOptions = systemUsers.map(user => 
+    `<option value="${user.username}">${user.fullName || user.username}</option>`
+  ).join('');
   
   const modal = document.createElement('div');
   modal.className = 'custom-modal-overlay';
@@ -461,10 +537,13 @@ function addTeamMember() {
         <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
       </div>
       <div class="custom-modal-body">
-        <form id="teamMemberForm" onsubmit="saveTeamMember(event, '${projectId}')">
+        <form id="teamMemberForm" onsubmit="saveTeamMember(event)">
           <div class="form-group">
-            <label for="memberName">Name *</label>
-            <input type="text" id="memberName" required>
+            <label for="memberUsername">Select User *</label>
+            <select id="memberUsername" required>
+              <option value="">Select User</option>
+              ${userOptions}
+            </select>
           </div>
           <div class="form-group">
             <label for="memberRole">Role *</label>
@@ -490,11 +569,11 @@ function addTeamMember() {
 }
 
 // Save Team Member
-function saveTeamMember(event, projectId) {
+function saveTeamMember(event) {
   event.preventDefault();
   
   const member = {
-    name: document.getElementById('memberName').value,
+    username: document.getElementById('memberUsername').value,
     role: document.getElementById('memberRole').value,
     resp: document.getElementById('memberResponsibilities').value,
     contact: document.getElementById('memberContact').value
@@ -506,8 +585,14 @@ function saveTeamMember(event, projectId) {
 }
 
 // Edit Team Member
-function editTeamMember(projectId, index) {
+function editTeamMember(index) {
   const member = tempTeamMembers[index];
+  
+  // Create user options for dropdown with current selection
+  const userOptions = systemUsers.map(user => {
+    const selected = user.username === member.username ? 'selected' : '';
+    return `<option value="${user.username}" ${selected}>${user.fullName || user.username}</option>`;
+  }).join('');
   
   const modal = document.createElement('div');
   modal.className = 'custom-modal-overlay';
@@ -518,10 +603,13 @@ function editTeamMember(projectId, index) {
         <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
       </div>
       <div class="custom-modal-body">
-        <form id="teamMemberForm" onsubmit="updateTeamMember(event, '${projectId}', ${index})">
+        <form id="teamMemberForm" onsubmit="updateTeamMember(event, ${index})">
           <div class="form-group">
-            <label for="memberName">Name *</label>
-            <input type="text" id="memberName" value="${member.name}" required>
+            <label for="memberUsername">Select User *</label>
+            <select id="memberUsername" required>
+              <option value="">Select User</option>
+              ${userOptions}
+            </select>
           </div>
           <div class="form-group">
             <label for="memberRole">Role *</label>
@@ -547,11 +635,11 @@ function editTeamMember(projectId, index) {
 }
 
 // Update Team Member
-function updateTeamMember(event, projectId, index) {
+function updateTeamMember(event, index) {
   event.preventDefault();
   
   tempTeamMembers[index] = {
-    name: document.getElementById('memberName').value,
+    username: document.getElementById('memberUsername').value,
     role: document.getElementById('memberRole').value,
     resp: document.getElementById('memberResponsibilities').value,
     contact: document.getElementById('memberContact').value
@@ -562,7 +650,7 @@ function updateTeamMember(event, projectId, index) {
 }
 
 // Remove Team Member
-function removeTeamMember(projectId, index) {
+function removeTeamMember(index) {
   tempTeamMembers.splice(index, 1);
   renderTeamMembers();
 }
@@ -570,6 +658,11 @@ function removeTeamMember(projectId, index) {
 // Add Task
 function addTask() {
   const projectId = document.getElementById('projectId').value;
+  
+  // Create user options for dropdown
+  const userOptions = systemUsers.map(user => 
+    `<option value="${user.username}">${user.fullName || user.username}</option>`
+  ).join('');
   
   const modal = document.createElement('div');
   modal.className = 'custom-modal-overlay';
@@ -580,7 +673,7 @@ function addTask() {
         <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
       </div>
       <div class="custom-modal-body">
-        <form id="taskForm" onsubmit="saveTaskToProject(event, '${projectId}')">
+        <form id="taskForm" onsubmit="saveTaskToProject(event)">
           <div class="form-group">
             <label for="taskName">Task Name *</label>
             <input type="text" id="taskName" required>
@@ -588,7 +681,10 @@ function addTask() {
           <div class="form-row">
             <div class="form-group">
               <label for="taskAssignee">Assignee *</label>
-              <input type="text" id="taskAssignee" required>
+              <select id="taskAssignee" required>
+                <option value="">Select Assignee</option>
+                ${userOptions}
+              </select>
             </div>
             <div class="form-group">
               <label for="taskPriority">Priority *</label>
@@ -623,7 +719,7 @@ function addTask() {
 }
 
 // Save Task to Project
-function saveTaskToProject(event, projectId) {
+function saveTaskToProject(event) {
   event.preventDefault();
   
   const task = {
@@ -641,8 +737,14 @@ function saveTaskToProject(event, projectId) {
 }
 
 // Edit Task
-function editTask(projectId, index) {
+function editTask(index) {
   const task = tempTasks[index];
+  
+  // Create user options for dropdown with current selection
+  const userOptions = systemUsers.map(user => {
+    const selected = user.username === task.who ? 'selected' : '';
+    return `<option value="${user.username}" ${selected}>${user.fullName || user.username}</option>`;
+  }).join('');
   
   const modal = document.createElement('div');
   modal.className = 'custom-modal-overlay';
@@ -653,7 +755,7 @@ function editTask(projectId, index) {
         <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
       </div>
       <div class="custom-modal-body">
-        <form id="taskForm" onsubmit="updateTaskInProject(event, '${projectId}', ${index})">
+        <form id="taskForm" onsubmit="updateTaskInProject(event, ${index})">
           <div class="form-group">
             <label for="taskName">Task Name *</label>
             <input type="text" id="taskName" value="${task.name}" required>
@@ -661,7 +763,10 @@ function editTask(projectId, index) {
           <div class="form-row">
             <div class="form-group">
               <label for="taskAssignee">Assignee *</label>
-              <input type="text" id="taskAssignee" value="${task.who}" required>
+              <select id="taskAssignee" required>
+                <option value="">Select Assignee</option>
+                ${userOptions}
+              </select>
             </div>
             <div class="form-group">
               <label for="taskPriority">Priority *</label>
@@ -696,7 +801,7 @@ function editTask(projectId, index) {
 }
 
 // Update Task in Project
-function updateTaskInProject(event, projectId, index) {
+function updateTaskInProject(event, index) {
   event.preventDefault();
   
   tempTasks[index] = {
@@ -713,7 +818,7 @@ function updateTaskInProject(event, projectId, index) {
 }
 
 // Remove Task
-function removeTask(projectId, index) {
+function removeTask(index) {
   tempTasks.splice(index, 1);
   renderTasks();
 }
@@ -778,6 +883,11 @@ async function saveProject(event) {
       
       closeProjectModal();
       showCustomModal('Success', 'Project saved successfully!', 'success');
+      
+      // Refresh projects
+      const updatedProjects = await firebaseService.getProjects();
+      localStorage.setItem('prospenProjects', JSON.stringify(updatedProjects));
+      
     } else {
       showCustomModal('Error', 'Failed to save project: ' + result.error, 'danger');
     }
@@ -830,6 +940,9 @@ async function confirmDeleteProject(id) {
   document.querySelector('.custom-modal-overlay').remove();
   
   if (result.success) {
+    // Refresh projects
+    const updatedProjects = await firebaseService.getProjects();
+    localStorage.setItem('prospenProjects', JSON.stringify(updatedProjects));
     showCustomModal('Success', 'Project deleted successfully!', 'success');
   } else {
     showCustomModal('Error', 'Failed to delete project: ' + result.error, 'danger');
@@ -902,6 +1015,7 @@ function openBudgetModal(projectId) {
   document.body.appendChild(modal);
 }
 
+// projects.js - Fix saveBudgetItem to properly store and retrieve notes
 async function saveBudgetItem(event, projectId) {
   event.preventDefault();
   
@@ -930,12 +1044,15 @@ async function saveBudgetItem(event, projectId) {
     notes: notes || null
   });
   
+  // Save to localStorage
   localStorage.setItem('prospenProjects', JSON.stringify(projects));
   
+  // Save to Firebase
   await firebaseService.saveProject(project);
   
   document.querySelector('.custom-modal-overlay').remove();
   
+  // Refresh the project view
   showProjectView(projectId);
   showCustomModal('Success', 'Budget item added successfully!', 'success');
 }
@@ -1027,7 +1144,9 @@ export {
   formatDate,
   updateTopProject,
   calculateTotalBudget,
-  calculateSpentBudget
+  calculateSpentBudget,
+  getUserDisplayName,
+  loadSystemUsers
 };
 
 window.initProjects = initProjects;
@@ -1054,3 +1173,4 @@ window.formatDate = formatDate;
 window.updateTopProject = updateTopProject;
 window.calculateTotalBudget = calculateTotalBudget;
 window.calculateSpentBudget = calculateSpentBudget;
+window.getUserDisplayName = getUserDisplayName;
