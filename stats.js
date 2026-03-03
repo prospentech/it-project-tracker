@@ -642,10 +642,14 @@ function getActionColor(action) {
         'clock_in': '#22c55e',
         'clock_out': '#ef4444',
         'clock': '#3b82f6',
-        'suggestion': '#a855f7', // Changed from enquiry
+        'suggestion': '#a855f7',
         'task_create': '#38bdf8',
         'task_update': '#f59e0b',
-        'task_delete': '#ef4444'
+        'task_delete': '#ef4444',
+        'HubSpot CRM': '#ff7a59',      // HubSpot orange
+        'Zoho CRM': '#f05b4c',          // Zoho red
+        'Venue Setup': '#9333ea',       // Purple
+        'Microsoft 365': '#0078d4'      // Microsoft blue
     };
     return colors[action] || '#6b7280';
 }
