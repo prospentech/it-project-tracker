@@ -1,4 +1,4 @@
-// theme.js
+// theme.js - Complete updated version with global theme application
 let themeSettings = {};
 let previewSettings = {};
 
@@ -8,12 +8,13 @@ let dropdownSettings = {
     customColor: '#ffffff'
 };
 
-// Dropdown background settings
+// Dropdown background settings - NOW USES CARD COLOR BY DEFAULT
 let dropdownBgSettings = {
-    auto: true,
-    customColor: '#1e293b'
+    auto: true, // When true, uses card color
+    customColor: '#1e293b' // Fallback
 };
 
+// Apply theme to current page
 function applyTheme(settings = null) {
     const currentUser = auth.getCurrentUser();
     const username = currentUser ? currentUser.username : 'default';
@@ -34,7 +35,7 @@ function applyTheme(settings = null) {
     
     // Apply background color if set, otherwise use darkMode
     if (previewSettings.bgColor) {
-        setBackgroundColor(previewSettings.bgColor);
+        setBackgroundColor(previewSettings.bgColor, false);
     } else {
         // Fallback to darkMode toggle
         if (previewSettings.darkMode) {
@@ -74,6 +75,27 @@ function applyTheme(settings = null) {
     // Load dropdown settings after theme is applied
     loadDropdownSettings();
     loadDropdownBgSettings();
+    
+    // Force update all dropdowns immediately
+    updateAllDropdowns();
+}
+
+// Apply theme to all iframes and ensure it persists
+function applyThemeToAllPages() {
+    // Apply to current document
+    applyTheme();
+    
+    // Set up a mutation observer to watch for dynamically added elements
+    const observer = new MutationObserver(function(mutations) {
+        // When new elements are added, reapply dropdown styles
+        updateAllDropdowns();
+    });
+    
+    // Start observing
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 }
 
 function toggleDarkMode() {
@@ -86,14 +108,16 @@ function toggleDarkMode() {
 function setCardColor(color) {
     previewSettings.cardColor = color;
     applyTheme(previewSettings);
+    updateAllDropdowns();
 }
 
 function setAccentColor(color) {
     previewSettings.accentColor = color;
     applyTheme(previewSettings);
+    updateAllDropdowns();
 }
 
-function setBackgroundColor(color) {
+function setBackgroundColor(color, updatePreviews = true) {
     previewSettings.bgColor = color;
     document.documentElement.style.setProperty('--bg', color);
     
@@ -113,6 +137,10 @@ function setBackgroundColor(color) {
     const darkModeToggle = document.getElementById('darkModeToggle');
     if (darkModeToggle) {
         darkModeToggle.checked = isDark;
+    }
+    
+    if (updatePreviews) {
+        updateAllDropdowns();
     }
 }
 
@@ -156,6 +184,7 @@ function toggleDropdownAuto() {
     
     // Save settings
     saveDropdownSettings();
+    updateAllDropdowns();
 }
 
 // Set dropdown text color from color grid
@@ -179,6 +208,7 @@ function setDropdownTextColor(color) {
     // Apply the color
     applyDropdownTextColor(color);
     saveDropdownSettings();
+    updateAllDropdowns();
 }
 
 // Apply custom dropdown text color from input field
@@ -197,12 +227,12 @@ function applyCustomDropdownColor() {
     setDropdownTextColor(color);
 }
 
-// Apply dropdown text color to all selects
+// Apply dropdown text color to all selects - IMPROVED VERSION
 function applyDropdownTextColor(color) {
     // Remove any existing custom dropdown styles
     removeCustomDropdownStyles();
     
-    // Create and add new style
+    // Create and add new style with !important flags
     const style = document.createElement('style');
     style.id = 'custom-dropdown-styles';
     style.textContent = `
@@ -221,7 +251,11 @@ function applyDropdownTextColor(color) {
         .projects-table select,
         .projects-table select option,
         .client-table select,
-        .client-table select option {
+        .client-table select option,
+        .chatbot-select,
+        .chatbot-select option,
+        .modal select,
+        .modal select option {
             color: ${color} !important;
         }
         
@@ -232,7 +266,8 @@ function applyDropdownTextColor(color) {
         .language-selector select option:hover,
         .tasks-table select option:hover,
         .projects-table select option:hover,
-        .client-table select option:hover {
+        .client-table select option:hover,
+        .modal select option:hover {
             background-color: var(--accent) !important;
             color: var(--bg) !important;
         }
@@ -244,7 +279,8 @@ function applyDropdownTextColor(color) {
         .language-selector select option:checked,
         .tasks-table select option:checked,
         .projects-table select option:checked,
-        .client-table select option:checked {
+        .client-table select option:checked,
+        .modal select option:checked {
             background-color: var(--accent) !important;
             color: var(--bg) !important;
         }
@@ -300,7 +336,7 @@ function loadDropdownSettings() {
     }
 }
 
-// Toggle between auto and custom dropdown background
+// Toggle between auto (card color) and custom dropdown background
 function toggleDropdownBgAuto() {
     const autoToggle = document.getElementById('dropdownBgAutoToggle');
     const customSection = document.getElementById('dropdownBgCustomColorSection');
@@ -311,6 +347,8 @@ function toggleDropdownBgAuto() {
         customSection.style.display = 'none';
         // Remove custom dropdown background styles
         removeCustomDropdownBgStyles();
+        // Apply card color as background
+        applyDropdownBgWithCardColor();
     } else {
         customSection.style.display = 'block';
         // Apply current custom color
@@ -319,9 +357,62 @@ function toggleDropdownBgAuto() {
     
     // Save settings
     saveDropdownBgSettings();
+    updateAllDropdowns();
 }
 
-// Set dropdown background color from color grid
+// Apply dropdown background using card color
+function applyDropdownBgWithCardColor() {
+    // Remove any existing custom dropdown background styles
+    removeCustomDropdownBgStyles();
+    
+    // Get current card color
+    const cardColor = getComputedStyle(document.documentElement).getPropertyValue('--card').trim();
+    
+    // Create and add new style for background using card color
+    const style = document.createElement('style');
+    style.id = 'custom-dropdown-bg-styles';
+    style.textContent = `
+        select option,
+        .filter-select option,
+        #fontFamily option,
+        .form-group select option,
+        .language-selector select option,
+        .tasks-table select option,
+        .projects-table select option,
+        .client-table select option,
+        .chatbot-select option,
+        .modal select option {
+            background-color: ${cardColor} !important;
+        }
+        
+        /* Style for the dropdown when expanded */
+        select:focus option,
+        select:active option,
+        select:hover option {
+            background-color: ${cardColor} !important;
+        }
+        
+        /* For Firefox */
+        select option:checked,
+        select option:selected {
+            background-color: var(--accent) !important;
+            color: var(--bg) !important;
+        }
+        
+        /* For Chrome/Safari */
+        select::-webkit-listbox {
+            background-color: ${cardColor} !important;
+        }
+        
+        select option:checked,
+        select option:selected {
+            background: var(--accent) linear-gradient(0deg, var(--accent) 0%, var(--accent) 100%) !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Set dropdown background color from color grid - FIXED
 function setDropdownBgColor(color) {
     dropdownBgSettings.customColor = color;
     dropdownBgSettings.auto = false;
@@ -342,6 +433,14 @@ function setDropdownBgColor(color) {
     // Apply the color
     applyDropdownBgColor(color);
     saveDropdownBgSettings();
+    updateAllDropdowns();
+    
+    // Prevent default navigation
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    return false;
 }
 
 // Apply custom dropdown background color from input field
@@ -360,12 +459,12 @@ function applyCustomDropdownBgColor() {
     setDropdownBgColor(color);
 }
 
-// Apply dropdown background color to all select dropdowns
+// Apply dropdown background color to all select dropdowns - IMPROVED VERSION
 function applyDropdownBgColor(color) {
     // Remove any existing custom dropdown background styles
     removeCustomDropdownBgStyles();
     
-    // Create and add new style for background
+    // Create and add new style for background with !important
     const style = document.createElement('style');
     style.id = 'custom-dropdown-bg-styles';
     style.textContent = `
@@ -376,7 +475,9 @@ function applyDropdownBgColor(color) {
         .language-selector select option,
         .tasks-table select option,
         .projects-table select option,
-        .client-table select option {
+        .client-table select option,
+        .chatbot-select option,
+        .modal select option {
             background-color: ${color} !important;
         }
         
@@ -402,6 +503,15 @@ function applyDropdownBgColor(color) {
         select option:checked,
         select option:selected {
             background: var(--accent) linear-gradient(0deg, var(--accent) 0%, var(--accent) 100%) !important;
+        }
+        
+        /* Custom dropdown arrow color for better visibility */
+        select {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(color)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 10px center !important;
+            background-size: 16px !important;
+            padding-right: 30px !important;
         }
     `;
     document.head.appendChild(style);
@@ -446,12 +556,33 @@ function loadDropdownBgSettings() {
         if (dropdownBgSettings.auto) {
             if (customSection) customSection.style.display = 'none';
             removeCustomDropdownBgStyles();
+            // Apply card color as background
+            applyDropdownBgWithCardColor();
         } else {
             if (customSection) customSection.style.display = 'block';
             if (colorInput) colorInput.value = dropdownBgSettings.customColor;
             if (colorPicker) colorPicker.value = dropdownBgSettings.customColor;
             applyDropdownBgColor(dropdownBgSettings.customColor);
         }
+    } else {
+        // Default to using card color
+        dropdownBgSettings.auto = true;
+        applyDropdownBgWithCardColor();
+    }
+}
+
+// NEW FUNCTION: Update all dropdowns with current settings
+function updateAllDropdowns() {
+    // Re-apply dropdown text color if not auto
+    if (!dropdownSettings.auto) {
+        applyDropdownTextColor(dropdownSettings.customColor);
+    }
+    
+    // Re-apply dropdown background (auto uses card color, custom uses custom)
+    if (dropdownBgSettings.auto) {
+        applyDropdownBgWithCardColor();
+    } else {
+        applyDropdownBgColor(dropdownBgSettings.customColor);
     }
 }
 
@@ -459,6 +590,7 @@ function saveThemeSettings() {
     const currentUser = auth.getCurrentUser();
     const username = currentUser ? currentUser.username : 'default';
     
+    // Save all theme settings
     localStorage.setItem('prospenTheme_' + username, JSON.stringify(previewSettings));
     themeSettings = { ...previewSettings };
     
@@ -466,10 +598,16 @@ function saveThemeSettings() {
     saveDropdownSettings();
     saveDropdownBgSettings();
     
+    // Apply theme immediately to current page
+    applyTheme(previewSettings);
+    
     // Show confirmation
     if (typeof showCustomModal === 'function') {
-        showCustomModal('Theme Updated', 'All settings saved successfully!', 'success');
+        showCustomModal('Theme Updated', 'Settings saved and applied to all pages!', 'success');
     }
+    
+    // Update all dropdowns with saved settings
+    updateAllDropdowns();
 }
 
 function resetSettings() {
@@ -509,6 +647,8 @@ function resetSettings() {
     if (bgAutoToggle) bgAutoToggle.checked = true;
     if (bgCustomSection) bgCustomSection.style.display = 'none';
     removeCustomDropdownBgStyles();
+    // Apply card color as background
+    applyDropdownBgWithCardColor();
     
     saveDropdownSettings();
     saveDropdownBgSettings();
@@ -537,6 +677,33 @@ function updateColorOptions() {
     });
 }
 
+// Initialize theme on page load
+function initTheme() {
+    // Apply saved theme
+    applyTheme();
+    
+    // Reapply theme when page becomes visible (in case of navigation)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            applyTheme();
+        }
+    });
+    
+    // Watch for navigation (SPA-like behavior)
+    window.addEventListener('popstate', function() {
+        setTimeout(applyTheme, 100);
+    });
+    
+    // Also reapply when any AJAX content loads
+    const originalFetch = window.fetch;
+    window.fetch = function() {
+        return originalFetch.apply(this, arguments).then(response => {
+            setTimeout(applyTheme, 200);
+            return response;
+        });
+    };
+}
+
 // Make functions available globally
 window.applyTheme = applyTheme;
 window.toggleDarkMode = toggleDarkMode;
@@ -558,3 +725,14 @@ window.applyCustomDropdownBgColor = applyCustomDropdownBgColor;
 window.loadDropdownBgSettings = loadDropdownBgSettings;
 window.removeCustomDropdownBgStyles = removeCustomDropdownBgStyles;
 window.saveDropdownBgSettings = saveDropdownBgSettings;
+window.updateAllDropdowns = updateAllDropdowns;
+window.applyDropdownBgWithCardColor = applyDropdownBgWithCardColor;
+window.initTheme = initTheme;
+window.applyThemeToAllPages = applyThemeToAllPages;
+
+// Auto-initialize on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTheme);
+} else {
+    initTheme();
+}

@@ -957,6 +957,138 @@ async function initClocking() {
   }, msToMidnight);
 }
 
+// Add this to main.js - Browser navigation support
+
+// Handle browser back/forward buttons
+window.addEventListener('popstate', function(event) {
+    // Check if we're in a project view
+    const projectView = document.getElementById('project-view');
+    if (projectView && projectView.style.display === 'block') {
+        // Close project view without affecting history
+        closeProject();
+        return;
+    }
+    
+    // Check if any modal is open
+    const openModals = document.querySelectorAll('.modal[style*="display: flex"], .custom-modal-overlay');
+    if (openModals.length > 0) {
+        // Close all modals
+        openModals.forEach(modal => modal.remove());
+        
+        // Also close any specific modals by ID
+        const modals = ['projectModal', 'taskModal', 'updateModal', 'commentModal', 
+                       'settingsModal', 'profileModal', 'clientModal', 'bannerModal',
+                       'meetingModal', 'versionModal', 'dutyModal', 'kpiModal'];
+        
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal && modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            }
+        });
+        
+        return;
+    }
+    
+    // Check if we're on a stats page
+    const statsPage = document.getElementById('statsPage');
+    if (statsPage && statsPage.style.display === 'block') {
+        closeStats();
+        return;
+    }
+    
+    // Check if we're on tech news page
+    const techNewsPage = document.getElementById('techNewsPage');
+    if (techNewsPage && techNewsPage.style.display === 'block') {
+        closeTechNews();
+        return;
+    }
+    
+    // Check if we're on enquiries page
+    const enquiriesPage = document.getElementById('enquiriesPage');
+    if (enquiriesPage && enquiriesPage.style.display === 'block') {
+        closeEnquiries();
+        return;
+    }
+    
+    // Check if we're on all projects page
+    const allProjectsPage = document.getElementById('allProjectsPage');
+    if (allProjectsPage && allProjectsPage.style.display === 'block') {
+        closeAllProjects();
+        return;
+    }
+    
+    // Check if we're on all updates page
+    const allUpdatesPage = document.getElementById('allUpdatesPage');
+    if (allUpdatesPage && allUpdatesPage.style.display === 'block') {
+        closeAllUpdates();
+        return;
+    }
+    
+    // If we're on a sub-page and not on index, go back to index
+    if (!window.location.pathname.includes('index.html') && 
+        window.location.pathname !== '/' && 
+        window.location.pathname !== '') {
+        window.location.href = 'index.html';
+    }
+});
+
+// Override navigation functions to work with history
+const originalOpenProject = window.openProject;
+window.openProject = function(id) {
+    // Push state for project view
+    history.pushState({ view: 'project', id: id }, '', '#project-view');
+    originalOpenProject(id);
+};
+
+const originalCloseProject = window.closeProject;
+window.closeProject = function() {
+    // Go back in history
+    history.back();
+};
+
+// Override modal open functions
+function openModalWithHistory(modalId) {
+    history.pushState({ modal: modalId }, '', '#modal');
+    document.getElementById(modalId).style.display = 'flex';
+}
+
+// Save original functions and override them
+const modalFunctions = {
+    'projectModal': 'openProjectModal',
+    'taskModal': 'openTaskModal',
+    'updateModal': 'openUpdateModal',
+    'settingsModal': 'openSettings',
+    'profileModal': 'openProfile',
+    'clientModal': 'openClientModal',
+    'bannerModal': 'openBannerModal',
+    'meetingModal': 'openMeetingModal',
+    'versionModal': 'openVersionModal',
+    'dutyModal': 'openDutyModal',
+    'kpiModal': 'openKPIModal'
+};
+
+Object.keys(modalFunctions).forEach(modalId => {
+    const funcName = modalFunctions[modalId];
+    if (window[funcName]) {
+        const originalFunc = window[funcName];
+        window[funcName] = function(...args) {
+            history.pushState({ modal: modalId }, '', '#modal');
+            return originalFunc.apply(this, args);
+        };
+    }
+});
+
+// Handle initial page load with hash
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash === '#project-view') {
+        const projectId = localStorage.getItem('currentProjectView');
+        if (projectId && window.showProjectView) {
+            window.showProjectView(projectId);
+        }
+    }
+});
+
 // Save scroll before leaving page
 window.addEventListener('beforeunload', saveScrollPosition);
 window.addEventListener('pagehide', saveScrollPosition);

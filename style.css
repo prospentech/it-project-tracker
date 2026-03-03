@@ -1876,3 +1876,40 @@ a[href*="microsoft"]:hover {
     overflow-wrap: break-word;
     white-space: pre-wrap;
 }
+
+/* Add to style.css - Improved dropdown styling */
+
+/* Ensure dropdown options are visible */
+select option {
+    padding: 8px 12px;
+}
+
+/* Custom dropdown styling for better color visibility */
+.filter-select, 
+.form-group select,
+.language-selector select,
+.tasks-table select,
+.projects-table select,
+.client-table select,
+#fontFamily {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    padding-right: 30px;
+}
+
+/* Dropdown hover effects */
+select:hover {
+    border-color: var(--accent);
+}
+
+/* Style for dropdown when expanded */
+select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}

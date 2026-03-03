@@ -119,6 +119,11 @@
             margin: 0 auto 5px;
             border: 1px solid rgba(255,255,255,0.2);
         }
+
+        /* Ensure color options don't navigate away */
+        .color-option {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -181,84 +186,84 @@
             <div class="settings-section">
                 <h3>Background Colors</h3>
                 <div class="color-grid" style="grid-template-columns: repeat(6, 1fr);">
-                    <div class="color-option" style="background: #FFFFFF;" onclick="setBackgroundColor('#FFFFFF')" title="White"></div>
-                    <div class="color-option" style="background: #F8FAFC;" onclick="setBackgroundColor('#F8FAFC')" title="Off White"></div>
-                    <div class="color-option" style="background: #E5E7EB;" onclick="setBackgroundColor('#E5E7EB')" title="Light Grey"></div>
-                    <div class="color-option" style="background: #9CA3AF;" onclick="setBackgroundColor('#9CA3AF')" title="Medium Grey"></div>
-                    <div class="color-option" style="background: #374151;" onclick="setBackgroundColor('#374151')" title="Dark Grey"></div>
-                    <div class="color-option" style="background: #000000;" onclick="setBackgroundColor('#000000')" title="Black"></div>
-                    <div class="color-option" style="background: #111827;" onclick="setBackgroundColor('#111827')" title="Charcoal"></div>
-                    <div class="color-option" style="background: #0A1F44;" onclick="setBackgroundColor('#0A1F44')" title="Navy Blue"></div>
-                    <div class="color-option" style="background: #1E4DB7;" onclick="setBackgroundColor('#1E4DB7')" title="Royal Blue"></div>
-                    <div class="color-option" style="background: #38BDF8;" onclick="setBackgroundColor('#38BDF8')" title="Sky Blue"></div>
-                    <div class="color-option" style="background: #2C5282;" onclick="setBackgroundColor('#2C5282')" title="Steel Blue"></div>
-                    <div class="color-option" style="background: #059669;" onclick="setBackgroundColor('#059669')" title="Emerald Green"></div>
-                    <div class="color-option" style="background: #0F766E;" onclick="setBackgroundColor('#0F766E')" title="Teal"></div>
-                    <div class="color-option" style="background: #A7F3D0;" onclick="setBackgroundColor('#A7F3D0')" title="Mint Green"></div>
-                    <div class="color-option" style="background: #F7931E;" onclick="setBackgroundColor('#F7931E')" title="Orange"></div>
-                    <div class="color-option" style="background: #EA580C;" onclick="setBackgroundColor('#EA580C')" title="Dark Orange"></div>
-                    <div class="color-option" style="background: #F59E0B;" onclick="setBackgroundColor('#F59E0B')" title="Amber"></div>
-                    <div class="color-option" style="background: #DC2626;" onclick="setBackgroundColor('#DC2626')" title="Red"></div>
-                    <div class="color-option" style="background: #991B1B;" onclick="setBackgroundColor('#991B1B')" title="Dark Red"></div>
-                    <div class="color-option" style="background: #4C1D95;" onclick="setBackgroundColor('#4C1D95')" title="Deep Purple"></div>
-                    <div class="color-option" style="background: #C9A227;" onclick="setBackgroundColor('#C9A227')" title="Gold"></div>
-                    <div class="color-option" style="background: #020617;" onclick="setBackgroundColor('#020617')" title="Dark Blue (Default)"></div>
+                    <div class="color-option" style="background: #FFFFFF;" onclick="setBackgroundColor('#FFFFFF'); event.preventDefault();" title="White"></div>
+                    <div class="color-option" style="background: #F8FAFC;" onclick="setBackgroundColor('#F8FAFC'); event.preventDefault();" title="Off White"></div>
+                    <div class="color-option" style="background: #E5E7EB;" onclick="setBackgroundColor('#E5E7EB'); event.preventDefault();" title="Light Grey"></div>
+                    <div class="color-option" style="background: #9CA3AF;" onclick="setBackgroundColor('#9CA3AF'); event.preventDefault();" title="Medium Grey"></div>
+                    <div class="color-option" style="background: #374151;" onclick="setBackgroundColor('#374151'); event.preventDefault();" title="Dark Grey"></div>
+                    <div class="color-option" style="background: #000000;" onclick="setBackgroundColor('#000000'); event.preventDefault();" title="Black"></div>
+                    <div class="color-option" style="background: #111827;" onclick="setBackgroundColor('#111827'); event.preventDefault();" title="Charcoal"></div>
+                    <div class="color-option" style="background: #0A1F44;" onclick="setBackgroundColor('#0A1F44'); event.preventDefault();" title="Navy Blue"></div>
+                    <div class="color-option" style="background: #1E4DB7;" onclick="setBackgroundColor('#1E4DB7'); event.preventDefault();" title="Royal Blue"></div>
+                    <div class="color-option" style="background: #38BDF8;" onclick="setBackgroundColor('#38BDF8'); event.preventDefault();" title="Sky Blue"></div>
+                    <div class="color-option" style="background: #2C5282;" onclick="setBackgroundColor('#2C5282'); event.preventDefault();" title="Steel Blue"></div>
+                    <div class="color-option" style="background: #059669;" onclick="setBackgroundColor('#059669'); event.preventDefault();" title="Emerald Green"></div>
+                    <div class="color-option" style="background: #0F766E;" onclick="setBackgroundColor('#0F766E'); event.preventDefault();" title="Teal"></div>
+                    <div class="color-option" style="background: #A7F3D0;" onclick="setBackgroundColor('#A7F3D0'); event.preventDefault();" title="Mint Green"></div>
+                    <div class="color-option" style="background: #F7931E;" onclick="setBackgroundColor('#F7931E'); event.preventDefault();" title="Orange"></div>
+                    <div class="color-option" style="background: #EA580C;" onclick="setBackgroundColor('#EA580C'); event.preventDefault();" title="Dark Orange"></div>
+                    <div class="color-option" style="background: #F59E0B;" onclick="setBackgroundColor('#F59E0B'); event.preventDefault();" title="Amber"></div>
+                    <div class="color-option" style="background: #DC2626;" onclick="setBackgroundColor('#DC2626'); event.preventDefault();" title="Red"></div>
+                    <div class="color-option" style="background: #991B1B;" onclick="setBackgroundColor('#991B1B'); event.preventDefault();" title="Dark Red"></div>
+                    <div class="color-option" style="background: #4C1D95;" onclick="setBackgroundColor('#4C1D95'); event.preventDefault();" title="Deep Purple"></div>
+                    <div class="color-option" style="background: #C9A227;" onclick="setBackgroundColor('#C9A227'); event.preventDefault();" title="Gold"></div>
+                    <div class="color-option" style="background: #020617;" onclick="setBackgroundColor('#020617'); event.preventDefault();" title="Dark Blue (Default)"></div>
                 </div>
             </div>
 
             <div class="settings-section">
                 <h3>Card Colors</h3>
                 <div class="color-grid" style="grid-template-columns: repeat(6, 1fr);">
-                    <div class="color-option" style="background: #FFFFFF;" onclick="setCardColor('#FFFFFF')" title="White"></div>
-                    <div class="color-option" style="background: #F8FAFC;" onclick="setCardColor('#F8FAFC')" title="Off White"></div>
-                    <div class="color-option" style="background: #E5E7EB;" onclick="setCardColor('#E5E7EB')" title="Light Grey"></div>
-                    <div class="color-option" style="background: #9CA3AF;" onclick="setCardColor('#9CA3AF')" title="Medium Grey"></div>
-                    <div class="color-option" style="background: #374151;" onclick="setCardColor('#374151')" title="Dark Grey"></div>
-                    <div class="color-option" style="background: #000000;" onclick="setCardColor('#000000')" title="Black"></div>
-                    <div class="color-option" style="background: #111827;" onclick="setCardColor('#111827')" title="Charcoal"></div>
-                    <div class="color-option" style="background: #0A1F44;" onclick="setCardColor('#0A1F44')" title="Navy Blue"></div>
-                    <div class="color-option" style="background: #1E4DB7;" onclick="setCardColor('#1E4DB7')" title="Royal Blue"></div>
-                    <div class="color-option" style="background: #38BDF8;" onclick="setCardColor('#38BDF8')" title="Sky Blue"></div>
-                    <div class="color-option" style="background: #2C5282;" onclick="setCardColor('#2C5282')" title="Steel Blue"></div>
-                    <div class="color-option" style="background: #059669;" onclick="setCardColor('#059669')" title="Emerald Green"></div>
-                    <div class="color-option" style="background: #0F766E;" onclick="setCardColor('#0F766E')" title="Teal"></div>
-                    <div class="color-option" style="background: #A7F3D0;" onclick="setCardColor('#A7F3D0')" title="Mint Green"></div>
-                    <div class="color-option" style="background: #F7931E;" onclick="setCardColor('#F7931E')" title="Orange"></div>
-                    <div class="color-option" style="background: #EA580C;" onclick="setCardColor('#EA580C')" title="Dark Orange"></div>
-                    <div class="color-option" style="background: #F59E0B;" onclick="setCardColor('#F59E0B')" title="Amber"></div>
-                    <div class="color-option" style="background: #DC2626;" onclick="setCardColor('#DC2626')" title="Red"></div>
-                    <div class="color-option" style="background: #991B1B;" onclick="setCardColor('#991B1B')" title="Dark Red"></div>
-                    <div class="color-option" style="background: #4C1D95;" onclick="setCardColor('#4C1D95')" title="Deep Purple"></div>
-                    <div class="color-option" style="background: #C9A227;" onclick="setCardColor('#C9A227')" title="Gold"></div>
-                    <div class="color-option" style="background: #1e293b;" onclick="setCardColor('#1e293b')" title="Dark Slate (Default)"></div>
+                    <div class="color-option" style="background: #FFFFFF;" onclick="setCardColor('#FFFFFF'); event.preventDefault();" title="White"></div>
+                    <div class="color-option" style="background: #F8FAFC;" onclick="setCardColor('#F8FAFC'); event.preventDefault();" title="Off White"></div>
+                    <div class="color-option" style="background: #E5E7EB;" onclick="setCardColor('#E5E7EB'); event.preventDefault();" title="Light Grey"></div>
+                    <div class="color-option" style="background: #9CA3AF;" onclick="setCardColor('#9CA3AF'); event.preventDefault();" title="Medium Grey"></div>
+                    <div class="color-option" style="background: #374151;" onclick="setCardColor('#374151'); event.preventDefault();" title="Dark Grey"></div>
+                    <div class="color-option" style="background: #000000;" onclick="setCardColor('#000000'); event.preventDefault();" title="Black"></div>
+                    <div class="color-option" style="background: #111827;" onclick="setCardColor('#111827'); event.preventDefault();" title="Charcoal"></div>
+                    <div class="color-option" style="background: #0A1F44;" onclick="setCardColor('#0A1F44'); event.preventDefault();" title="Navy Blue"></div>
+                    <div class="color-option" style="background: #1E4DB7;" onclick="setCardColor('#1E4DB7'); event.preventDefault();" title="Royal Blue"></div>
+                    <div class="color-option" style="background: #38BDF8;" onclick="setCardColor('#38BDF8'); event.preventDefault();" title="Sky Blue"></div>
+                    <div class="color-option" style="background: #2C5282;" onclick="setCardColor('#2C5282'); event.preventDefault();" title="Steel Blue"></div>
+                    <div class="color-option" style="background: #059669;" onclick="setCardColor('#059669'); event.preventDefault();" title="Emerald Green"></div>
+                    <div class="color-option" style="background: #0F766E;" onclick="setCardColor('#0F766E'); event.preventDefault();" title="Teal"></div>
+                    <div class="color-option" style="background: #A7F3D0;" onclick="setCardColor('#A7F3D0'); event.preventDefault();" title="Mint Green"></div>
+                    <div class="color-option" style="background: #F7931E;" onclick="setCardColor('#F7931E'); event.preventDefault();" title="Orange"></div>
+                    <div class="color-option" style="background: #EA580C;" onclick="setCardColor('#EA580C'); event.preventDefault();" title="Dark Orange"></div>
+                    <div class="color-option" style="background: #F59E0B;" onclick="setCardColor('#F59E0B'); event.preventDefault();" title="Amber"></div>
+                    <div class="color-option" style="background: #DC2626;" onclick="setCardColor('#DC2626'); event.preventDefault();" title="Red"></div>
+                    <div class="color-option" style="background: #991B1B;" onclick="setCardColor('#991B1B'); event.preventDefault();" title="Dark Red"></div>
+                    <div class="color-option" style="background: #4C1D95;" onclick="setCardColor('#4C1D95'); event.preventDefault();" title="Deep Purple"></div>
+                    <div class="color-option" style="background: #C9A227;" onclick="setCardColor('#C9A227'); event.preventDefault();" title="Gold"></div>
+                    <div class="color-option" style="background: #1e293b;" onclick="setCardColor('#1e293b'); event.preventDefault();" title="Dark Slate (Default)"></div>
                 </div>
             </div>
 
             <div class="settings-section">
                 <h3>Accent Colors</h3>
                 <div class="color-grid" style="grid-template-columns: repeat(6, 1fr);">
-                    <div class="color-option" style="background: #FFFFFF;" onclick="setAccentColor('#FFFFFF')" title="White"></div>
-                    <div class="color-option" style="background: #F8FAFC;" onclick="setAccentColor('#F8FAFC')" title="Off White"></div>
-                    <div class="color-option" style="background: #E5E7EB;" onclick="setAccentColor('#E5E7EB')" title="Light Grey"></div>
-                    <div class="color-option" style="background: #9CA3AF;" onclick="setAccentColor('#9CA3AF')" title="Medium Grey"></div>
-                    <div class="color-option" style="background: #374151;" onclick="setAccentColor('#374151')" title="Dark Grey"></div>
-                    <div class="color-option" style="background: #000000;" onclick="setAccentColor('#000000')" title="Black"></div>
-                    <div class="color-option" style="background: #111827;" onclick="setAccentColor('#111827')" title="Charcoal"></div>
-                    <div class="color-option" style="background: #0A1F44;" onclick="setAccentColor('#0A1F44')" title="Navy Blue"></div>
-                    <div class="color-option" style="background: #1E4DB7;" onclick="setAccentColor('#1E4DB7')" title="Royal Blue"></div>
-                    <div class="color-option" style="background: #38BDF8;" onclick="setAccentColor('#38BDF8')" title="Sky Blue"></div>
-                    <div class="color-option" style="background: #2C5282;" onclick="setAccentColor('#2C5282')" title="Steel Blue"></div>
-                    <div class="color-option" style="background: #059669;" onclick="setAccentColor('#059669')" title="Emerald Green"></div>
-                    <div class="color-option" style="background: #0F766E;" onclick="setAccentColor('#0F766E')" title="Teal"></div>
-                    <div class="color-option" style="background: #A7F3D0;" onclick="setAccentColor('#A7F3D0')" title="Mint Green"></div>
-                    <div class="color-option" style="background: #F7931E;" onclick="setAccentColor('#F7931E')" title="Orange"></div>
-                    <div class="color-option" style="background: #EA580C;" onclick="setAccentColor('#EA580C')" title="Dark Orange"></div>
-                    <div class="color-option" style="background: #F59E0B;" onclick="setAccentColor('#F59E0B')" title="Amber"></div>
-                    <div class="color-option" style="background: #DC2626;" onclick="setAccentColor('#DC2626')" title="Red"></div>
-                    <div class="color-option" style="background: #991B1B;" onclick="setAccentColor('#991B1B')" title="Dark Red"></div>
-                    <div class="color-option" style="background: #4C1D95;" onclick="setAccentColor('#4C1D95')" title="Deep Purple"></div>
-                    <div class="color-option" style="background: #C9A227;" onclick="setAccentColor('#C9A227')" title="Gold"></div>
-                    <div class="color-option" style="background: #38bdf8;" onclick="setAccentColor('#38bdf8')" title="Sky Blue (Default)"></div>
+                    <div class="color-option" style="background: #FFFFFF;" onclick="setAccentColor('#FFFFFF'); event.preventDefault();" title="White"></div>
+                    <div class="color-option" style="background: #F8FAFC;" onclick="setAccentColor('#F8FAFC'); event.preventDefault();" title="Off White"></div>
+                    <div class="color-option" style="background: #E5E7EB;" onclick="setAccentColor('#E5E7EB'); event.preventDefault();" title="Light Grey"></div>
+                    <div class="color-option" style="background: #9CA3AF;" onclick="setAccentColor('#9CA3AF'); event.preventDefault();" title="Medium Grey"></div>
+                    <div class="color-option" style="background: #374151;" onclick="setAccentColor('#374151'); event.preventDefault();" title="Dark Grey"></div>
+                    <div class="color-option" style="background: #000000;" onclick="setAccentColor('#000000'); event.preventDefault();" title="Black"></div>
+                    <div class="color-option" style="background: #111827;" onclick="setAccentColor('#111827'); event.preventDefault();" title="Charcoal"></div>
+                    <div class="color-option" style="background: #0A1F44;" onclick="setAccentColor('#0A1F44'); event.preventDefault();" title="Navy Blue"></div>
+                    <div class="color-option" style="background: #1E4DB7;" onclick="setAccentColor('#1E4DB7'); event.preventDefault();" title="Royal Blue"></div>
+                    <div class="color-option" style="background: #38BDF8;" onclick="setAccentColor('#38BDF8'); event.preventDefault();" title="Sky Blue"></div>
+                    <div class="color-option" style="background: #2C5282;" onclick="setAccentColor('#2C5282'); event.preventDefault();" title="Steel Blue"></div>
+                    <div class="color-option" style="background: #059669;" onclick="setAccentColor('#059669'); event.preventDefault();" title="Emerald Green"></div>
+                    <div class="color-option" style="background: #0F766E;" onclick="setAccentColor('#0F766E'); event.preventDefault();" title="Teal"></div>
+                    <div class="color-option" style="background: #A7F3D0;" onclick="setAccentColor('#A7F3D0'); event.preventDefault();" title="Mint Green"></div>
+                    <div class="color-option" style="background: #F7931E;" onclick="setAccentColor('#F7931E'); event.preventDefault();" title="Orange"></div>
+                    <div class="color-option" style="background: #EA580C;" onclick="setAccentColor('#EA580C'); event.preventDefault();" title="Dark Orange"></div>
+                    <div class="color-option" style="background: #F59E0B;" onclick="setAccentColor('#F59E0B'); event.preventDefault();" title="Amber"></div>
+                    <div class="color-option" style="background: #DC2626;" onclick="setAccentColor('#DC2626'); event.preventDefault();" title="Red"></div>
+                    <div class="color-option" style="background: #991B1B;" onclick="setAccentColor('#991B1B'); event.preventDefault();" title="Dark Red"></div>
+                    <div class="color-option" style="background: #4C1D95;" onclick="setAccentColor('#4C1D95'); event.preventDefault();" title="Deep Purple"></div>
+                    <div class="color-option" style="background: #C9A227;" onclick="setAccentColor('#C9A227'); event.preventDefault();" title="Gold"></div>
+                    <div class="color-option" style="background: #38bdf8;" onclick="setAccentColor('#38bdf8'); event.preventDefault();" title="Sky Blue (Default)"></div>
                 </div>
             </div>
 
@@ -281,25 +286,25 @@
 
                 <div id="dropdownCustomColorSection" style="display: none;">
                     <div class="color-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 15px;">
-                        <div class="color-option" style="background: #FFFFFF; border: 2px solid #ccc;" onclick="setDropdownTextColor('#FFFFFF')" title="White"></div>
-                        <div class="color-option" style="background: #F8FAFC;" onclick="setDropdownTextColor('#F8FAFC')" title="Off White"></div>
-                        <div class="color-option" style="background: #E5E7EB;" onclick="setDropdownTextColor('#E5E7EB')" title="Light Grey"></div>
-                        <div class="color-option" style="background: #9CA3AF;" onclick="setDropdownTextColor('#9CA3AF')" title="Medium Grey"></div>
-                        <div class="color-option" style="background: #94A3B8;" onclick="setDropdownTextColor('#94A3B8')" title="Slate Grey"></div>
-                        <div class="color-option" style="background: #64748B;" onclick="setDropdownTextColor('#64748B')" title="Dark Slate"></div>
-                        <div class="color-option" style="background: #38BDF8;" onclick="setDropdownTextColor('#38BDF8')" title="Sky Blue"></div>
-                        <div class="color-option" style="background: #22C55E;" onclick="setDropdownTextColor('#22C55E')" title="Green"></div>
-                        <div class="color-option" style="background: #F59E0B;" onclick="setDropdownTextColor('#F59E0B')" title="Orange"></div>
-                        <div class="color-option" style="background: #EF4444;" onclick="setDropdownTextColor('#EF4444')" title="Red"></div>
-                        <div class="color-option" style="background: #A855F7;" onclick="setDropdownTextColor('#A855F7')" title="Purple"></div>
-                        <div class="color-option" style="background: #EC4899;" onclick="setDropdownTextColor('#EC4899')" title="Pink"></div>
+                        <div class="color-option" style="background: #FFFFFF; border: 2px solid #ccc;" onclick="setDropdownTextColor('#FFFFFF'); event.preventDefault();" title="White"></div>
+                        <div class="color-option" style="background: #F8FAFC;" onclick="setDropdownTextColor('#F8FAFC'); event.preventDefault();" title="Off White"></div>
+                        <div class="color-option" style="background: #E5E7EB;" onclick="setDropdownTextColor('#E5E7EB'); event.preventDefault();" title="Light Grey"></div>
+                        <div class="color-option" style="background: #9CA3AF;" onclick="setDropdownTextColor('#9CA3AF'); event.preventDefault();" title="Medium Grey"></div>
+                        <div class="color-option" style="background: #94A3B8;" onclick="setDropdownTextColor('#94A3B8'); event.preventDefault();" title="Slate Grey"></div>
+                        <div class="color-option" style="background: #64748B;" onclick="setDropdownTextColor('#64748B'); event.preventDefault();" title="Dark Slate"></div>
+                        <div class="color-option" style="background: #38BDF8;" onclick="setDropdownTextColor('#38BDF8'); event.preventDefault();" title="Sky Blue"></div>
+                        <div class="color-option" style="background: #22C55E;" onclick="setDropdownTextColor('#22C55E'); event.preventDefault();" title="Green"></div>
+                        <div class="color-option" style="background: #F59E0B;" onclick="setDropdownTextColor('#F59E0B'); event.preventDefault();" title="Orange"></div>
+                        <div class="color-option" style="background: #EF4444;" onclick="setDropdownTextColor('#EF4444'); event.preventDefault();" title="Red"></div>
+                        <div class="color-option" style="background: #A855F7;" onclick="setDropdownTextColor('#A855F7'); event.preventDefault();" title="Purple"></div>
+                        <div class="color-option" style="background: #EC4899;" onclick="setDropdownTextColor('#EC4899'); event.preventDefault();" title="Pink"></div>
                     </div>
                     
                     <div class="form-group">
                         <label for="customDropdownColor">Custom Hex Color</label>
                         <div style="display: flex; gap: 10px;">
-                            <input type="color" id="customDropdownColorPicker" value="#ffffff" style="width: 50px; height: 40px; border-radius: 4px; cursor: pointer;">
-                            <input type="text" id="customDropdownColor" placeholder="#ffffff" value="#ffffff" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-h);">
+                            <input type="color" id="customDropdownColorPicker" value="#ffffff" style="width: 50px; height: 40px; border-radius: 4px; cursor: pointer;" onchange="document.getElementById('customDropdownColor').value = this.value; applyCustomDropdownColor();">
+                            <input type="text" id="customDropdownColor" placeholder="#ffffff" value="#ffffff" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-h);" onkeyup="if(event.key==='Enter') applyCustomDropdownColor()">
                             <button type="button" class="small-btn" onclick="applyCustomDropdownColor()" style="padding: 0 20px; background: var(--accent); color: var(--bg);">Apply</button>
                         </div>
                     </div>
@@ -325,25 +330,25 @@
 
                 <div id="dropdownBgCustomColorSection" style="display: none;">
                     <div class="color-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 15px;">
-                        <div class="color-option" style="background: #1e293b;" onclick="setDropdownBgColor('#1e293b')" title="Dark Slate (Default)"></div>
-                        <div class="color-option" style="background: #020617;" onclick="setDropdownBgColor('#020617')" title="Dark Blue"></div>
-                        <div class="color-option" style="background: #111827;" onclick="setDropdownBgColor('#111827')" title="Charcoal"></div>
-                        <div class="color-option" style="background: #374151;" onclick="setDropdownBgColor('#374151')" title="Dark Grey"></div>
-                        <div class="color-option" style="background: #4B5563;" onclick="setDropdownBgColor('#4B5563')" title="Medium Grey"></div>
-                        <div class="color-option" style="background: #6B7280;" onclick="setDropdownBgColor('#6B7280')" title="Grey"></div>
-                        <div class="color-option" style="background: #0A1F44;" onclick="setDropdownBgColor('#0A1F44')" title="Navy Blue"></div>
-                        <div class="color-option" style="background: #1E3A8A;" onclick="setDropdownBgColor('#1E3A8A')" title="Blue"></div>
-                        <div class="color-option" style="background: #065F46;" onclick="setDropdownBgColor('#065F46')" title="Dark Green"></div>
-                        <div class="color-option" style="background: #92400E;" onclick="setDropdownBgColor('#92400E')" title="Dark Orange"></div>
-                        <div class="color-option" style="background: #7F1D1D;" onclick="setDropdownBgColor('#7F1D1D')" title="Dark Red"></div>
-                        <div class="color-option" style="background: #581C87;" onclick="setDropdownBgColor('#581C87')" title="Dark Purple"></div>
+                        <div class="color-option" style="background: #1e293b;" onclick="setDropdownBgColor('#1e293b'); event.preventDefault();" title="Dark Slate (Default)"></div>
+                        <div class="color-option" style="background: #020617;" onclick="setDropdownBgColor('#020617'); event.preventDefault();" title="Dark Blue"></div>
+                        <div class="color-option" style="background: #111827;" onclick="setDropdownBgColor('#111827'); event.preventDefault();" title="Charcoal"></div>
+                        <div class="color-option" style="background: #374151;" onclick="setDropdownBgColor('#374151'); event.preventDefault();" title="Dark Grey"></div>
+                        <div class="color-option" style="background: #4B5563;" onclick="setDropdownBgColor('#4B5563'); event.preventDefault();" title="Medium Grey"></div>
+                        <div class="color-option" style="background: #6B7280;" onclick="setDropdownBgColor('#6B7280'); event.preventDefault();" title="Grey"></div>
+                        <div class="color-option" style="background: #0A1F44;" onclick="setDropdownBgColor('#0A1F44'); event.preventDefault();" title="Navy Blue"></div>
+                        <div class="color-option" style="background: #1E3A8A;" onclick="setDropdownBgColor('#1E3A8A'); event.preventDefault();" title="Blue"></div>
+                        <div class="color-option" style="background: #065F46;" onclick="setDropdownBgColor('#065F46'); event.preventDefault();" title="Dark Green"></div>
+                        <div class="color-option" style="background: #92400E;" onclick="setDropdownBgColor('#92400E'); event.preventDefault();" title="Dark Orange"></div>
+                        <div class="color-option" style="background: #7F1D1D;" onclick="setDropdownBgColor('#7F1D1D'); event.preventDefault();" title="Dark Red"></div>
+                        <div class="color-option" style="background: #581C87;" onclick="setDropdownBgColor('#581C87'); event.preventDefault();" title="Dark Purple"></div>
                     </div>
                     
                     <div class="form-group">
                         <label for="customDropdownBgColor">Custom Hex Color</label>
                         <div style="display: flex; gap: 10px;">
-                            <input type="color" id="customDropdownBgColorPicker" value="#1e293b" style="width: 50px; height: 40px; border-radius: 4px; cursor: pointer;">
-                            <input type="text" id="customDropdownBgColor" placeholder="#1e293b" value="#1e293b" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-h);">
+                            <input type="color" id="customDropdownBgColorPicker" value="#1e293b" style="width: 50px; height: 40px; border-radius: 4px; cursor: pointer;" onchange="document.getElementById('customDropdownBgColor').value = this.value; applyCustomDropdownBgColor();">
+                            <input type="text" id="customDropdownBgColor" placeholder="#1e293b" value="#1e293b" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-h);" onkeyup="if(event.key==='Enter') applyCustomDropdownBgColor()">
                             <button type="button" class="small-btn" onclick="applyCustomDropdownBgColor()" style="padding: 0 20px; background: var(--accent); color: var(--bg);">Apply</button>
                         </div>
                     </div>
@@ -352,7 +357,7 @@
                 <!-- Combined Dropdown Preview -->
                 <div class="dropdown-preview">
                     <h4 style="color: var(--accent); margin: 0 0 10px 0;">Live Preview:</h4>
-                    <select style="width: 100%; padding: 12px; border-radius: 8px; font-size: 14px;">
+                    <select id="previewDropdown" style="width: 100%; padding: 12px; border-radius: 8px; font-size: 14px;">
                         <option>Select an option...</option>
                         <option>Dashboard View</option>
                         <option>Projects Overview</option>
@@ -362,11 +367,11 @@
                     </select>
                     <div style="margin-top: 15px; display: flex; gap: 20px; justify-content: center;">
                         <div style="text-align: center;">
-                            <div class="color-preview-box" style="background: var(--dropdown-text-preview, #ffffff);"></div>
+                            <div class="color-preview-box" id="textColorPreview" style="background: #ffffff;"></div>
                             <span style="color: var(--text-p); font-size: 0.8rem;">Text Color</span>
                         </div>
                         <div style="text-align: center;">
-                            <div class="color-preview-box" style="background: var(--dropdown-bg-preview, #1e293b);"></div>
+                            <div class="color-preview-box" id="bgColorPreview" style="background: #1e293b;"></div>
                             <span style="color: var(--text-p); font-size: 0.8rem;">Background</span>
                         </div>
                     </div>
@@ -390,7 +395,7 @@
                             <span class="countdown" style="margin-top: 0;">7 Days Remaining</span>
                         </div>
                         <div style="margin-top: 15px;">
-                            <select style="width: 100%; padding: 8px; background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
+                            <select id="samplePreviewDropdown" style="width: 100%; padding: 8px; background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
                                 <option>Sample dropdown with your colors</option>
                                 <option>Option 1</option>
                                 <option>Option 2</option>
@@ -402,7 +407,9 @@
 
             <div class="btn-group">
                 <button class="btn-secondary" onclick="resetSettings()">Reset All</button>
-                <button type="button" class="btn-primary" onclick="saveThemeSettings(); window.location.href='../index.html'">Save & Return</button>
+                <button type="button" class="btn-primary" onclick="saveThemeSettings()">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
             </div>
         </div>
     </div>
@@ -426,6 +433,19 @@
             const preview = document.getElementById('fontPreview');
             if (preview) {
                 preview.style.fontFamily = document.getElementById('fontFamily').value;
+            }
+        };
+
+        // Update preview boxes with current colors
+        window.updatePreviewBoxes = function() {
+            const textColorPreview = document.getElementById('textColorPreview');
+            const bgColorPreview = document.getElementById('bgColorPreview');
+            
+            if (textColorPreview) {
+                textColorPreview.style.backgroundColor = dropdownSettings?.customColor || '#ffffff';
+            }
+            if (bgColorPreview) {
+                bgColorPreview.style.backgroundColor = dropdownBgSettings?.customColor || '#1e293b';
             }
         };
 
@@ -456,12 +476,18 @@
             
             // Load dropdown text settings
             if (window.loadDropdownSettings) {
-                setTimeout(window.loadDropdownSettings, 200);
+                setTimeout(() => {
+                    window.loadDropdownSettings();
+                    window.updatePreviewBoxes();
+                }, 200);
             }
             
             // Load dropdown background settings
             if (window.loadDropdownBgSettings) {
-                setTimeout(window.loadDropdownBgSettings, 200);
+                setTimeout(() => {
+                    window.loadDropdownBgSettings();
+                    window.updatePreviewBoxes();
+                }, 200);
             }
             
             // Set initial font preview
@@ -476,11 +502,34 @@
             
             // Add click handlers for color options to show active state
             document.querySelectorAll('.color-option').forEach(option => {
-                option.addEventListener('click', function() {
+                option.addEventListener('click', function(event) {
+                    // Prevent any default navigation
+                    event.preventDefault();
+                    
+                    // Remove active class from all options
                     document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+                    
+                    // Add active class to clicked option
                     this.classList.add('active');
+                    
+                    // Update preview boxes
+                    window.updatePreviewBoxes();
                 });
             });
+            
+            // Prevent any accidental navigation from color clicks
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('mousedown', (e) => e.preventDefault());
+            });
+        });
+
+        // Override any default link behavior
+        document.addEventListener('click', function(event) {
+            // If the click target is a color option, ensure it doesn't navigate
+            if (event.target.classList.contains('color-option')) {
+                event.preventDefault();
+                return false;
+            }
         });
     </script>
 </body>
