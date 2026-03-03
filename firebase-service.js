@@ -128,6 +128,7 @@ class FirebaseService {
     }
   }
 
+  // firebase-service.js - Fix the saveProject method
   async saveProject(project) {
     try {
       const projectId = project.id || push(ref(db, 'projects')).key;
@@ -141,6 +142,34 @@ class FirebaseService {
       };
       
       await set(projectRef, projectData);
+      
+      // If project has tasks, save them as individual tasks too
+      if (project.tasks && project.tasks.length > 0 && this.currentUser) {
+        for (const task of project.tasks) {
+          // Check if this task already exists in tasks collection
+          const taskData = {
+            id: task.id || `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            title: task.name,
+            assignedTo: task.who,
+            priority: task.prio,
+            dueDate: task.due,
+            status: task.status || 'Not Started',
+            projectId: projectId,
+            projectName: project.name,
+            description: '',
+            type: project.type,
+            notes: '',
+            createdBy: this.currentUser.username,
+            createdAt: new Date().toISOString()
+          };
+          
+          // Check if task already exists in tasks collection
+          const taskSnapshot = await get(ref(db, `tasks/${taskData.id}`));
+          if (!taskSnapshot.exists()) {
+            await set(ref(db, `tasks/${taskData.id}`), taskData);
+          }
+        }
+      }
       
       await this.recordActivity(
         project.id ? 'update' : 'create',
