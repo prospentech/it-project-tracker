@@ -143,33 +143,8 @@ class FirebaseService {
       
       await set(projectRef, projectData);
       
-      // If project has tasks, save them as individual tasks too
-      if (project.tasks && project.tasks.length > 0 && this.currentUser) {
-        for (const task of project.tasks) {
-          // Check if this task already exists in tasks collection
-          const taskData = {
-            id: task.id || `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            title: task.name,
-            assignedTo: task.who,
-            priority: task.prio,
-            dueDate: task.due,
-            status: task.status || 'Not Started',
-            projectId: projectId,
-            projectName: project.name,
-            description: '',
-            type: project.type,
-            notes: '',
-            createdBy: this.currentUser.username,
-            createdAt: new Date().toISOString()
-          };
-          
-          // Check if task already exists in tasks collection
-          const taskSnapshot = await get(ref(db, `tasks/${taskData.id}`));
-          if (!taskSnapshot.exists()) {
-            await set(ref(db, `tasks/${taskData.id}`), taskData);
-          }
-        }
-      }
+      // IMPORTANT: Do NOT re-write embedded project tasks back into /tasks here.
+      // That logic resurrects deleted tasks every time a project is saved.
       
       await this.recordActivity(
         project.id ? 'update' : 'create',
@@ -359,6 +334,24 @@ class FirebaseService {
     } catch (error) {
       console.error('Error deleting task:', error);
       return { success: false, error: error.message };
+    }
+  }
+
+  // Safely remove a task reference from a project WITHOUT touching the /tasks node.
+  // Use this instead of saveProject() after deletion — saveProject re-writes all
+  // embedded tasks back into /tasks, which resurrects deleted tasks.
+  async removeTaskFromProject(projectId, taskId) {
+    try {
+      const projectRef = ref(db, `projects/${projectId}`);
+      const snapshot = await get(projectRef);
+      if (!snapshot.exists()) return;
+      const project = snapshot.val();
+      if (project.tasks) {
+        project.tasks = project.tasks.filter(t => t.id !== taskId);
+        await set(projectRef, project);
+      }
+    } catch (error) {
+      console.error('Error removing task from project:', error);
     }
   }
 

@@ -5,10 +5,10 @@ import firebaseService from './firebase-service.js';
 let tasks = [];
 let users = [];
 let projects = {};
-let duties = []; // Add this line to store duties
+let duties = [];
 let currentPage = 1;
-let tasksUnsubscribe = null; // Track real-time subscription to prevent duplicates
-let tasksInitialized = false; // Guard against double-init
+let tasksUnsubscribe = null;  // prevents stacking real-time listeners
+let tasksInitialized = false; // prevents double-init
 const itemsPerPage = 15;
 let currentFilters = {
     status: 'all',
@@ -96,8 +96,6 @@ function checkOverdueTasks() {
 function generateTaskId() {
     const maxId = tasks.reduce((max, task) => {
         if (!task.taskId) return max;
-        // Handle both plain numeric ("01", "02") and prefixed ("TASK-XXXXX") formats
-        // Extract any trailing number, or parse the whole thing as a number
         const numMatch = task.taskId.toString().match(/(\d+)$/);
         if (numMatch) {
             const num = parseInt(numMatch[1], 10);
@@ -105,10 +103,7 @@ function generateTaskId() {
         }
         return max;
     }, 0);
-    
-    const nextNum = maxId + 1;
-    // Pad with leading zeros to ensure at least 2 digits (01, 02, etc.)
-    return nextNum.toString().padStart(2, '0');
+    return (maxId + 1).toString().padStart(2, '0');
 }
 
 // Helper function to check if a date is within a date range
@@ -716,9 +711,7 @@ async function saveTask(event) {
             }
             
             closeTaskModal();
-            // DO NOT call loadTasks() or renderTable() here.
-            // The real-time subscribeToTasks listener handles refresh automatically.
-            // Any manual update here races with Firebase and causes duplicates.
+            // subscribeToTasks handles refresh — do NOT call loadTasks/renderTable here
             showCustomModal('Success', 'Task saved successfully!', 'success');
         } else {
             showCustomModal('Error', 'Failed to save task: ' + result.error, 'danger');
@@ -878,7 +871,7 @@ async function markTaskComplete(taskId) {
     
     if (result.success) {
         closeTaskDetail();
-        // DO NOT call renderTable() here — real-time subscription handles refresh.
+        // subscribeToTasks handles refresh
         showCustomModal('Success', 'Task marked as complete!', 'success');
     } else {
         showCustomModal('Error', 'Failed to update task: ' + result.error, 'danger');
@@ -912,35 +905,26 @@ function deleteTask(taskId) {
 // Confirm delete task
 async function confirmDeleteTask(taskId) {
     const task = tasks.find(t => t.id === taskId);
-    
-    // Remove the confirmation modal first
+    const projectId = task?.projectId;
+
+    // Close modal and detail panel safely
     const overlay = document.querySelector('.custom-modal-overlay');
     if (overlay) overlay.remove();
-    
-    // Store task info before any async work
-    const projectId = task?.projectId;
-    
-    // Close detail view if open
     const detailView = document.getElementById('taskDetailView');
     if (detailView) detailView.classList.remove('show');
-    
-    // Delete from Firebase first
+
+    // Delete from Firebase /tasks first
     const result = await firebaseService.deleteTask(taskId);
-    
+
     if (result.success) {
-        // Update the linked project if needed
-        if (projectId && projects[projectId]) {
-            const project = projects[projectId];
-            if (project.tasks) {
-                project.tasks = project.tasks.filter(t => t.id !== taskId);
-                await firebaseService.saveProject(project);
-            }
+        // Use removeTaskFromProject (NOT saveProject) to clean the project reference.
+        // saveProject has a bug where it re-writes all embedded tasks back into /tasks,
+        // which resurrects deleted tasks. removeTaskFromProject only touches the project node.
+        if (projectId) {
+            await firebaseService.removeTaskFromProject(projectId, taskId);
         }
-        
-        // DO NOT manually filter tasks array or call renderTable() here.
-        // The real-time subscribeToTasks listener handles the refresh automatically
-        // once Firebase confirms the deletion. Touching tasks[] here causes a race
-        // condition where the deleted task reappears or duplicates are shown.
+        // DO NOT call loadTasks(), renderTable(), or filter tasks[] here.
+        // subscribeToTasks fires automatically with the updated data from Firebase.
         showCustomModal('Success', 'Task deleted successfully!', 'success');
     } else {
         showCustomModal('Error', 'Failed to delete task: ' + result.error, 'danger');
@@ -1007,38 +991,20 @@ function showCustomModal(title, message, type = 'info') {
 
 // Initialize tasks
 async function initTasks() {
-    // Prevent duplicate initialization
-    if (tasksInitialized) return;
+    if (tasksInitialized) return; // prevent double-init
     tasksInitialized = true;
-    
     try {
-        // Unsubscribe from any previous real-time listener before creating a new one
-        if (tasksUnsubscribe) {
-            tasksUnsubscribe();
-            tasksUnsubscribe = null;
-        }
-        
-        // Load all required data
-        await Promise.all([
-            loadTasks(),
-            loadUsers(),
-            loadProjects(),
-            loadDuties()
-        ]);
-        
-        // Subscribe to real-time updates (store unsubscribe fn to avoid duplicates)
+        if (tasksUnsubscribe) { tasksUnsubscribe(); tasksUnsubscribe = null; }
+        await Promise.all([loadTasks(), loadUsers(), loadProjects(), loadDuties()]);
         tasksUnsubscribe = firebaseService.subscribeToTasks((updatedTasks) => {
             tasks = updatedTasks;
             checkOverdueTasks();
             updateStats();
             renderTable();
         });
-        
-        // Force an immediate render
         renderTable();
-        
     } catch (error) {
-        tasksInitialized = false; // Reset on error so retry is possible
+        tasksInitialized = false;
         showCustomModal('Error', 'Failed to initialize tasks: ' + error.message, 'danger');
     }
 }
@@ -1063,8 +1029,7 @@ window.formatDateTime = formatDateTime;
 window.getUserFullName = getUserFullName;
 window.renderTasks = renderTable;
 
-// NOTE: initTasks() is called by the page (tasks.html).
-// Do NOT add a DOMContentLoaded listener here — it would cause double-init and task duplication.
+// initTasks() is called by tasks.html — no DOMContentLoaded needed here.
 
 // Export for module usage
 export {
