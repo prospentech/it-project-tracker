@@ -1029,7 +1029,7 @@ window.formatDateTime = formatDateTime;
 window.getUserFullName = getUserFullName;
 window.renderTasks = renderTable;
 
-// initTasks() is called by tasks.html — no DOMContentLoaded needed here.
+// initTasks() is called by tasks.html — no DOMContentLoaded needed here
 
 // Export for module usage
 export {
