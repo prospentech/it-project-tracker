@@ -716,11 +716,9 @@ async function saveTask(event) {
             }
             
             closeTaskModal();
-            await loadTasks();
-            await loadProjects();
-            await loadDuties(); // Reload duties
-            renderTable();
-            
+            // DO NOT call loadTasks() or renderTable() here.
+            // The real-time subscribeToTasks listener handles refresh automatically.
+            // Any manual update here races with Firebase and causes duplicates.
             showCustomModal('Success', 'Task saved successfully!', 'success');
         } else {
             showCustomModal('Error', 'Failed to save task: ' + result.error, 'danger');
@@ -880,8 +878,7 @@ async function markTaskComplete(taskId) {
     
     if (result.success) {
         closeTaskDetail();
-        await loadTasks();
-        renderTable();
+        // DO NOT call renderTable() here — real-time subscription handles refresh.
         showCustomModal('Success', 'Task marked as complete!', 'success');
     } else {
         showCustomModal('Error', 'Failed to update task: ' + result.error, 'danger');
@@ -920,27 +917,30 @@ async function confirmDeleteTask(taskId) {
     const overlay = document.querySelector('.custom-modal-overlay');
     if (overlay) overlay.remove();
     
-    if (task && task.projectId && projects[task.projectId]) {
-        const project = projects[task.projectId];
-        if (project.tasks) {
-            project.tasks = project.tasks.filter(t => t.id !== taskId);
-            await firebaseService.saveProject(project);
-        }
-    }
-    
-    const result = await firebaseService.deleteTask(taskId);
+    // Store task info before any async work
+    const projectId = task?.projectId;
     
     // Close detail view if open
     const detailView = document.getElementById('taskDetailView');
     if (detailView) detailView.classList.remove('show');
     
+    // Delete from Firebase first
+    const result = await firebaseService.deleteTask(taskId);
+    
     if (result.success) {
-        // Remove from local array immediately so generateTaskId works correctly
-        tasks = tasks.filter(t => t.id !== taskId);
-        await loadTasks();
-        await loadProjects();
-        await loadDuties();
-        renderTable();
+        // Update the linked project if needed
+        if (projectId && projects[projectId]) {
+            const project = projects[projectId];
+            if (project.tasks) {
+                project.tasks = project.tasks.filter(t => t.id !== taskId);
+                await firebaseService.saveProject(project);
+            }
+        }
+        
+        // DO NOT manually filter tasks array or call renderTable() here.
+        // The real-time subscribeToTasks listener handles the refresh automatically
+        // once Firebase confirms the deletion. Touching tasks[] here causes a race
+        // condition where the deleted task reappears or duplicates are shown.
         showCustomModal('Success', 'Task deleted successfully!', 'success');
     } else {
         showCustomModal('Error', 'Failed to delete task: ' + result.error, 'danger');
