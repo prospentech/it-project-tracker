@@ -7,6 +7,8 @@ let users = [];
 let projects = {};
 let duties = []; // Add this line to store duties
 let currentPage = 1;
+let tasksUnsubscribe = null; // Track real-time subscription to prevent duplicates
+let tasksInitialized = false; // Guard against double-init
 const itemsPerPage = 15;
 let currentFilters = {
     status: 'all',
@@ -1005,24 +1007,27 @@ function showCustomModal(title, message, type = 'info') {
 
 // Initialize tasks
 async function initTasks() {
-    //console.log('Initializing tasks...');
+    // Prevent duplicate initialization
+    if (tasksInitialized) return;
+    tasksInitialized = true;
+    
     try {
+        // Unsubscribe from any previous real-time listener before creating a new one
+        if (tasksUnsubscribe) {
+            tasksUnsubscribe();
+            tasksUnsubscribe = null;
+        }
+        
         // Load all required data
         await Promise.all([
             loadTasks(),
             loadUsers(),
             loadProjects(),
-            loadDuties() // Load duties
+            loadDuties()
         ]);
         
-        //console.log('Tasks loaded:', tasks.length);
-        //console.log('Users loaded:', users.length);
-        //console.log('Projects loaded:', Object.keys(projects).length);
-        //console.log('Duties loaded:', duties.length);
-        
-        // Subscribe to real-time updates
-        firebaseService.subscribeToTasks((updatedTasks) => {
-            //console.log('Real-time tasks update received:', updatedTasks.length);
+        // Subscribe to real-time updates (store unsubscribe fn to avoid duplicates)
+        tasksUnsubscribe = firebaseService.subscribeToTasks((updatedTasks) => {
             tasks = updatedTasks;
             checkOverdueTasks();
             updateStats();
@@ -1033,7 +1038,7 @@ async function initTasks() {
         renderTable();
         
     } catch (error) {
-        //console.error('Error initializing tasks:', error);
+        tasksInitialized = false; // Reset on error so retry is possible
         showCustomModal('Error', 'Failed to initialize tasks: ' + error.message, 'danger');
     }
 }
@@ -1058,11 +1063,8 @@ window.formatDateTime = formatDateTime;
 window.getUserFullName = getUserFullName;
 window.renderTasks = renderTable;
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    //console.log('DOM loaded, initializing tasks...');
-    initTasks();
-});
+// NOTE: initTasks() is called by the page (tasks.html).
+// Do NOT add a DOMContentLoaded listener here — it would cause double-init and task duplication.
 
 // Export for module usage
 export {
