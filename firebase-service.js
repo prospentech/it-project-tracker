@@ -282,7 +282,7 @@ class FirebaseService {
       const taskData = {
         ...task,
         id: taskId,
-        taskId: task.taskId || `TASK-${taskId.substring(0, 5).toUpperCase()}`,
+        taskId: task.taskId || null,
         createdAt: task.createdAt || new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
         lastUpdatedBy: this.currentUser?.username || 'system'

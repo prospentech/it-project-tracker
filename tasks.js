@@ -93,9 +93,12 @@ function checkOverdueTasks() {
 // Generate Task ID (01, 02, 03 format)
 function generateTaskId() {
     const maxId = tasks.reduce((max, task) => {
-        // Check if task ID is a number (without any prefix)
-        if (task.taskId && !isNaN(parseInt(task.taskId))) {
-            const num = parseInt(task.taskId);
+        if (!task.taskId) return max;
+        // Handle both plain numeric ("01", "02") and prefixed ("TASK-XXXXX") formats
+        // Extract any trailing number, or parse the whole thing as a number
+        const numMatch = task.taskId.toString().match(/(\d+)$/);
+        if (numMatch) {
+            const num = parseInt(numMatch[1], 10);
             return num > max ? num : max;
         }
         return max;
@@ -911,6 +914,10 @@ function deleteTask(taskId) {
 async function confirmDeleteTask(taskId) {
     const task = tasks.find(t => t.id === taskId);
     
+    // Remove the confirmation modal first
+    const overlay = document.querySelector('.custom-modal-overlay');
+    if (overlay) overlay.remove();
+    
     if (task && task.projectId && projects[task.projectId]) {
         const project = projects[task.projectId];
         if (project.tasks) {
@@ -921,13 +928,16 @@ async function confirmDeleteTask(taskId) {
     
     const result = await firebaseService.deleteTask(taskId);
     
-    document.querySelector('.custom-modal-overlay').remove();
-    document.getElementById('taskDetailView').classList.remove('show');
+    // Close detail view if open
+    const detailView = document.getElementById('taskDetailView');
+    if (detailView) detailView.classList.remove('show');
     
     if (result.success) {
+        // Remove from local array immediately so generateTaskId works correctly
+        tasks = tasks.filter(t => t.id !== taskId);
         await loadTasks();
         await loadProjects();
-        await loadDuties(); // Reload duties
+        await loadDuties();
         renderTable();
         showCustomModal('Success', 'Task deleted successfully!', 'success');
     } else {
