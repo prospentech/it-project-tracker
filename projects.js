@@ -218,7 +218,7 @@ function openProject(id) {
   showProjectView(id);
 }
 
-// projects.js - Fix showProjectView to properly display notes
+// projects.js - Fix showProjectView to properly display team members
 function showProjectView(id) {
   const projectView = document.getElementById('project-view');
   const landing = document.getElementById('landing');
@@ -344,14 +344,19 @@ function showProjectView(id) {
       <div class="side-col">
         <div class="section-box">
           <h2>5. Team Roles</h2>
-          ${p.members && p.members.length > 0 ? p.members.map(m => `
+          ${p.members && p.members.length > 0 ? p.members.map(m => {
+            // Get the username properly - check both possible field names
+            const memberUsername = m.username || m.name || '';
+            // Get the display name using our helper function
+            const displayName = memberUsername ? getUserDisplayName(memberUsername) : 'Unknown';
+            return `
             <div class="team-member">
-              <b>${getUserDisplayName(m.username)}</b>
-              <i>${m.role}</i>
-              <div style="font-size:0.8rem; margin-top:5px;">${m.resp}</div>
-              <div style="color:var(--accent); font-size:0.8rem;">${m.contact}</div>
+              <b>${displayName}</b>
+              <i>${m.role || ''}</i>
+              <div style="font-size:0.8rem; margin-top:5px;">${m.resp || ''}</div>
+              <div style="color:var(--accent); font-size:0.8rem;">${m.contact || ''}</div>
             </div>
-          `).join('') : '<p>No team members added yet</p>'}
+          `}).join('') : '<p>No team members added yet</p>'}
         </div>
         <div class="section-box">
           <h2>6. Notes</h2>
@@ -530,14 +535,15 @@ function addTeamMember() {
   
   const modal = document.createElement('div');
   modal.className = 'custom-modal-overlay';
+  modal.id = 'teamMemberModal'; // Add an ID to identify this modal
   modal.innerHTML = `
     <div class="custom-modal" style="max-width: 500px;">
       <div class="custom-modal-header">
         <h3>Add Team Member</h3>
-        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+        <button class="custom-modal-close" onclick="this.closest('.custom-modal-overlay').remove();">&times;</button>
       </div>
       <div class="custom-modal-body">
-        <form id="teamMemberForm" onsubmit="saveTeamMember(event)">
+        <form id="teamMemberForm">
           <div class="form-group">
             <label for="memberUsername">Select User *</label>
             <select id="memberUsername" required>
@@ -558,8 +564,8 @@ function addTeamMember() {
             <input type="text" id="memberContact" placeholder="Email or phone">
           </div>
           <div class="btn-group">
-            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove()">Cancel</button>
-            <button type="submit" class="btn-primary">Add Member</button>
+            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove();">Cancel</button>
+            <button type="button" class="btn-primary" onclick="saveTeamMemberFromModal()">Add Member</button>
           </div>
         </form>
       </div>
@@ -568,9 +574,46 @@ function addTeamMember() {
   document.body.appendChild(modal);
 }
 
+// Add this new function right after addTeamMember
+function saveTeamMemberFromModal() {
+  // Get the form elements
+  const usernameSelect = document.getElementById('memberUsername');
+  const roleInput = document.getElementById('memberRole');
+  const respTextarea = document.getElementById('memberResponsibilities');
+  const contactInput = document.getElementById('memberContact');
+  
+  // Validate required fields
+  if (!usernameSelect || !usernameSelect.value) {
+    alert('Please select a user');
+    return;
+  }
+  
+  if (!roleInput || !roleInput.value) {
+    alert('Please enter a role');
+    return;
+  }
+  
+  const member = {
+    username: usernameSelect.value,
+    role: roleInput.value,
+    resp: respTextarea ? respTextarea.value : '',
+    contact: contactInput ? contactInput.value : ''
+  };
+  
+  tempTeamMembers.push(member);
+  renderTeamMembers();
+  
+  // Close the modal
+  const modalOverlay = document.querySelector('.custom-modal-overlay');
+  if (modalOverlay) {
+    modalOverlay.remove();
+  }
+}
+
 // Save Team Member
 function saveTeamMember(event) {
   event.preventDefault();
+  event.stopPropagation();
   
   const member = {
     username: document.getElementById('memberUsername').value,
@@ -581,10 +624,17 @@ function saveTeamMember(event) {
   
   tempTeamMembers.push(member);
   renderTeamMembers();
-  document.querySelector('.custom-modal-overlay').remove();
+  
+  // Close the modal properly
+  const modalOverlay = document.querySelector('.custom-modal-overlay');
+  if (modalOverlay) {
+    modalOverlay.remove();
+  }
+  
+  return false;
 }
 
-// Edit Team Member
+// Edit Team Member - replace with this fixed version
 function editTeamMember(index) {
   const member = tempTeamMembers[index];
   
@@ -596,36 +646,37 @@ function editTeamMember(index) {
   
   const modal = document.createElement('div');
   modal.className = 'custom-modal-overlay';
+  modal.id = 'editTeamMemberModal';
   modal.innerHTML = `
     <div class="custom-modal" style="max-width: 500px;">
       <div class="custom-modal-header">
         <h3>Edit Team Member</h3>
-        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+        <button class="custom-modal-close" onclick="this.closest('.custom-modal-overlay').remove();">&times;</button>
       </div>
       <div class="custom-modal-body">
-        <form id="teamMemberForm" onsubmit="updateTeamMember(event, ${index})">
+        <form id="editTeamMemberForm">
           <div class="form-group">
-            <label for="memberUsername">Select User *</label>
-            <select id="memberUsername" required>
+            <label for="editMemberUsername">Select User *</label>
+            <select id="editMemberUsername" required>
               <option value="">Select User</option>
               ${userOptions}
             </select>
           </div>
           <div class="form-group">
-            <label for="memberRole">Role *</label>
-            <input type="text" id="memberRole" value="${member.role}" required>
+            <label for="editMemberRole">Role *</label>
+            <input type="text" id="editMemberRole" value="${member.role || ''}" required>
           </div>
           <div class="form-group">
-            <label for="memberResponsibilities">Responsibilities</label>
-            <textarea id="memberResponsibilities" rows="2">${member.resp || ''}</textarea>
+            <label for="editMemberResponsibilities">Responsibilities</label>
+            <textarea id="editMemberResponsibilities" rows="2">${member.resp || ''}</textarea>
           </div>
           <div class="form-group">
-            <label for="memberContact">Contact</label>
-            <input type="text" id="memberContact" value="${member.contact || ''}">
+            <label for="editMemberContact">Contact</label>
+            <input type="text" id="editMemberContact" value="${member.contact || ''}">
           </div>
           <div class="btn-group">
-            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove()">Cancel</button>
-            <button type="submit" class="btn-primary">Update Member</button>
+            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove();">Cancel</button>
+            <button type="button" class="btn-primary" onclick="updateTeamMemberFromModal(${index})">Update Member</button>
           </div>
         </form>
       </div>
@@ -634,9 +685,42 @@ function editTeamMember(index) {
   document.body.appendChild(modal);
 }
 
+// Add this function for updating team members
+function updateTeamMemberFromModal(index) {
+  const usernameSelect = document.getElementById('editMemberUsername');
+  const roleInput = document.getElementById('editMemberRole');
+  const respTextarea = document.getElementById('editMemberResponsibilities');
+  const contactInput = document.getElementById('editMemberContact');
+  
+  if (!usernameSelect || !usernameSelect.value) {
+    alert('Please select a user');
+    return;
+  }
+  
+  if (!roleInput || !roleInput.value) {
+    alert('Please enter a role');
+    return;
+  }
+  
+  tempTeamMembers[index] = {
+    username: usernameSelect.value,
+    role: roleInput.value,
+    resp: respTextarea ? respTextarea.value : '',
+    contact: contactInput ? contactInput.value : ''
+  };
+  
+  renderTeamMembers();
+  
+  const modalOverlay = document.querySelector('.custom-modal-overlay');
+  if (modalOverlay) {
+    modalOverlay.remove();
+  }
+}
+
 // Update Team Member
 function updateTeamMember(event, index) {
   event.preventDefault();
+  event.stopPropagation();
   
   tempTeamMembers[index] = {
     username: document.getElementById('memberUsername').value,
@@ -646,7 +730,13 @@ function updateTeamMember(event, index) {
   };
   
   renderTeamMembers();
-  document.querySelector('.custom-modal-overlay').remove();
+  
+  const modalOverlay = document.querySelector('.custom-modal-overlay');
+  if (modalOverlay) {
+    modalOverlay.remove();
+  }
+  
+  return false;
 }
 
 // Remove Team Member
@@ -670,10 +760,10 @@ function addTask() {
     <div class="custom-modal" style="max-width: 500px;">
       <div class="custom-modal-header">
         <h3>Add Task</h3>
-        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+        <button class="custom-modal-close" onclick="this.closest('.custom-modal-overlay').remove(); event.preventDefault(); event.stopPropagation();">&times;</button>
       </div>
       <div class="custom-modal-body">
-        <form id="taskForm" onsubmit="saveTaskToProject(event)">
+        <form id="taskForm" onsubmit="saveTaskToProject(event); return false;">
           <div class="form-group">
             <label for="taskName">Task Name *</label>
             <input type="text" id="taskName" required>
@@ -708,7 +798,7 @@ function addTask() {
             </select>
           </div>
           <div class="btn-group">
-            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove()">Cancel</button>
+            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove(); event.preventDefault(); event.stopPropagation();">Cancel</button>
             <button type="submit" class="btn-primary">Add Task</button>
           </div>
         </form>
@@ -716,24 +806,55 @@ function addTask() {
     </div>
   `;
   document.body.appendChild(modal);
+  
+  // Add event listener to prevent form submission from bubbling
+  const form = document.getElementById('taskForm');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      saveTaskToProject(e);
+    });
+  }
 }
 
 // Save Task to Project
 function saveTaskToProject(event) {
   event.preventDefault();
+  event.stopPropagation();
+  
+  // Generate a proper task ID with timestamp and random string to ensure uniqueness
+  const taskId = 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   
   const task = {
-    id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+    id: taskId,
     name: document.getElementById('taskName').value,
     who: document.getElementById('taskAssignee').value,
     prio: document.getElementById('taskPriority').value,
     due: document.getElementById('taskDue').value,
-    status: document.getElementById('taskStatus').value
+    status: document.getElementById('taskStatus').value,
+    taskId: taskId
   };
   
-  tempTasks.push(task);
-  renderTasks();
-  document.querySelector('.custom-modal-overlay').remove();
+  // Check if this task already exists in tempTasks (to prevent duplicates)
+  const existingTaskIndex = tempTasks.findIndex(t => 
+    t.name === task.name && 
+    t.who === task.who && 
+    t.due === task.due
+  );
+  
+  if (existingTaskIndex === -1) {
+    tempTasks.push(task);
+    renderTasks();
+  }
+  
+  // Close the modal properly
+  const modalOverlay = document.querySelector('.custom-modal-overlay');
+  if (modalOverlay) {
+    modalOverlay.remove();
+  }
+  
+  return false;
 }
 
 // Edit Task
@@ -752,10 +873,10 @@ function editTask(index) {
     <div class="custom-modal" style="max-width: 500px;">
       <div class="custom-modal-header">
         <h3>Edit Task</h3>
-        <button class="custom-modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+        <button class="custom-modal-close" onclick="this.closest('.custom-modal-overlay').remove(); event.preventDefault(); event.stopPropagation();">&times;</button>
       </div>
       <div class="custom-modal-body">
-        <form id="taskForm" onsubmit="updateTaskInProject(event, ${index})">
+        <form id="taskForm" onsubmit="updateTaskInProject(event, ${index}); return false;">
           <div class="form-group">
             <label for="taskName">Task Name *</label>
             <input type="text" id="taskName" value="${task.name}" required>
@@ -790,7 +911,7 @@ function editTask(index) {
             </select>
           </div>
           <div class="btn-group">
-            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove()">Cancel</button>
+            <button type="button" class="btn-secondary" onclick="this.closest('.custom-modal-overlay').remove(); event.preventDefault(); event.stopPropagation();">Cancel</button>
             <button type="submit" class="btn-primary">Update Task</button>
           </div>
         </form>
@@ -798,11 +919,22 @@ function editTask(index) {
     </div>
   `;
   document.body.appendChild(modal);
+  
+  // Add event listener to prevent form submission from bubbling
+  const form = document.getElementById('taskForm');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      updateTaskInProject(e, index);
+    });
+  }
 }
 
 // Update Task in Project
 function updateTaskInProject(event, index) {
   event.preventDefault();
+  event.stopPropagation();
   
   tempTasks[index] = {
     id: tempTasks[index].id,
@@ -810,11 +942,18 @@ function updateTaskInProject(event, index) {
     who: document.getElementById('taskAssignee').value,
     prio: document.getElementById('taskPriority').value,
     due: document.getElementById('taskDue').value,
-    status: document.getElementById('taskStatus').value
+    status: document.getElementById('taskStatus').value,
+    taskId: tempTasks[index].id
   };
   
   renderTasks();
-  document.querySelector('.custom-modal-overlay').remove();
+  
+  const modalOverlay = document.querySelector('.custom-modal-overlay');
+  if (modalOverlay) {
+    modalOverlay.remove();
+  }
+  
+  return false;
 }
 
 // Remove Task
@@ -832,6 +971,19 @@ async function saveProject(event) {
     return;
   }
   
+  // Ensure all tasks have proper IDs
+  const processedTasks = tempTasks.map(task => {
+    if (!task.id || task.id === 'N/A' || task.id === 'undefined') {
+      const newId = 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      return {
+        ...task,
+        id: newId,
+        taskId: newId
+      };
+    }
+    return task;
+  });
+  
   const project = {
     id: document.getElementById('projectId').value || null,
     name: document.getElementById('projectName').value,
@@ -844,7 +996,7 @@ async function saveProject(event) {
     type: document.getElementById('projectType').value,
     notes: document.getElementById('projectNotes').value,
     members: tempTeamMembers,
-    tasks: tempTasks,
+    tasks: processedTasks,
     lastUpdatedBy: currentUser.username
   };
   
@@ -859,8 +1011,8 @@ async function saveProject(event) {
     
     if (result.success) {
       // Also save each task as a separate task in Firebase
-      if (tempTasks.length > 0) {
-        for (const task of tempTasks) {
+      if (processedTasks.length > 0) {
+        for (const task of processedTasks) {
           const taskData = {
             id: task.id,
             title: task.name,
@@ -875,7 +1027,8 @@ async function saveProject(event) {
             startDate: project.start,
             notes: '',
             createdBy: currentUser.username,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            taskId: task.id
           };
           await firebaseService.saveTask(taskData);
         }
@@ -1136,11 +1289,17 @@ export {
   addTeamMember,
   editTeamMember,
   removeTeamMember,
+  saveTeamMember,
+  updateTeamMember,
   addTask,
   editTask,
   removeTask,
+  saveTaskToProject,
+  updateTaskInProject,
   openBudgetModal,
   saveBudgetItem,
+  saveTeamMemberFromModal,
+  updateTeamMemberFromModal,
   formatDate,
   updateTopProject,
   calculateTotalBudget,
@@ -1149,6 +1308,7 @@ export {
   loadSystemUsers
 };
 
+// Make absolutely sure all functions are available globally
 window.initProjects = initProjects;
 window.renderProjects = renderProjects;
 window.renderAllProjects = renderAllProjects;
@@ -1164,9 +1324,13 @@ window.confirmDeleteProject = confirmDeleteProject;
 window.addTeamMember = addTeamMember;
 window.editTeamMember = editTeamMember;
 window.removeTeamMember = removeTeamMember;
+window.saveTeamMember = saveTeamMember;
+window.updateTeamMember = updateTeamMember;
 window.addTask = addTask;
 window.editTask = editTask;
 window.removeTask = removeTask;
+window.saveTaskToProject = saveTaskToProject;
+window.updateTaskInProject = updateTaskInProject;
 window.openBudgetModal = openBudgetModal;
 window.saveBudgetItem = saveBudgetItem;
 window.formatDate = formatDate;
@@ -1174,3 +1338,5 @@ window.updateTopProject = updateTopProject;
 window.calculateTotalBudget = calculateTotalBudget;
 window.calculateSpentBudget = calculateSpentBudget;
 window.getUserDisplayName = getUserDisplayName;
+window.saveTeamMemberFromModal = saveTeamMemberFromModal;
+window.updateTeamMemberFromModal = updateTeamMemberFromModal;

@@ -21,6 +21,7 @@
     <script type="module" src="../stats.js"></script>
     <script type="module" src="../tasks.js"></script>
     <script type="module" src="../main.js"></script>
+    <script type="module" src="../i18n.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="../style.css">
@@ -570,7 +571,7 @@
                 <table class="inventory-table" id="inventoryTable">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th style="display:none;">ID</th>
                             <th>Laptop Number</th>
                             <th>Brand</th>
                             <th>Model</th>
@@ -1097,7 +1098,7 @@
                 const sequentialId = (index + 1).toString().padStart(3, '0');
                 
                 row.innerHTML = `
-                    <td><strong>${sequentialId}</strong></td>
+                    <td style="display:none;"><strong>${sequentialId}</strong></td>
                     <td><strong>${laptop.laptopNumber || 'N/A'}</strong></td>
                     <td>${laptop.brand}</td>
                     <td>${laptop.model}</td>
@@ -1269,6 +1270,21 @@
                 createdAt: now,
                 updatedAt: now
             };
+
+            // Duplicate validation
+            const newLaptopNumber = (document.getElementById('laptopNumber').value || '').trim().toLowerCase();
+            const newSerialNumber = (document.getElementById('serialNumber').value || '').trim().toLowerCase();
+            const duplicateLaptopNumber = laptops.find(l => l.id !== laptopId && (l.laptopNumber || '').trim().toLowerCase() === newLaptopNumber && newLaptopNumber !== '');
+            const duplicateSerial = laptops.find(l => l.id !== laptopId && (l.serialNumber || '').trim().toLowerCase() === newSerialNumber && newSerialNumber !== '');
+
+            if (duplicateLaptopNumber) {
+                showCustomModal('Duplicate Laptop Number', `Laptop number "${document.getElementById('laptopNumber').value}" already exists. Please use a different laptop number.`, 'danger');
+                return;
+            }
+            if (duplicateSerial) {
+                showCustomModal('Duplicate Serial Number', `Serial number "${document.getElementById('serialNumber').value}" already exists. Please use a different serial number.`, 'danger');
+                return;
+            }
 
             // Show loading indicator
             const submitBtn = event.target.querySelector('button[type="submit"]');

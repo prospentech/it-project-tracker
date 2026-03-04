@@ -526,7 +526,7 @@ window.updateStatsDisplay = function() {
         </div>
 
         <div class="section-box">
-            <h2><i class="fas fa-history"></i> Recent Activity Timeline (Last 7 Days)</h2>
+            <h2><i class="fas fa-history"></i> <span data-i18n="recent_activity">Recent Activity Timeline (Last 7 Days)</span></h2>
             <div style="margin-top: 15px;">
     `;
 

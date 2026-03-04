@@ -396,7 +396,7 @@ All team members for testing and feedback
 You can do this sequence every time you update files:
 
 git add .
-git commit -m "Describe changes"
+git commit -m "Updated and Project Linking"
 git push origin main
 
 No extra steps needed unless someone else updated the repo, then you’d git pull origin main first.

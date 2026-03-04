@@ -43,9 +43,13 @@
 // Make setLanguage available globally
 window.setLanguage = function(lang) {
     localStorage.setItem('appLanguage', lang);
+    // Use i18n module's setLanguage if loaded, otherwise just apply translations
     if (typeof applyTranslations === 'function') {
         applyTranslations();
     }
+    // Sync selector on all pages
+    const langSelect = document.getElementById('languageSelect');
+    if (langSelect) langSelect.value = lang;
 };
 
 // Initialize language selector with saved preference

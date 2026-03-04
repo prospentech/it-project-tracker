@@ -475,25 +475,25 @@ class FirebaseService {
         const defaultUsers = [
           { 
             username: 'admin', 
-            fullName: 'admin', 
+            fullName: 'Administrator', 
             email: 'admin@prospen.co.za', 
             role: 'Administrator' 
           },
           { 
             username: 'Junior', 
-            fullName: 'techsupport', 
+            fullName: 'Junior', 
             email: 'techsupport@prospen.co.za', 
             role: 'Team Member' 
           },
           { 
             username: 'Buhle', 
-            fullName: 'buhle', 
+            fullName: 'Buhle', 
             email: 'buhle@prospen.co.za', 
             role: 'Team Member' 
           },
           { 
             username: 'AJay', 
-            fullName: 'infotech', 
+            fullName: 'AJay', 
             email: 'infotech@prospen.co.za', 
             role: 'Team Member' 
           }
@@ -517,7 +517,7 @@ class FirebaseService {
         { 
           uid: '1', 
           username: 'admin', 
-          fullName: 'admin', 
+          fullName: 'Administrator', 
           email: 'admin@prospen.co.za', 
           role: 'Administrator', 
           online: false 
@@ -525,7 +525,7 @@ class FirebaseService {
         { 
           uid: '2', 
           username: 'Junior', 
-          fullName: 'techsupport', 
+          fullName: 'Junior', 
           email: 'techsupport@prospen.co.za', 
           role: 'Team Member', 
           online: false 
@@ -533,7 +533,7 @@ class FirebaseService {
         { 
           uid: '3', 
           username: 'Buhle', 
-          fullName: 'buhle', 
+          fullName: 'Buhle', 
           email: 'buhle@prospen.co.za', 
           role: 'Team Member', 
           online: false 
@@ -541,7 +541,7 @@ class FirebaseService {
         { 
           uid: '4', 
           username: 'AJay', 
-          fullName: 'infotech', 
+          fullName: 'AJay', 
           email: 'infotech@prospen.co.za', 
           role: 'Team Member', 
           online: false 

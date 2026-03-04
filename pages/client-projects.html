@@ -21,6 +21,7 @@
     <script type="module" src="../stats.js"></script> 
     <!-- <script type="module" src="../tasks.js"></script> -->
     <script type="module" src="../main.js"></script>
+    <script type="module" src="../i18n.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="../style.css">
@@ -1207,7 +1208,8 @@
                 `;
             } else {
                 let html = '';
-                paginatedClients.forEach(client => {
+                paginatedClients.forEach((client, index) => {
+                    const sequentialId = (startIndex + index + 1).toString().padStart(2, '0');
                     const statusClass = {
                         'Active': 'active',
                         'Completed': 'completed',
@@ -1217,7 +1219,7 @@
                     
                     html += `
                         <tr>
-                            <td><strong>${client.id.substring(0, 8)}</strong></td>
+                            <td><strong>${sequentialId}</strong></td>
                             <td>${client.fullName || 'N/A'}</td>
                             <td>${client.businessName || 'N/A'}</td>
                             <td><span class="status-badge ${statusClass}">${client.projectStatus || 'Pending'}</span></td>

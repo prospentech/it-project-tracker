@@ -21,7 +21,7 @@
     <script type="module" src="../stats.js"></script>
     <script type="module" src="../tasks.js"></script>
     <script type="module" src="../main.js"></script>
-    
+    <script type="module" src="../i18n.js"></script>    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
     <!-- Add this line after your other imports to make firebaseService globally available -->
@@ -344,8 +344,8 @@
             
             const version = {
                 id: document.getElementById('versionId').value || null,
-                title: document.getElementById('versionNumber').value, // Change this line
-                description: document.getElementById('versionTitle').value, // Add this
+                version: document.getElementById('versionNumber').value,
+                title: document.getElementById('versionTitle').value,
                 problemStatement: document.getElementById('problemStatement').value,
                 goal: document.getElementById('goal').value,
                 implDate: document.getElementById('implDate').value,

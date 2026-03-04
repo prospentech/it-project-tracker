@@ -19,6 +19,7 @@
     <script type="module" src="../theme.js"></script>
     <script type="module" src="../stats.js"></script>
     <script type="module" src="../main.js"></script>
+    <script type="module" src="../i18n.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="../style.css">
@@ -120,19 +121,14 @@
             document.body.appendChild(modal);
         };
 
-        // Make sure it's also attached to window (add this line right after the function)
-        window.deleteSuggestion = deleteSuggestion;
-
         // FIXED: Confirm delete suggestion function
         window.confirmDeleteSuggestion = async function(id) {
             try {
-                // Use the firebaseService.deleteEnquiry method (need to add it to firebase-service.js)
-                // For now, we'll use remove directly
-                const { db, ref, remove } = await import('../firebase-config.js');
-                await remove(ref(db, `enquiries/${id}`));
+                const result = await firebaseService.deleteEnquiry(id);
                 
                 // Close the modal
-                document.querySelector('.custom-modal-overlay').remove();
+                const overlay = document.querySelector('.custom-modal-overlay');
+                if (overlay) overlay.remove();
                 
                 // Reload suggestions
                 await loadSuggestions();

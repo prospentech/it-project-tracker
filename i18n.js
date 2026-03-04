@@ -157,7 +157,21 @@ const translations = {
         feature_banners: "Track email banner assignments",
         feature_versions: "Plan feature releases",
         feature_stats: "View attendance and system analytics",
-        feature_tech_news: "Stay updated with tech trends"
+        feature_tech_news: "Stay updated with tech trends",
+        view_projects: "View Projects",
+        view_tasks: "View Tasks",
+        view_updates: "View Updates",
+        view_all_updates: "View All Updates",
+        nav_laptops: "Laptops",
+        attendance_leave: "Attendance & Leave",
+        performance_tracker: "Performance Tracker",
+        nav_settings: "Settings",
+        chat_support: "Chat Support",
+        welcome_title: "Welcome!",
+        section_updates: "Updates",
+        recent_activity: "Recent Activity Timeline (Last 7 Days)",
+        add_task: "ADD TASK",
+        leave: "LEAVE"
     },
     
     af: {
@@ -317,7 +331,21 @@ const translations = {
         feature_banners: "Volg e-pos banier toewysings",
         feature_versions: "Beplan kenmerk vrystellings",
         feature_stats: "Bekyk bywoning en stelsel analise",
-        feature_tech_news: "Bly op hoogte van tegnologie neigings"
+        feature_tech_news: "Bly op hoogte van tegnologie neigings",
+        view_projects: "Bekyk Projekte",
+        view_tasks: "Bekyk Take",
+        view_updates: "Bekyk Opdaterings",
+        view_all_updates: "Bekyk Alle Opdaterings",
+        nav_laptops: "Skootrekenaars",
+        attendance_leave: "Bywoning & Verlof",
+        performance_tracker: "Prestasie Opgaarder",
+        nav_settings: "Instellings",
+        chat_support: "Klet Ondersteuning",
+        welcome_title: "Welkom!",
+        section_updates: "Opdaterings",
+        recent_activity: "Onlangse Aktiwiteit Tydlyn (Laaste 7 Dae)",
+        add_task: "VOEG TAAK BY",
+        leave: "VERLOF"
     },
     
     zu: {
@@ -477,7 +505,21 @@ const translations = {
         feature_banners: "Landelela izabelo zamabhena e-imeyili",
         feature_versions: "Hlela ukukhishwa kwezici",
         feature_stats: "Buka ukuya kanye nokuhlaziywa kwesistimu",
-        feature_tech_news: "Hlala ubuke izitayela zobuchwepheshe"
+        feature_tech_news: "Hlala ubuke izitayela zobuchwepheshe",
+        view_projects: "Buka Amaphrojekthi",
+        view_tasks: "Buka Imisebenzi",
+        view_updates: "Buka Izibuyekezo",
+        view_all_updates: "Buka Zonke Izibuyekezo",
+        nav_laptops: "Amalaphu",
+        attendance_leave: "Ukuphila & Ikhefu",
+        performance_tracker: "Ukulandela Ukusebenza",
+        nav_settings: "Izilungiselelo",
+        chat_support: "Usizo Lokukhuluma",
+        welcome_title: "Wamukelekile!",
+        section_updates: "Izibuyekezo",
+        recent_activity: "Umlando Wemisebenzi Yamuva (Izinsuku Eziyi-7)",
+        add_task: "ENGEZA UMSEBENZI",
+        leave: "IKHEFU"
     },
     
     xh: {
@@ -637,7 +679,21 @@ const translations = {
         feature_banners: "Landelela izabelo zebhena ye-imeyili",
         feature_versions: "Cwangcisa ukukhutshwa kweempawu",
         feature_stats: "Jonga ukuya kunye nohlalutyo lwenkqubo",
-        feature_tech_news: "Hlala uhlaziyekile ngeendlela zobuchwepheshe"
+        feature_tech_news: "Hlala uhlaziyekile ngeendlela zobuchwepheshe",
+        view_projects: "Jonga Iiprojekthi",
+        view_tasks: "Jonga Imisebenzi",
+        view_updates: "Jonga Uhlaziyo",
+        view_all_updates: "Jonga Lonke Uhlaziyo",
+        nav_laptops: "Iilaptop",
+        attendance_leave: "Ukuphazamiseka & Imvume",
+        performance_tracker: "Ukulandela Ukusebenza",
+        nav_settings: "Useto",
+        chat_support: "Uncedo Lokuthetha",
+        welcome_title: "Wamkelekile!",
+        section_updates: "Uhlaziyo",
+        recent_activity: "Umlando Wemisebenzi Yamva (Iintsuku Ezi-7)",
+        add_task: "YONGEZA UMSEBENZI",
+        leave: "IMVUME"
     },
     
     nso: {
@@ -797,7 +853,21 @@ const translations = {
         feature_banners: "Latela dikabelo tša dibannara tša imeile",
         feature_versions: "Rera go lokollwa ga dikarolo",
         feature_stats: "Lebelela go ba gona le tshekatsheko ya sisteme",
-        feature_tech_news: "Dula o hlokometše mekgwa ya theknolotši"
+        feature_tech_news: "Dula o hlokometše mekgwa ya theknolotši",
+        view_projects: "Lebelela Diporojeke",
+        view_tasks: "Lebelela Mešomo",
+        view_updates: "Lebelela Dikgatišo",
+        view_all_updates: "Lebelela Dikgatišo Tšohle",
+        nav_laptops: "Dikhomphutha",
+        attendance_leave: "Go tla le Go hloka",
+        performance_tracker: "Molaodi wa Tiro",
+        nav_settings: "Dipeakanyo",
+        chat_support: "Thušo ya go bua",
+        welcome_title: "Amogela!",
+        section_updates: "Dikgatišo",
+        recent_activity: "Lenaneo la Mešomo ya Bjale (Matsatsi a 7)",
+        add_task: "OKETŠA MOŠOMO",
+        leave: "GO HLOKA"
     },
     
     st: {
@@ -957,7 +1027,21 @@ const translations = {
         feature_banners: "Lata likabelo tsa libannara tsa imeile",
         feature_versions: "Rera ho lokolloa ha likarolo",
         feature_stats: "Sheba boteng le tlhahlobo ea sistimi",
-        feature_tech_news: "Lula u hlokometse mekhoa ea theknoloji"
+        feature_tech_news: "Lula u hlokometse mekhoa ea theknoloji",
+        view_projects: "Sheba Merero",
+        view_tasks: "Sheba Mesebetsi",
+        view_updates: "Sheba Diphetolo",
+        view_all_updates: "Sheba Diphetolo Tsohle",
+        nav_laptops: "Dikhomphutha",
+        attendance_leave: "Ho tla le Ho hloka",
+        performance_tracker: "Motheo wa Mosebetsi",
+        nav_settings: "Dipeakanyo",
+        chat_support: "Thuso ya Puisano",
+        welcome_title: "Amoheha!",
+        section_updates: "Diphetolo",
+        recent_activity: "Lenaneo la Mesebetsi ya Morao (Matsatsi a 7)",
+        add_task: "KENYA MOSEBETSI",
+        leave: "HO HLOKA"
     },
     
     tn: {
@@ -1117,7 +1201,21 @@ const translations = {
         feature_banners: "Latela dikabelo tsa dibannara tsa imeile",
         feature_versions: "Rera go gololwa ga dikarolo",
         feature_stats: "Lebelela boteng le tshekatsheko ya sisteme",
-        feature_tech_news: "Dula o lebeletse mekgwa ya thekenoloji"
+        feature_tech_news: "Dula o lebeletse mekgwa ya thekenoloji",
+        view_projects: "Bona Diprojeke",
+        view_tasks: "Bona Mošomo",
+        view_updates: "Bona Dikgatišo",
+        view_all_updates: "Bona Dikgatišo Tsotlhe",
+        nav_laptops: "Dikhomphutha",
+        attendance_leave: "Go nna le Go tlhoka",
+        performance_tracker: "Molebeledi wa Tiro",
+        nav_settings: "Dipeelo",
+        chat_support: "Thuso ya Puisano",
+        welcome_title: "Amogela!",
+        section_updates: "Dikgatišo",
+        recent_activity: "Lenaneo la Mošomo wa Jaanong (Malatsi a 7)",
+        add_task: "TSENYA MOŠOMO",
+        leave: "GO TLHOKA"
     },
     
     nr: {
@@ -1277,7 +1375,21 @@ const translations = {
         feature_banners: "Landelela izabelo zamabhena e-imeyili",
         feature_versions: "Hlela ukukhishwa kwezici",
         feature_stats: "Buka ukuya kanye nokuhlaziywa kwesistimu",
-        feature_tech_news: "Hlala ubuke izitayela zobuchwepheshe"
+        feature_tech_news: "Hlala ubuke izitayela zobuchwepheshe",
+        view_projects: "Bona Iimphrojekthi",
+        view_tasks: "Bona Imisebenzi",
+        view_updates: "Bona Iilwazi",
+        view_all_updates: "Bona Iilwazi Zonke",
+        nav_laptops: "Amalaphu",
+        attendance_leave: "Ukuphila & Ikhefu",
+        performance_tracker: "Ukulandela Ukusebenza",
+        nav_settings: "Izilungiselelo",
+        chat_support: "Usizo Lokukhuluma",
+        welcome_title: "Wamukelekile!",
+        section_updates: "Iilwazi",
+        recent_activity: "Umlando Wemisebenzi Yamuva (Iintsuku Eziyi-7)",
+        add_task: "ENGEZA UMSEBENZI",
+        leave: "IKHEFU"
     },
     
     ss: {
@@ -1437,7 +1549,21 @@ const translations = {
         feature_banners: "Landzelela kwabelwa kwemabhena e-imeyili",
         feature_versions: "Hlela kukhishwa kwetici",
         feature_stats: "Buka kuba khona nehlatiya lesistimu",
-        feature_tech_news: "Hlala ubuke imikhuba yebuchwepheshe"
+        feature_tech_news: "Hlala ubuke imikhuba yebuchwepheshe",
+        view_projects: "Buka Tiprojekthi",
+        view_tasks: "Buka Imisebenti",
+        view_updates: "Buka Tibuyekezo",
+        view_all_updates: "Buka Tonkhe Tibuyekezo",
+        nav_laptops: "Emalaphu",
+        attendance_leave: "Kuphila & Ekhefwini",
+        performance_tracker: "Kulandzelela Kusebenta",
+        nav_settings: "Tilingiselelo",
+        chat_support: "Lusito Lokukhuluma",
+        welcome_title: "Wamukelwa!",
+        section_updates: "Tibuyekezo",
+        recent_activity: "Umlando Wemisebenti Yamuva (Emalanga Lesikhombisa)",
+        add_task: "ENGETA UMSEBENZI",
+        leave: "EKHEFWINI"
     },
     
     ve: {
@@ -1597,7 +1723,21 @@ const translations = {
                 feature_banners: "Tevhela u abelwa ha mabannara e-imeyili",
         feature_versions: "Rula u bviswa ha zwiimo",
         feature_stats: "Sedza vhudzulo na u saukanya ha sisiteme",
-        feature_tech_news: "Dzula no sedza ndila dza thekhinolodzhi"
+        feature_tech_news: "Dzula no sedza ndila dza thekhinolodzhi",
+        view_projects: "Vhona Zwiphrojeke",
+        view_tasks: "Vhona Mishumo",
+        view_updates: "Vhona Zwidzengi",
+        view_all_updates: "Vhona Zwidzengi Zwose",
+        nav_laptops: "Zwikhomphiyutha",
+        attendance_leave: "U Swika na U Shumula",
+        performance_tracker: "Muvhigo wa Mushumo",
+        nav_settings: "Zwithu zwa u Ita",
+        chat_support: "Thuso ya Vhaisani",
+        welcome_title: "Khou Ambiwa!",
+        section_updates: "Zwidzengi",
+        recent_activity: "Mafhungo a Mishumo (Maduvha a 7)",
+        add_task: "ENGEDZA MUSHUMO",
+        leave: "U SHUMULA"
     },
     
     ts: {
@@ -1757,7 +1897,21 @@ const translations = {
         feature_banners: "Landzelela ku averiwa ka mabhanara ya imeyili",
         feature_versions: "Pulana ku humesiwa ka swiphemu",
         feature_stats: "Vona vukona na nxopaxopo wa sisteme",
-        feature_tech_news: "Tshama u langutile maendlelo ya thekinoloji"
+        feature_tech_news: "Tshama u langutile maendlelo ya thekinoloji",
+        view_projects: "Languta Swiphrojeke",
+        view_tasks: "Languta Switirho",
+        view_updates: "Languta Swibuyeriwa",
+        view_all_updates: "Languta Swibuyeriwa Hinkwaswo",
+        nav_laptops: "Swikhomphutha",
+        attendance_leave: "Ku Tiva na Ku Siya",
+        performance_tracker: "Mulandzisi wa Ntirho",
+        nav_settings: "Swilungiselelo",
+        chat_support: "Pfuneto ya Vurimi",
+        welcome_title: "Xewelani!",
+        section_updates: "Swibuyeriwa",
+        recent_activity: "Matimu ya Ntirho (Masiku ya 7)",
+        add_task: "ENGETELA NTIRHO",
+        leave: "KU SIYA"
     }
 };
 

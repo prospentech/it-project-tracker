@@ -21,6 +21,7 @@
     <script type="module" src="../stats.js"></script>
     <!-- <script type="module" src="../tasks.js"></script> -->
     <script type="module" src="../main.js"></script>
+    <script type="module" src="../i18n.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="../style.css">
@@ -434,12 +435,23 @@
                 <div class="form-group">
                     <label for="projectType">Project Type *</label>
                     <select id="projectType" required>
-                        <option value="Design">Design</option>
-                        <option value="Web">Web</option>
-                        <option value="Both (Design / Web)">Both (Design / Web)</option>
-                        <option value="IT">IT</option>
-                        <option value="Mobile Development">Mobile Development</option>
-                        <option value="Marketing">Marketing</option>
+                        <option value="">Select Type</option>
+                        <option value="Design">Design (Email Banners, Brochures e.t.c)</option>
+                        <option value="Web Development">Web Development</option>
+                        <option value="Web Design">Web Design</option>
+                        <option value="Moodle LMS">Moodle LMS</option>
+                        <option value="Video Editing">Video Editing</option>
+                        <option value="eLearning Website">eLearning Website</option>
+                        <option value="Presentation Design">Presentation Design</option>
+                        <option value="Landing Page">Landing Pages</option>
+                        <option value="Digital Marketing">Digital Marketing</option>
+                        <option value="Technical Support">Technical Support</option>
+                        <option value="Research & Testing">Research & Testing</option>
+                        <option value="Client Support">Client Support</option>
+                        <option value="HubSpot CRM">HubSpot CRM</option>
+                        <option value="Zoho CRM">Zoho CRM</option>
+                        <option value="Venue Setup">Venue Setup</option>
+                        <option value="Microsoft 365">Microsoft 365</option>
                     </select>
                 </div>
 
@@ -588,7 +600,8 @@
                 `;
             } else {
                 let html = '';
-                paginatedProjects.forEach(project => {
+                paginatedProjects.forEach((project, index) => {
+                    const sequentialId = (startIndex + index + 1).toString().padStart(2, '0');
                     const statusClass = {
                         'In Progress': 'in-progress',
                         'Completed': 'completed',
@@ -603,7 +616,7 @@
                     
                     html += `
                         <tr>
-                            <td><strong>${project.id ? project.id.substring(0, 8) : 'N/A'}</strong></td>
+                            <td><strong>${sequentialId}</strong></td>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <i class="${project.icon || 'fas fa-project-diagram'}" style="color: var(--accent);"></i>
@@ -879,14 +892,24 @@
                     <div class="side-col">
                         <div class="detail-section">
                             <h2><i class="fas fa-users"></i> Team Members</h2>
-                            ${project.members && project.members.length > 0 ? project.members.map(member => `
+                            ${project.members && project.members.length > 0 ? project.members.map(member => {
+                                const systemUsers = [
+                                    { username: 'admin', fullName: 'Administrator' },
+                                    { username: 'Junior', fullName: 'Junior' },
+                                    { username: 'Buhle', fullName: 'Buhle' },
+                                    { username: 'AJay', fullName: 'AJay' }
+                                ];
+                                const memberUsername = member.username || member.name || '';
+                                const user = systemUsers.find(u => u.username === memberUsername);
+                                const displayName = user ? (user.fullName || user.username) : (memberUsername || 'Unknown');
+                                return `
                                 <div class="team-member">
-                                    <b>${member.name}</b>
-                                    <i>${member.role}</i>
-                                    <div style="font-size:0.8rem; margin-top:5px;">${member.resp}</div>
-                                    <div style="color:var(--accent); font-size:0.8rem;">${member.contact}</div>
-                                </div>
-                            `).join('') : '<p>No team members added yet</p>'}
+                                    <b>${displayName}</b>
+                                    <i>${member.role || ''}</i>
+                                    <div style="font-size:0.8rem; margin-top:5px;">${member.resp || ''}</div>
+                                    <div style="color:var(--accent); font-size:0.8rem;">${member.contact || ''}</div>
+                                </div>`;
+                            }).join('') : '<p>No team members added yet</p>'}
                         </div>
                         
                         <div class="detail-section">
