@@ -350,8 +350,10 @@ class FirebaseService {
         project.tasks = project.tasks.filter(t => t.id !== taskId);
         await set(projectRef, project);
       }
+      return { success: true };
     } catch (error) {
       console.error('Error removing task from project:', error);
+      return { success: false, error: error.message };
     }
   }
 

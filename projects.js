@@ -28,6 +28,17 @@ async function initProjects() {
   });
 }
 
+// Add this helper function near the top of projects.js
+function getPriorityColor(priority) {
+    const colors = {
+        'Urgent': '#7f1d1d',
+        'High': '#991b1b',
+        'Medium': '#92400e',
+        'Low': '#166534'
+    };
+    return colors[priority] || '#92400e';
+}
+
 // Load all system users from Firebase
 async function loadSystemUsers() {
   try {
@@ -218,7 +229,8 @@ function openProject(id) {
   showProjectView(id);
 }
 
-// projects.js - Fix showProjectView to properly display team members
+// projects.js - Complete updated showProjectView function
+
 function showProjectView(id) {
   const projectView = document.getElementById('project-view');
   const landing = document.getElementById('landing');
@@ -232,6 +244,17 @@ function showProjectView(id) {
   const totalBudget = calculateTotalBudget(p);
   const spentBudget = calculateSpentBudget(p);
   const remainingBudget = totalBudget - spentBudget;
+  
+  // Helper function for priority colors
+  function getPriorityColor(priority) {
+    const colors = {
+      'Urgent': '#7f1d1d',
+      'High': '#991b1b',
+      'Medium': '#92400e',
+      'Low': '#166534'
+    };
+    return colors[priority] || '#92400e';
+  }
   
   let html = `
     <button class="back-btn" onclick="closeProject()"><i class="fas fa-chevron-left"></i> RETURN TO HUB</button>
@@ -252,16 +275,23 @@ function showProjectView(id) {
           <table>
             <thead><tr><th>ID</th><th>Task</th><th>Assignee</th><th>Priority</th><th>Due Date</th><th>Status</th></tr></thead>
             <tbody>
-              ${p.tasks && p.tasks.length > 0 ? p.tasks.map(t => `
+              ${p.tasks && p.tasks.length > 0 ? p.tasks.map(t => {
+                const priorityColor = getPriorityColor(t.prio);
+                return `
                 <tr>
                   <td>${t.id ? t.id.substring(0, 8) : 'N/A'}</td>
                   <td>${t.name}</td>
                   <td>${getUserDisplayName(t.who)}</td>
-                  <td class="priority-high">${t.prio}</td>
+                  <td>
+                    <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; 
+                         background: ${priorityColor}; color: white;">
+                      ${t.prio || 'Medium'}
+                    </span>
+                  </td>
                   <td>${formatDate(t.due)}</td>
                   <td>${t.status}</td>
                 </tr>
-              `).join('') : '<tr><td colspan="6" style="text-align: center;">No tasks added yet</td></tr>'}
+              `}).join('') : '<tr><td colspan="6" style="text-align: center;">No tasks added yet</td></tr>'}
             </tbody>
           </table>
         </div>

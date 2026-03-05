@@ -289,12 +289,13 @@
                             <th>Clock In</th>
                             <th>Clock Out</th>
                             <th>Hours</th>
+                            <th>Work Location</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="attendanceTableBody">
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 40px;">
+                            <td colspan="6" style="text-align: center; padding: 40px;">
                                 <i class="fas fa-clock fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
                                 <p>Loading attendance data...</p>
                             </td>
@@ -475,7 +476,7 @@
             if (attendanceLogs.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" style="text-align: center; padding: 40px;">
+                        <td colspan="6" style="text-align: center; padding: 40px;">
                             <i class="fas fa-clock fa-4x" style="color: var(--text-p); margin-bottom: 20px;"></i>
                             <p>No attendance records found for this period</p>
                         </td>
@@ -502,8 +503,24 @@
                     'Absent': 'status-absent',
                     'On Leave': 'status-leave',
                     'Overtime': 'status-overtime',
-                    'Early Leave': 'status-early'
+                    'Early Leave': 'status-early',
+                    'On Leave (Working)': 'status-leave'
                 }[log.attendanceStatus] || 'status-present';
+                
+                // Get work location with icon
+                let locationIcon = 'fa-question-circle';
+                let locationColor = 'var(--text-p)';
+                
+                if (log.workLocation === 'On-site') {
+                    locationIcon = 'fa-building';
+                    locationColor = 'var(--success)';
+                } else if (log.workLocation === 'Remote') {
+                    locationIcon = 'fa-home';
+                    locationColor = 'var(--accent)';
+                } else if (log.workLocation === 'Client Site') {
+                    locationIcon = 'fa-briefcase';
+                    locationColor = 'var(--warning)';
+                }
                 
                 html += `
                     <tr>
@@ -511,6 +528,11 @@
                         <td>${log.clockInTime || '—'}</td>
                         <td>${log.clockOutTime || '—'}</td>
                         <td>${hours}</td>
+                        <td>
+                            <span style="color: ${locationColor};">
+                                <i class="fas ${locationIcon}"></i> ${log.workLocation || 'Not specified'}
+                            </span>
+                        </td>
                         <td><span class="status-badge ${statusClass}">${log.attendanceStatus || 'Present'}</span></td>
                     </tr>
                 `;

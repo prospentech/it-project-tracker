@@ -917,14 +917,11 @@ async function confirmDeleteTask(taskId) {
     const result = await firebaseService.deleteTask(taskId);
 
     if (result.success) {
-        // Use removeTaskFromProject (NOT saveProject) to clean the project reference.
-        // saveProject has a bug where it re-writes all embedded tasks back into /tasks,
-        // which resurrects deleted tasks. removeTaskFromProject only touches the project node.
+        // Now remove the task from the project's embedded tasks
         if (projectId) {
             await firebaseService.removeTaskFromProject(projectId, taskId);
         }
-        // DO NOT call loadTasks(), renderTable(), or filter tasks[] here.
-        // subscribeToTasks fires automatically with the updated data from Firebase.
+        // subscribeToTasks handles refresh
         showCustomModal('Success', 'Task deleted successfully!', 'success');
     } else {
         showCustomModal('Error', 'Failed to delete task: ' + result.error, 'danger');

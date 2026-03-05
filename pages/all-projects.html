@@ -288,16 +288,17 @@
         
         .task-item .task-priority {
             font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
             color: white;
             display: inline-block;
             margin-left: 5px;
         }
         
-        .priority-high { background: #ef4444; }
-        .priority-medium { background: #f59e0b; }
-        .priority-low { background: #94a3b8; }
+        .priority-urgent { background: #7f1d1d; }
+        .priority-high { background: #991b1b; }
+        .priority-medium { background: #92400e; }
+        .priority-low { background: #166534; }
         
         .budget-summary {
             display: grid;
@@ -403,6 +404,12 @@
             background: var(--card);
             border-radius: 0 0 15px 15px;
         }
+
+        /* Priority text colors */
+        .priority-text-urgent { color: #fecaca; background: #7f1d1d; }
+        .priority-text-high { color: #fee2e2; background: #991b1b; }
+        .priority-text-medium { color: #fef3c7; background: #92400e; }
+        .priority-text-low { color: #dcfce7; background: #166534; }
     </style>
 </head>
 <body>
@@ -585,6 +592,17 @@
         let currentPage = 1;
         const itemsPerPage = 10;
 
+        // Helper function for priority colors
+        function getPriorityColor(priority) {
+            const colors = {
+                'Urgent': '#7f1d1d',
+                'High': '#991b1b',
+                'Medium': '#92400e',
+                'Low': '#166534'
+            };
+            return colors[priority] || '#92400e';
+        }
+
         // Make functions available globally
         window.openProjectModal = openProjectModal;
         window.closeProjectModal = closeProjectModal;
@@ -594,6 +612,7 @@
         window.closeProjectDetail = closeProjectDetail;
         window.openBudgetModal = openBudgetModal;
         window.saveBudgetItem = saveBudgetItem;
+        window.getPriorityColor = getPriorityColor;
 
         // Override showProjectView so saveBudgetItem refreshes this page's detail view
         window.showProjectView = function(projectId) {
@@ -831,7 +850,7 @@
             }
         };
 
-        // View project details
+        // View project details - COMPLETE UPDATED FUNCTION
         window.viewProjectDetails = function(projectId) {
             const project = projects[projectId];
             if (!project) return;
@@ -844,6 +863,21 @@
             const remainingBudget = totalBudget - spentBudget;
             const progress = calculateProjectProgress(project);
             
+            // System users for display names
+            const systemUsers = [
+                { username: 'admin', fullName: 'Administrator' },
+                { username: 'Junior', fullName: 'Junior' },
+                { username: 'Buhle', fullName: 'Buhle' },
+                { username: 'AJay', fullName: 'AJay' }
+            ];
+            
+            // Helper to get display name
+            function getUserDisplayName(username) {
+                if (!username) return '';
+                const user = systemUsers.find(u => u.username === username);
+                return user ? (user.fullName || user.username) : username;
+            }
+            
             let html = `
                 <div class="grid-layout">
                     <div class="main-col">
@@ -851,7 +885,7 @@
                             <h2><i class="fas fa-info-circle"></i> Project Overview</h2>
                             <div class="detail-row"><span class="detail-label">Project Name:</span><span class="detail-value">${project.name}</span></div>
                             <div class="detail-row"><span class="detail-label">Description:</span><span class="detail-value">${project.desc || 'No description'}</span></div>
-                            <div class="detail-row"><span class="detail-label">Project Lead:</span><span class="detail-value">${project.lead}</span></div>
+                            <div class="detail-row"><span class="detail-label">Project Lead:</span><span class="detail-value">${getUserDisplayName(project.lead)}</span></div>
                             <div class="detail-row"><span class="detail-label">Type:</span><span class="detail-value">${project.type || 'N/A'}</span></div>
                             <div class="detail-row"><span class="detail-label">Start Date:</span><span class="detail-value">${formatDate(project.start)}</span></div>
                             <div class="detail-row"><span class="detail-label">Due Date:</span><span class="detail-value">${formatDate(project.due)}</span></div>
@@ -867,7 +901,7 @@
                                 </span>
                             </div>
                             <div class="detail-row"><span class="detail-label">Last Updated:</span><span class="detail-value">${project.lastUpdated ? new Date(project.lastUpdated).toLocaleString() : 'Never'}</span></div>
-                            <div class="detail-row"><span class="detail-label">Last Updated By:</span><span class="detail-value">${project.lastUpdatedBy || 'N/A'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Last Updated By:</span><span class="detail-value">${project.lastUpdatedBy ? getUserDisplayName(project.lastUpdatedBy) : 'N/A'}</span></div>
                         </div>
 
                         <div class="detail-section">
@@ -884,15 +918,22 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${project.tasks.map(task => `
+                                        ${project.tasks.map(task => {
+                                            const priorityColor = getPriorityColor(task.prio);
+                                            return `
                                             <tr>
                                                 <td>${task.name}</td>
-                                                <td>${task.who}</td>
-                                                <td><span class="task-priority priority-${task.prio?.toLowerCase() || 'medium'}">${task.prio || 'Medium'}</span></td>
+                                                <td>${getUserDisplayName(task.who)}</td>
+                                                <td>
+                                                    <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; 
+                                                         background: ${priorityColor}; color: white;">
+                                                        ${task.prio || 'Medium'}
+                                                    </span>
+                                                </td>
                                                 <td>${formatDate(task.due)}</td>
                                                 <td>${task.status}</td>
                                             </tr>
-                                        `).join('')}
+                                        `}).join('')}
                                     </tbody>
                                 </table>
                             ` : '<p>No tasks added yet</p>'}
@@ -994,15 +1035,8 @@
                         <div class="detail-section">
                             <h2><i class="fas fa-users"></i> Team Members</h2>
                             ${project.members && project.members.length > 0 ? project.members.map(member => {
-                                const systemUsers = [
-                                    { username: 'admin', fullName: 'Administrator' },
-                                    { username: 'Junior', fullName: 'Junior' },
-                                    { username: 'Buhle', fullName: 'Buhle' },
-                                    { username: 'AJay', fullName: 'AJay' }
-                                ];
                                 const memberUsername = member.username || member.name || '';
-                                const user = systemUsers.find(u => u.username === memberUsername);
-                                const displayName = user ? (user.fullName || user.username) : (memberUsername || 'Unknown');
+                                const displayName = getUserDisplayName(memberUsername);
                                 return `
                                 <div class="team-member">
                                     <b>${displayName}</b>
