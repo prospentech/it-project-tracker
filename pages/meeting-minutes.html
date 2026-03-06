@@ -303,14 +303,14 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
-                <div class="stat-number" id="nextMeeting">-</div>
+                <div class="stat-number" id="nextMeetingDate">-</div>
                 <div class="stat-label">Next Meeting</div>
             </div>
         </div>
 
         <!-- Meetings Table -->
         <div class="section-box">
-            <h2>All Meetings</h2>
+            <h2>All IT Meetings</h2>
             <div style="overflow-x: auto;">
                 <table class="meetings-table" id="meetingsTable">
                     <thead>
@@ -451,7 +451,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="nextMeetingDate">Next Meeting Date</label>
-                            <input type="date" id="nextMeetingDate">
+                            <input type="date" id="nextMeetingDateInput">
                         </div>
                         <div class="form-group">
                             <label for="nextMeetingTime">Time</label>
@@ -607,16 +607,16 @@
                 }
             });
             
-            // Next meeting
-            const futureMeetings = meetings.filter(m => new Date(m.meetingDate) > now);
-            const nextMeeting = futureMeetings.length > 0 ? 
-                futureMeetings.sort((a, b) => new Date(a.meetingDate) - new Date(b.meetingDate))[0] : null;
+            // Next meeting - look for the soonest future nextMeetingDate across all meetings
+            const meetingsWithNext = meetings.filter(m => m.nextMeetingDate && new Date(m.nextMeetingDate) > now);
+            const nextMeeting = meetingsWithNext.length > 0 ? 
+                meetingsWithNext.sort((a, b) => new Date(a.nextMeetingDate) - new Date(b.nextMeetingDate))[0] : null;
             
             document.getElementById('totalMeetings').textContent = totalMeetings;
             document.getElementById('thisMonthMeetings').textContent = thisMonthMeetings;
             document.getElementById('totalAttendants').textContent = allAttendants.size;
-            document.getElementById('nextMeeting').textContent = nextMeeting ? 
-                new Date(nextMeeting.meetingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-';
+            document.getElementById('nextMeetingDate').textContent = nextMeeting ? 
+                new Date(nextMeeting.nextMeetingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-';
         }
 
         // Render table with pagination
@@ -735,7 +735,8 @@
                 
                 document.getElementById('meetingId').value = meetingId;
                 document.getElementById('meetingTitle').value = meeting.title || '';
-                document.getElementById('meetingDate').value = meeting.meetingDate || '';
+                document.getElementById('meetingDate').value = meeting.meetingDate || '';  // ADD THIS LINE (it's missing)
+                document.getElementById('nextMeetingDateInput').value = meeting.nextMeetingDate || '';  // CHANGE THIS (was nextMeetingDate)
                 document.getElementById('meetingTime').value = meeting.meetingTime || '';
                 document.getElementById('meetingLocation').value = meeting.location || '';
                 document.getElementById('chairperson').value = meeting.chairperson || '';
@@ -770,7 +771,7 @@
                     addDecisionField();
                 }
                 
-                document.getElementById('nextMeetingDate').value = meeting.nextMeetingDate || '';
+                document.getElementById('nextMeetingDateInput').value = meeting.nextMeetingDate || '';
                 document.getElementById('nextMeetingTime').value = meeting.nextMeetingTime || '';
                 document.getElementById('nextMeetingLocation').value = meeting.nextMeetingLocation || '';
                 
@@ -834,7 +835,7 @@
                 topics: topics,
                 keyPoints: keyPoints,
                 decisions: decisions,
-                nextMeetingDate: document.getElementById('nextMeetingDate').value,
+                nextMeetingDate: document.getElementById('nextMeetingDateInput').value,
                 nextMeetingTime: document.getElementById('nextMeetingTime').value,
                 nextMeetingLocation: document.getElementById('nextMeetingLocation').value,
                 timestamp: now,
